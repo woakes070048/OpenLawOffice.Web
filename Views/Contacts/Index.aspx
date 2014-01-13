@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Views/Shared/Site.Master" Inherits="System.Web.Mvc.ViewPage<IEnumerable<OpenLawOffice.WebClient.ViewModels.Security.UserViewModel>>" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Views/Shared/Site.Master" Inherits="System.Web.Mvc.ViewPage<IEnumerable<OpenLawOffice.WebClient.ViewModels.Contacts.ContactViewModel>>" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="TitleContent" runat="server">
 	Index
@@ -11,16 +11,22 @@
     <table class="listing_table">
         <tr>
             <th>
-                Username
+                Display Name
             </th>
-            <th style="width: 200px;"></th>
+            <th>
+                City, State
+            </th>
+            <th style="width: 150px;"></th>
         </tr>
 
     <% foreach (var item in Model) { %>
     
         <tr>
             <td>
-                <%: item.Username %>
+                <%: item.DisplayName %>
+            </td>
+            <td>
+                <%: item.Address1AddressCity + ", " + item.Address1AddressStateOrProvince %>
             </td>
             <td>
                 <%: Html.ActionLink("Edit", "Edit", new { id=item.Id }) %> |
@@ -38,7 +44,7 @@
 <asp:Content ID="Content3" ContentPlaceHolderID="MenuContent" runat="server">
     <li>Navigation</li>
     <ul style="list-style: none outside none; padding-left: 1em;">
-        <li><%: Html.ActionLink("New User", "Create") %></li>
+        <li><%: Html.ActionLink("New Contact", "Create") %></li>
     </ul>
 </asp:Content>
 

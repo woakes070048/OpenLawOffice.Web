@@ -1,43 +1,37 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Views/Shared/Site.Master" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.WebClient.ViewModels.Matters.MatterViewModel>" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Views/Shared/Site.Master" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.WebClient.ViewModels.Security.AreaAclViewModel>" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="TitleContent" runat="server">
 	Details
 </asp:Content>
 
-<asp:Content ID="Content2" ContentPlaceHolderID="MenuContent" runat="server">
-    <li>Navigation</li>
-    <ul style="list-style: none outside none; padding-left: 1em;">
-        <li><%: Html.ActionLink("New Matter", "Create") %></li>
-        <li><%: Html.ActionLink("Edit", "Edit", new { id = Model.Id })%></li>
-        <li><%: Html.ActionLink("Delete ", "Delete", new { id = Model.Id })%></li>
-        <li><%: Html.ActionLink("List", "Index") %></li>
-    </ul>
-    <li><%: Html.ActionLink("Tags", "Tags", new { id = Model.Id })%></li>
-    <li><%: Html.ActionLink("Responsible Users", "Users", "Matters")%></li>
-    <li><%: Html.ActionLink("Contacts", "Contacts", "Matters")%></li>
-    <li><%: Html.ActionLink("Tasks", "Tasks", "Matters")%> (<%: Html.ActionLink("Add", "AddTask", new { controller = "Matters", id = Model.Id }) %>)</li>
-    <li><%: Html.ActionLink("Notes", "Notes", "Matters")%> (<%: Html.ActionLink("Add", "AddNote", new { controller = "Matters", id = Model.Id }) %>)</li>
-    <li><%: Html.ActionLink("Documents", "Documents", "Matters")%> (<%: Html.ActionLink("Add", "AddDocument", new { controller = "Matters", id = Model.Id }) %>)</li>
-    <li><%: Html.ActionLink("Time", "Time", "Matters")%> (<%: Html.ActionLink("Add", "AddTime", new { controller = "Matters", id = Model.Id }) %>)</li>
-    <li><%: Html.ActionLink("Permissions", "Acls", "Matters")%></li>
-</asp:Content>
-
-<asp:Content ID="Content3" ContentPlaceHolderID="MainContent" runat="server">
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
 
     <h2>Details</h2>
-
+    
     <table class="detail_table">
         <tr>
-            <td class="display-label">Id</td>
-            <td class="display-field"><%: Model.Id %></td>
+            <td class="display-label">Area</td>
+            <td class="display-field">
+                <%: Html.LabelFor(model => model.Area.Name)%>
+            </td>
         </tr>
         <tr>
-            <td class="display-label">Title</td>
-            <td class="display-field"><%: Model.Title %></td>
+            <td class="display-label">User</td>
+            <td class="display-field">
+                <%: Html.LabelFor(model => model.User) %>
+            </td>
         </tr>
         <tr>
-            <td class="display-label">Synopsis</td>
-            <td class="display-field"><%: Model.Synopsis %></td>
+            <td class="display-label">Allowed</td>
+            <td class="display-field"> 
+                    <%: Html.DisplayFor(x => Model.AllowPermissions, "PermissionViewModel") %>
+            </td>
+        </tr>
+        <tr>
+            <td class="display-label">Denied</td>
+            <td class="display-field">                    
+                    <%: Html.DisplayFor(x => Model.DenyPermissions, "PermissionViewModel")%>
+            </td>
         </tr>
     </table>
 
@@ -81,5 +75,13 @@
             <% } %>
         </tr>
     </table>
+
+</asp:Content>
+
+<asp:Content ID="Content3" ContentPlaceHolderID="MenuContent" runat="server">
+    <li>Navigation</li>
+    <ul style="list-style: none outside none; padding-left: 1em;">
+        <li><%: Html.ActionLink("List", "Index") %></li>
+    </ul>
 </asp:Content>
 
