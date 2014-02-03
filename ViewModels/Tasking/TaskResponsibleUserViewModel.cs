@@ -1,18 +1,45 @@
-﻿namespace OpenLawOffice.WebClient.ViewModels.Matters
+﻿// -----------------------------------------------------------------------
+// <copyright file="TaskResponsibleUserViewModel.cs" company="Nodine Legal, LLC">
+// Licensed to Nodine Legal, LLC under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  Nodine Legal, LLC licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+// 
+//  http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace OpenLawOffice.WebClient.ViewModels.Tasking
 {
     using System;
     using AutoMapper;
     using OpenLawOffice.Common.Models;
     using DBOs = OpenLawOffice.Server.Core.DBOs;
 
+    /// <summary>
+    /// Relates a user to a task
+    /// </summary>
     [MapMe]
-    public class SelectableMatterContactViewModel : MatterContactViewModel
+    public class TaskResponsibleUserViewModel : CoreViewModel
     {
-        public bool IsSelected { get; set; }
+        public Guid? Id { get; set; }
+        public TaskViewModel Task { get; set; }
+        public Security.UserViewModel User { get; set; }
+        public AssignmentTypeViewModel AssignmentType { get; set; }
 
         public void BuildMappings()
         {
-            Mapper.CreateMap<DBOs.Matters.MatterContact, SelectableMatterContactViewModel>()
+            Mapper.CreateMap<DBOs.Tasking.TaskResponsibleUser, TaskResponsibleUserViewModel>()
                 .ForMember(dst => dst.IsStub, opt => opt.UseValue(false))
                 .ForMember(dst => dst.UtcCreated, opt => opt.MapFrom(src => src.UtcCreated))
                 .ForMember(dst => dst.UtcModified, opt => opt.MapFrom(src => src.UtcModified))
@@ -43,26 +70,25 @@
                     };
                 }))
                 .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dst => dst.Matter, opt => opt.ResolveUsing(db =>
+                .ForMember(dst => dst.Task, opt => opt.ResolveUsing(db =>
                 {
-                    return new ViewModels.Matters.MatterViewModel()
+                    return new ViewModels.Tasking.TaskViewModel()
                     {
-                        Id = db.MatterId,
+                        Id = db.TaskId,
                         IsStub = true
                     };
                 }))
-                .ForMember(dst => dst.Contact, opt => opt.ResolveUsing(db =>
+                .ForMember(dst => dst.User, opt => opt.ResolveUsing(db =>
                 {
-                    return new ViewModels.Contacts.ContactViewModel()
+                    return new ViewModels.Security.UserViewModel()
                     {
-                        Id = db.ContactId,
+                        Id = db.UserId,
                         IsStub = true
                     };
                 }))
-                .ForMember(dst => dst.Role, opt => opt.MapFrom(src => src.Role))
-                .ForMember(dst => dst.IsSelected, opt => opt.Ignore());
+                .ForMember(dst => dst.AssignmentType, opt => opt.MapFrom(src => src.AssignmentType));
 
-            Mapper.CreateMap<SelectableMatterContactViewModel, DBOs.Matters.MatterContact>()
+            Mapper.CreateMap<TaskResponsibleUserViewModel, DBOs.Tasking.TaskResponsibleUser>()
                 .ForMember(dst => dst.UtcCreated, opt => opt.MapFrom(src => src.UtcCreated))
                 .ForMember(dst => dst.UtcModified, opt => opt.MapFrom(src => src.UtcModified))
                 .ForMember(dst => dst.UtcDisabled, opt => opt.MapFrom(src => src.UtcDisabled))
@@ -84,17 +110,24 @@
                     return model.DisabledBy.Id;
                 }))
                 .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dst => dst.MatterId, opt => opt.ResolveUsing(model =>
+                .ForMember(dst => dst.TaskId, opt => opt.ResolveUsing(model =>
                 {
-                    if (model.Matter == null) return null;
-                    return model.Matter.Id;
+                    if (model.Task != null)
+                        return model.Task.Id;
+                    else
+                        return null;
                 }))
-                .ForMember(dst => dst.ContactId, opt => opt.ResolveUsing(model =>
+                .ForMember(dst => dst.UserId, opt => opt.ResolveUsing(model =>
                 {
-                    if (model.Contact == null) return null;
-                    return model.Contact.Id;
+                    if (model.User != null)
+                        return model.User.Id;
+                    else
+                        return null;
                 }))
-                .ForMember(dst => dst.Role, opt => opt.MapFrom(src => src.Role));
+                .ForMember(dst => dst.AssignmentType, opt => opt.ResolveUsing(model =>
+                {
+                    return (int)model.AssignmentType;
+                }));
         }
     }
 }
