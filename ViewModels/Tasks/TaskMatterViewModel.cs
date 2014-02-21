@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels.Tasking
+namespace OpenLawOffice.WebClient.ViewModels.Tasks
 {
     using System;
     using AutoMapper;
@@ -35,7 +35,7 @@ namespace OpenLawOffice.WebClient.ViewModels.Tasking
 
         public void BuildMappings()
         {
-            Mapper.CreateMap<DBOs.Tasking.TaskMatter, TaskMatterViewModel>()
+            Mapper.CreateMap<DBOs.Tasks.TaskMatter, TaskMatterViewModel>()
                 .ForMember(dst => dst.IsStub, opt => opt.UseValue(false))
                 .ForMember(dst => dst.UtcCreated, opt => opt.MapFrom(src => src.UtcCreated))
                 .ForMember(dst => dst.UtcModified, opt => opt.MapFrom(src => src.UtcModified))
@@ -68,7 +68,7 @@ namespace OpenLawOffice.WebClient.ViewModels.Tasking
                 .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dst => dst.Task, opt => opt.ResolveUsing(db =>
                 {
-                    return new ViewModels.Tasking.TaskViewModel()
+                    return new ViewModels.Tasks.TaskViewModel()
                     {
                         Id = db.TaskId,
                         IsStub = true
@@ -83,7 +83,7 @@ namespace OpenLawOffice.WebClient.ViewModels.Tasking
                     };
                 }));
 
-            Mapper.CreateMap<TaskMatterViewModel, DBOs.Tasking.TaskMatter>()
+            Mapper.CreateMap<TaskMatterViewModel, DBOs.Tasks.TaskMatter>()
                 .ForMember(dst => dst.UtcCreated, opt => opt.MapFrom(src => src.UtcCreated))
                 .ForMember(dst => dst.UtcModified, opt => opt.MapFrom(src => src.UtcModified))
                 .ForMember(dst => dst.UtcDisabled, opt => opt.MapFrom(src => src.UtcDisabled))

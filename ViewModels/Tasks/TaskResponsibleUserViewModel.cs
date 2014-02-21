@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="TaskTimeViewModel.cs" company="Nodine Legal, LLC">
+// <copyright file="TaskResponsibleUserViewModel.cs" company="Nodine Legal, LLC">
 // Licensed to Nodine Legal, LLC under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -19,23 +19,27 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels.Tasking
+namespace OpenLawOffice.WebClient.ViewModels.Tasks
 {
     using System;
     using AutoMapper;
     using OpenLawOffice.Common.Models;
     using DBOs = OpenLawOffice.Server.Core.DBOs;
 
+    /// <summary>
+    /// Relates a user to a task
+    /// </summary>
     [MapMe]
-    public class TaskTimeViewModel : CoreViewModel
+    public class TaskResponsibleUserViewModel : CoreViewModel
     {
         public Guid? Id { get; set; }
         public TaskViewModel Task { get; set; }
-        public Timing.TimeViewModel Time { get; set; }
+        public Security.UserViewModel User { get; set; }
+        public AssignmentTypeViewModel AssignmentType { get; set; }
 
         public void BuildMappings()
         {
-            Mapper.CreateMap<DBOs.Tasking.TaskTime, TaskTimeViewModel>()
+            Mapper.CreateMap<DBOs.Tasks.TaskResponsibleUser, TaskResponsibleUserViewModel>()
                 .ForMember(dst => dst.IsStub, opt => opt.UseValue(false))
                 .ForMember(dst => dst.UtcCreated, opt => opt.MapFrom(src => src.UtcCreated))
                 .ForMember(dst => dst.UtcModified, opt => opt.MapFrom(src => src.UtcModified))
@@ -68,22 +72,23 @@ namespace OpenLawOffice.WebClient.ViewModels.Tasking
                 .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dst => dst.Task, opt => opt.ResolveUsing(db =>
                 {
-                    return new ViewModels.Tasking.TaskViewModel()
+                    return new ViewModels.Tasks.TaskViewModel()
                     {
                         Id = db.TaskId,
                         IsStub = true
                     };
                 }))
-                .ForMember(dst => dst.Time, opt => opt.ResolveUsing(db =>
+                .ForMember(dst => dst.User, opt => opt.ResolveUsing(db =>
                 {
-                    return new ViewModels.Timing.TimeViewModel()
+                    return new ViewModels.Security.UserViewModel()
                     {
-                        Id = db.TimeId,
+                        Id = db.UserId,
                         IsStub = true
                     };
-                }));
+                }))
+                .ForMember(dst => dst.AssignmentType, opt => opt.MapFrom(src => src.AssignmentType));
 
-            Mapper.CreateMap<TaskTimeViewModel, DBOs.Tasking.TaskTime>()
+            Mapper.CreateMap<TaskResponsibleUserViewModel, DBOs.Tasks.TaskResponsibleUser>()
                 .ForMember(dst => dst.UtcCreated, opt => opt.MapFrom(src => src.UtcCreated))
                 .ForMember(dst => dst.UtcModified, opt => opt.MapFrom(src => src.UtcModified))
                 .ForMember(dst => dst.UtcDisabled, opt => opt.MapFrom(src => src.UtcDisabled))
@@ -112,12 +117,16 @@ namespace OpenLawOffice.WebClient.ViewModels.Tasking
                     else
                         return null;
                 }))
-                .ForMember(dst => dst.TimeId, opt => opt.ResolveUsing(model =>
+                .ForMember(dst => dst.UserId, opt => opt.ResolveUsing(model =>
                 {
-                    if (model.Time != null)
-                        return model.Time.Id;
+                    if (model.User != null)
+                        return model.User.Id;
                     else
                         return null;
+                }))
+                .ForMember(dst => dst.AssignmentType, opt => opt.ResolveUsing(model =>
+                {
+                    return (int)model.AssignmentType;
                 }));
         }
     }

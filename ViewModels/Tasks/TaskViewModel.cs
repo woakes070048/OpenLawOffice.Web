@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="TaskTagViewModel.cs" company="Nodine Legal, LLC">
+// <copyright file="TaskViewModel.cs" company="Nodine Legal, LLC">
 // Licensed to Nodine Legal, LLC under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels.Tasking
+namespace OpenLawOffice.WebClient.ViewModels.Tasks
 {
     using System;
     using AutoMapper;
@@ -27,13 +27,23 @@ namespace OpenLawOffice.WebClient.ViewModels.Tasking
     using DBOs = OpenLawOffice.Server.Core.DBOs;
 
     [MapMe]
-    public class TaskTagViewModel : Tagging.TagBaseViewModel
+    public class TaskViewModel : CoreViewModel
     {
-        public TaskViewModel Task { get; set; }
+        public long? Id { get; set; }
+        public string Title { get; set; }
+        public string Type { get; set; }
+        public string Description { get; set; }
+        public DateTime? ProjectedStart { get; set; }
+        public DateTime? DueDate { get; set; }
+        public DateTime? ProjectedEnd { get; set; }
+        public DateTime? ActualEnd { get; set; }
+        public TaskViewModel Parent { get; set; }
+        public bool IsGroupingTask { get; set; }
+        public TaskViewModel SequentialPredecessor { get; set; }
 
         public void BuildMappings()
         {
-            Mapper.CreateMap<DBOs.Tasking.TaskTag, TaskTagViewModel>()
+            Mapper.CreateMap<DBOs.Tasks.Task, TaskViewModel>()
                 .ForMember(dst => dst.IsStub, opt => opt.UseValue(false))
                 .ForMember(dst => dst.UtcCreated, opt => opt.MapFrom(src => src.UtcCreated))
                 .ForMember(dst => dst.UtcModified, opt => opt.MapFrom(src => src.UtcModified))
@@ -64,28 +74,38 @@ namespace OpenLawOffice.WebClient.ViewModels.Tasking
                     };
                 }))
                 .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dst => dst.Task, opt => opt.ResolveUsing(db =>
+                .ForMember(dst => dst.Parent, opt => opt.ResolveUsing(db =>
                 {
-                    return new ViewModels.Tasking.TaskViewModel()
-                    {
-                        Id = db.TaskId,
-                        IsStub = true
-                    };
-                }))
-                .ForMember(dst => dst.TagCategory, opt => opt.ResolveUsing(db =>
-                {
-                    if (!db.TagCategoryId.HasValue || db.TagCategoryId.Value < 1)
+                    if (db.ParentId.HasValue)
+                        return new ViewModels.Tasks.TaskViewModel()
+                        {
+                            Id = db.ParentId.Value,
+                            IsStub = true
+                        };
+                    else
                         return null;
-
-                    return new ViewModels.Tagging.TagCategoryViewModel()
-                    {
-                        Id = db.TagCategoryId.Value,
-                        IsStub = true
-                    };
                 }))
-                .ForMember(dst => dst.Tag, opt => opt.MapFrom(src => src.Tag));
+                .ForMember(dst => dst.Title, opt => opt.MapFrom(src => src.Title))
+                .ForMember(dst => dst.Type, opt => opt.Ignore())
+                .ForMember(dst => dst.Description, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dst => dst.ProjectedStart, opt => opt.MapFrom(src => src.ProjectedStart))
+                .ForMember(dst => dst.DueDate, opt => opt.MapFrom(src => src.DueDate))
+                .ForMember(dst => dst.ProjectedEnd, opt => opt.MapFrom(src => src.ProjectedEnd))
+                .ForMember(dst => dst.ActualEnd, opt => opt.MapFrom(src => src.ActualEnd))
+                .ForMember(dst => dst.IsGroupingTask, opt => opt.MapFrom(src => src.IsGroupingTask))
+                .ForMember(dst => dst.SequentialPredecessor, opt => opt.ResolveUsing(db =>
+                {
+                    if (db.SequentialPredecessorId.HasValue)
+                        return new ViewModels.Tasks.TaskViewModel()
+                        {
+                            Id = db.SequentialPredecessorId.Value,
+                            IsStub = true
+                        };
+                    else
+                        return null;
+                }));
 
-            Mapper.CreateMap<TaskTagViewModel, DBOs.Tasking.TaskTag>()
+            Mapper.CreateMap<TaskViewModel, DBOs.Tasks.Task>()
                 .ForMember(dst => dst.UtcCreated, opt => opt.MapFrom(src => src.UtcCreated))
                 .ForMember(dst => dst.UtcModified, opt => opt.MapFrom(src => src.UtcModified))
                 .ForMember(dst => dst.UtcDisabled, opt => opt.MapFrom(src => src.UtcDisabled))
@@ -107,19 +127,27 @@ namespace OpenLawOffice.WebClient.ViewModels.Tasking
                     return model.DisabledBy.Id;
                 }))
                 .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dst => dst.TaskId, opt => opt.ResolveUsing(model =>
+                .ForMember(dst => dst.ParentId, opt => opt.ResolveUsing(model =>
                 {
-                    if (model.Task == null || !model.Task.Id.HasValue)
-                        throw new Exception("Matter cannot be null");
-                    return model.Task.Id.Value;
-                }))
-                .ForMember(dst => dst.TagCategoryId, opt => opt.ResolveUsing(model =>
-                {
-                    if (model.TagCategory == null)
+                    if (model.Parent != null)
+                        return model.Parent.Id;
+                    else
                         return null;
-                    return model.TagCategory.Id;
                 }))
-                .ForMember(dst => dst.Tag, opt => opt.MapFrom(src => src.Tag));
+                .ForMember(dst => dst.Title, opt => opt.MapFrom(src => src.Title))
+                .ForMember(dst => dst.Description, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dst => dst.ProjectedStart, opt => opt.MapFrom(src => src.ProjectedStart))
+                .ForMember(dst => dst.DueDate, opt => opt.MapFrom(src => src.DueDate))
+                .ForMember(dst => dst.ProjectedEnd, opt => opt.MapFrom(src => src.ProjectedEnd))
+                .ForMember(dst => dst.ActualEnd, opt => opt.MapFrom(src => src.ActualEnd))
+                .ForMember(dst => dst.IsGroupingTask, opt => opt.MapFrom(src => src.IsGroupingTask))
+                .ForMember(dst => dst.SequentialPredecessorId, opt => opt.ResolveUsing(model =>
+                {
+                    if (model.SequentialPredecessor != null)
+                        return model.SequentialPredecessor.Id;
+                    else
+                        return null;
+                }));
         }
     }
 }
