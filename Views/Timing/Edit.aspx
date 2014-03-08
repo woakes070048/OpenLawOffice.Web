@@ -18,6 +18,10 @@
     </style>
 
     <h2>Edit</h2>
+
+    <% using (Html.BeginForm()) {%>
+        <%: Html.ValidationSummary(true) %>
+    
     
     <table class="detail_table">
         <tr>
@@ -32,7 +36,8 @@
             <td class="display-label">Worker</td>
             <td class="display-field">
             
-                <%: Html.HiddenFor(model => model.Worker.Id) %>
+                Worker: <%: Html.TextBoxFor(model => model.Worker.Id, new { @readonly = true })%>
+                <%: Html.ValidationMessageFor(model => model.Worker.Id)%>
                 <table id="list"></table>
                 <div id="pager"></div>
                 <input id="clear" type="button" style="width:200px;" value="clear" />
@@ -74,7 +79,23 @@
             </td>
         </tr>
     </table>
+            
+        <p>
+            <input type="submit" value="Save" />
+        </p>
+
+    <% } %>
+
 </asp:Content>
 
 <asp:Content ID="Content3" ContentPlaceHolderID="MenuContent" runat="server">
+    <li>Navigation</li>
+    <ul style="list-style: none outside none; padding-left: 1em;">
+        <li><%: Html.ActionLink("Details", "Details", new { id = Model.Id })%></li>
+        <li><%: Html.ActionLink("Delete ", "Delete", new { id = Model.Id })%></li>
+        <% if (ViewData["TaskId"] != null)
+           { %>
+        <li><%: Html.ActionLink("Task ", "Details", "Tasks", new { id = ViewData["TaskId"] }, null)%></li>
+        <% } %>
+    </ul>
 </asp:Content>

@@ -14,6 +14,10 @@
             <td class="display-field"><%: Model.Id %></td>
         </tr>
         <tr>
+            <td class="display-label">Duration</td>
+            <td class="display-field"><%: ((TimeSpan)(Model.Stop - Model.Start)).TotalMinutes %> min.</td>
+        </tr>
+        <tr>
             <td class="display-label">Start</td>
             <td class="display-field"><%: String.Format("{0:g}", DateTime.SpecifyKind(Model.Start, DateTimeKind.Utc).ToLocalTime())%></td>
         </tr>
@@ -71,4 +75,13 @@
 </asp:Content>
 
 <asp:Content ID="Content3" ContentPlaceHolderID="MenuContent" runat="server">
+    <li>Navigation</li>
+    <ul style="list-style: none outside none; padding-left: 1em;">
+        <li><%: Html.ActionLink("Edit", "Edit", new { id = Model.Id })%></li>
+        <li><%: Html.ActionLink("Delete ", "Delete", new { id = Model.Id })%></li>
+        <% if (ViewData["TaskId"] != null)
+           { %>
+        <li><%: Html.ActionLink("Task ", "Details", "Tasks", new { id = ViewData["TaskId"] }, null)%></li>
+        <% } %>
+    </ul>
 </asp:Content>
