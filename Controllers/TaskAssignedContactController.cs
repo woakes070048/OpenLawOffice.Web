@@ -7,11 +7,9 @@
     using System.Web.Mvc;
     using System.Data;
     using ServiceStack.OrmLite;
-    using OpenLawOffice.Server.Core;
-    using DBOs = OpenLawOffice.Server.Core.DBOs;
     using AutoMapper;
 
-    public class TaskContactController : BaseController
+    public class TaskAssignedContactController : BaseController
     {
         // Selects link based on Guid of Matter
         [SecurityFilter(SecurityAreaName = "Tasks.TaskContact", IsSecuredResource = false,
@@ -22,7 +20,7 @@
 
             using (IDbConnection db = Database.Instance.OpenConnection())
             {
-                List<DBOs.Contacts.Contact> contactsDbo = db.Query<DBOs.Contacts.Contact>(
+                List<DBOs.Contacts.Contact> contactsDbo = db.SqlList<DBOs.Contacts.Contact>(
                     "SELECT * FROM \"contact\" WHERE \"utc_disabled\" is null");
 
                 contactsDbo.ForEach(x =>
@@ -51,10 +49,10 @@
 
             using (IDbConnection db = Database.Instance.OpenConnection())
             {
-                DBOs.Tasks.Task taskDbo = db.QuerySingle<DBOs.Tasks.Task>(
+                DBOs.Tasks.Task taskDbo = db.Single<DBOs.Tasks.Task>(
                     "SELECT * FROM \"task\" WHERE \"id\"=@Id AND \"utc_disabled\" is null",
                     new { Id = taskId });
-                DBOs.Contacts.Contact contactDbo = db.QuerySingle<DBOs.Contacts.Contact>(
+                DBOs.Contacts.Contact contactDbo = db.Single<DBOs.Contacts.Contact>(
                     "SELECT * FROM \"contact\" WHERE \"id\"=@Id AND \"utc_disabled\" is null",
                     new { Id = id });
 
@@ -78,7 +76,7 @@
             Common.Models.Security.User currentUser = UserCache.Instance.Lookup(Request);
             using (IDbConnection db = Database.Instance.OpenConnection())
             {
-                dbo = db.QuerySingle<DBOs.Tasks.TaskAssignedContact>(
+                dbo = db.Single<DBOs.Tasks.TaskAssignedContact>(
                     "SELECT * FROM \"task_assigned_contact\" WHERE \"task_id\"=@TaskId AND \"contact_id\"=@ContactId",
                     new { TaskId = model.Task.Id, ContactId = model.Contact.Id });
 
@@ -108,7 +106,7 @@
                         }, where => where.Id == dbo.Id);
                 }
 
-                dbo = db.GetById<DBOs.Tasks.TaskAssignedContact>(dbo.Id);
+                dbo = db.SingleById<DBOs.Tasks.TaskAssignedContact>(dbo.Id);
             }
 
             return RedirectToAction("Contacts", "Tasks", new { id = dbo.TaskId.ToString() });
@@ -122,12 +120,12 @@
             using (IDbConnection db = Database.Instance.OpenConnection())
             {
                 // Load base DBO
-                DBOs.Tasks.TaskAssignedContact dbo = db.QuerySingle<DBOs.Tasks.TaskAssignedContact>(
+                DBOs.Tasks.TaskAssignedContact dbo = db.Single<DBOs.Tasks.TaskAssignedContact>(
                     "SELECT * FROM \"task_assigned_contact\" WHERE \"id\"=@Id AND \"utc_disabled\" is null",
                     new { Id = id });
 
-                DBOs.Tasks.Task taskDbo = db.GetById<DBOs.Tasks.Task>(dbo.TaskId);
-                DBOs.Contacts.Contact contactDbo = db.GetById<DBOs.Contacts.Contact>(dbo.ContactId);
+                DBOs.Tasks.Task taskDbo = db.SingleById<DBOs.Tasks.Task>(dbo.TaskId);
+                DBOs.Contacts.Contact contactDbo = db.SingleById<DBOs.Contacts.Contact>(dbo.ContactId);
 
                 model = Mapper.Map<ViewModels.Tasks.TaskAssignedContactViewModel>(dbo);
                 model.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contactDbo);
@@ -161,7 +159,7 @@
                         },
                         where => where.Id == dbo.Id);
 
-                    dbo = db.GetById<DBOs.Tasks.TaskAssignedContact>(dbo.Id);
+                    dbo = db.SingleById<DBOs.Tasks.TaskAssignedContact>(dbo.Id);
                 }
 
                 return RedirectToAction("Contacts", "Tasks", new { id = dbo.TaskId.ToString() });
@@ -180,12 +178,12 @@
             using (IDbConnection db = Database.Instance.OpenConnection())
             {
                 // Load base DBO
-                DBOs.Tasks.TaskAssignedContact dbo = db.QuerySingle<DBOs.Tasks.TaskAssignedContact>(
+                DBOs.Tasks.TaskAssignedContact dbo = db.Single<DBOs.Tasks.TaskAssignedContact>(
                     "SELECT * FROM \"task_assigned_contact\" WHERE \"id\"=@Id AND \"utc_disabled\" is null",
                     new { Id = id });
 
-                DBOs.Tasks.Task taskDbo = db.GetById<DBOs.Tasks.Task>(dbo.TaskId);
-                DBOs.Contacts.Contact contactDbo = db.GetById<DBOs.Contacts.Contact>(dbo.ContactId);
+                DBOs.Tasks.Task taskDbo = db.SingleById<DBOs.Tasks.Task>(dbo.TaskId);
+                DBOs.Contacts.Contact contactDbo = db.SingleById<DBOs.Contacts.Contact>(dbo.ContactId);
 
                 model = Mapper.Map<ViewModels.Tasks.TaskAssignedContactViewModel>(dbo);
                 model.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contactDbo);
@@ -228,7 +226,7 @@
                         },
                         where => where.Id == dbo.Id);
 
-                    dbo = db.GetById<DBOs.Tasks.TaskAssignedContact>(dbo.Id);
+                    dbo = db.SingleById<DBOs.Tasks.TaskAssignedContact>(dbo.Id);
                 }
 
                 return RedirectToAction("Contacts", "Tasks", new { id = dbo.TaskId.ToString() });
