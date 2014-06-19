@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="LoginModel.cs" company="Nodine Legal, LLC">
+// <copyright file="FormsAuthenticationService.cs" company="Nodine Legal, LLC">
 // Licensed to Nodine Legal, LLC under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -19,12 +19,23 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels.Account
+namespace OpenLawOffice.WebClient
 {
-    public class LoginModel
-    {
-        public string Username { get; set; }
+    using System;
+    using System.Web.Security;
 
-        public string Password { get; set; }
+    public class FormsAuthenticationService : IFormsAuthenticationService
+    {
+        public void SignIn(string userName, bool createPersistentCookie)
+        {
+            if (String.IsNullOrEmpty(userName)) throw new ArgumentException("Value cannot be null or empty.", "userName");
+
+            FormsAuthentication.SetAuthCookie(userName, createPersistentCookie);
+        }
+
+        public void SignOut()
+        {
+            FormsAuthentication.SignOut();
+        }
     }
 }
