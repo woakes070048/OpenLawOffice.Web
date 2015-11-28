@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Views/Shared/SiteNoRightBar.Master" Inherits="System.Web.Mvc.ViewPage<List<OpenLawOffice.WebClient.ViewModels.Forms.FormFieldMatterViewModel>>" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Views/Shared/SiteNoRightBar.Master" Inherits="System.Web.Mvc.ViewPage<List<OpenLawOffice.Web.ViewModels.Forms.FormFieldMatterViewModel>>" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="TitleContent" runat="server">
 	Matter Form Fields
@@ -26,7 +26,7 @@
         <% bool altRow = true; 
            for (int i=0; i<Model.Count; i++)
            {
-               OpenLawOffice.WebClient.ViewModels.Forms.FormFieldMatterViewModel item = Model[i];
+               OpenLawOffice.Web.ViewModels.Forms.FormFieldMatterViewModel item = Model[i];
                altRow = !altRow;
                if (altRow)
                { %> <tr class="tr_alternate"> <% }

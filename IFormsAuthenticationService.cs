@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient
+namespace OpenLawOffice.Web
 {
     public interface IFormsAuthenticationService
     {

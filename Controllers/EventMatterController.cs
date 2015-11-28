@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.Controllers
+namespace OpenLawOffice.Web.Controllers
 {
     using System;
     using System.Collections.Generic;

@@ -1,5 +1,5 @@
-﻿<%@ Page Language="C#" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.WebClient.ViewModels.Contacts.TimesheetsViewModel>" %>
-<%@ Import Namespace="OpenLawOffice.WebClient.Helpers" %>
+﻿<%@ Page Language="C#" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.Web.ViewModels.Contacts.TimesheetsViewModel>" %>
+<%@ Import Namespace="OpenLawOffice.Web.Helpers" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml" >
@@ -45,7 +45,7 @@
         List<Tuple<string, string, TimeSpan>> summaryList = new List<Tuple<string, string, TimeSpan>>();
 for (int i=0; i<Model.Matters.Count; i++)
 {
-    OpenLawOffice.WebClient.ViewModels.Contacts.TimesheetsViewModel.MatterTimeList matter = Model.Matters[i];
+    OpenLawOffice.Web.ViewModels.Contacts.TimesheetsViewModel.MatterTimeList matter = Model.Matters[i];
 
     if (matter.Times.Count > 0)
     {

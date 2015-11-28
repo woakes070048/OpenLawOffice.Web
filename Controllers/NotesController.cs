@@ -19,13 +19,14 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.Controllers
+namespace OpenLawOffice.Web.Controllers
 {
     using System;
     using System.Web;
     using System.Web.Mvc;
     using AutoMapper;
     using System.Collections.Generic;
+    using AutoMapper.Internal;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class NotesController : BaseController

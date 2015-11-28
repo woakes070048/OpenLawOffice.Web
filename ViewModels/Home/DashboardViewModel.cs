@@ -24,7 +24,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace OpenLawOffice.WebClient.ViewModels.Home
+namespace OpenLawOffice.Web.ViewModels.Home
 {
     public class DashboardViewModel
     {

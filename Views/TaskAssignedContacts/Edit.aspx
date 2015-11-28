@@ -1,6 +1,6 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Views/Shared/Site.Master" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.WebClient.ViewModels.Tasks.TaskAssignedContactViewModel>" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Views/Shared/Site.Master" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.Web.ViewModels.Tasks.TaskAssignedContactViewModel>" %>
 
-<%--<%@ Import Namespace="OpenLawOffice.WebClient.Helpers" %>--%>
+<%--<%@ Import Namespace="OpenLawOffice.Web.Helpers" %>--%>
 <asp:Content ID="Content1" ContentPlaceHolderID="TitleContent" runat="server">
     Edit Contact Assignment to Task
 </asp:Content>

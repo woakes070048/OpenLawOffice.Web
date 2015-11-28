@@ -1,4 +1,4 @@
-﻿namespace OpenLawOffice.WebClient.ViewModels
+﻿namespace OpenLawOffice.Web.ViewModels
 {
     using AutoMapper;
     using OpenLawOffice.Common.Models;

@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels
+namespace OpenLawOffice.Web.ViewModels
 {
     /// <summary>
     /// Represents the method of assignment

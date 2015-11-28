@@ -25,7 +25,7 @@ using System.Web.Mvc;
 using AutoMapper;
 using System.Web.Security;
 
-namespace OpenLawOffice.WebClient.Controllers
+namespace OpenLawOffice.Web.Controllers
 {
     [HandleError(View = "Errors/Index", Order = 10)]
     public class TaskTimeController : BaseController

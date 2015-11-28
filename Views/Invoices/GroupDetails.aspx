@@ -1,5 +1,5 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Views/Shared/SiteNoRightBar.Master" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.WebClient.ViewModels.Billing.GroupInvoiceViewModel>" %>
-<%@ Import Namespace="OpenLawOffice.WebClient.Helpers" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Views/Shared/SiteNoRightBar.Master" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.Web.ViewModels.Billing.GroupInvoiceViewModel>" %>
+<%@ Import Namespace="OpenLawOffice.Web.Helpers" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="TitleContent" runat="server">
 	Invoice Details
@@ -268,7 +268,7 @@
             decimal expSum = 0;
             for (int i = 0; i < Model.Matters[j].Expenses.Count; i++)
             {
-                OpenLawOffice.WebClient.ViewModels.Billing.InvoiceExpenseViewModel item = Model.Matters[j].Expenses[i];
+                OpenLawOffice.Web.ViewModels.Billing.InvoiceExpenseViewModel item = Model.Matters[j].Expenses[i];
                 altRow = !altRow;
                 expSum += item.Amount;
                 if (altRow)
@@ -326,7 +326,7 @@
             decimal feeSum = 0;
             for (int i = 0; i < Model.Matters[j].Fees.Count; i++)
             {
-                OpenLawOffice.WebClient.ViewModels.Billing.InvoiceFeeViewModel item = Model.Matters[j].Fees[i];
+                OpenLawOffice.Web.ViewModels.Billing.InvoiceFeeViewModel item = Model.Matters[j].Fees[i];
                 altRow = !altRow;
                 feeSum += item.Amount;
                 if (altRow)
@@ -389,7 +389,7 @@
             decimal timeSum = 0;
             for (int i = 0; i < Model.Matters[j].Times.Count; i++)
             {
-                OpenLawOffice.WebClient.ViewModels.Billing.InvoiceTimeViewModel item = Model.Matters[j].Times[i];
+                OpenLawOffice.Web.ViewModels.Billing.InvoiceTimeViewModel item = Model.Matters[j].Times[i];
                 altRow = !altRow;
                 timeSum += (decimal)item.Duration.TotalHours * item.PricePerHour;
                 if (altRow)

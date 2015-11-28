@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels.Billing
+namespace OpenLawOffice.Web.ViewModels.Billing
 {
     using System;
     using AutoMapper;

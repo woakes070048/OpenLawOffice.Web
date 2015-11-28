@@ -1,6 +1,6 @@
-﻿<%@ Page Language="C#" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.WebClient.ViewModels.Billing.GroupInvoiceViewModel>" %>
+﻿<%@ Page Language="C#" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.Web.ViewModels.Billing.GroupInvoiceViewModel>" %>
 
-<%@ Import Namespace="OpenLawOffice.WebClient.Helpers" %>
+<%@ Import Namespace="OpenLawOffice.Web.Helpers" %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 

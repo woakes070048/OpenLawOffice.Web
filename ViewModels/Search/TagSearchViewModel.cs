@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels.Search
+namespace OpenLawOffice.Web.ViewModels.Search
 {
     using System.Collections.Generic;
 

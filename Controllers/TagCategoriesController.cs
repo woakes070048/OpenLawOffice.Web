@@ -22,7 +22,7 @@
 using System.Collections.Generic;
 using System.Web.Mvc;
 
-namespace OpenLawOffice.WebClient.Controllers
+namespace OpenLawOffice.Web.Controllers
 {
     [HandleError(View = "Errors/Index", Order = 10)]
     public class TagCategoriesController : BaseController

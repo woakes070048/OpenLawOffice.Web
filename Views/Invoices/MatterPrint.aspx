@@ -1,5 +1,5 @@
-﻿<%@ Page Language="C#" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.WebClient.ViewModels.Billing.InvoiceViewModel>" %>
-<%@ Import Namespace="OpenLawOffice.WebClient.Helpers" %>
+﻿<%@ Page Language="C#" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.Web.ViewModels.Billing.InvoiceViewModel>" %>
+<%@ Import Namespace="OpenLawOffice.Web.Helpers" %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -112,7 +112,7 @@
                     decimal expSum = 0;
                     for (int i=0; i<Model.Expenses.Count; i++)
                     {
-                        OpenLawOffice.WebClient.ViewModels.Billing.InvoiceExpenseViewModel item = Model.Expenses[i];
+                        OpenLawOffice.Web.ViewModels.Billing.InvoiceExpenseViewModel item = Model.Expenses[i];
                         altRow = !altRow;
                         expSum += item.Amount;
                         if (altRow)
@@ -170,7 +170,7 @@
                     decimal feeSum = 0;
                     for (int i=0; i<Model.Fees.Count; i++)
                     {
-                        OpenLawOffice.WebClient.ViewModels.Billing.InvoiceFeeViewModel item = Model.Fees[i];
+                        OpenLawOffice.Web.ViewModels.Billing.InvoiceFeeViewModel item = Model.Fees[i];
                         altRow = !altRow;
                         feeSum += item.Amount;
                         if (altRow)
@@ -233,7 +233,7 @@
                     decimal timeSum = 0;
                     for (int i=0; i<Model.Times.Count; i++)
                     {
-                        OpenLawOffice.WebClient.ViewModels.Billing.InvoiceTimeViewModel item = Model.Times[i];
+                        OpenLawOffice.Web.ViewModels.Billing.InvoiceTimeViewModel item = Model.Times[i];
                         altRow = !altRow;
                         timeSum += (decimal)item.Duration.TotalHours * item.PricePerHour;
                         if (altRow)

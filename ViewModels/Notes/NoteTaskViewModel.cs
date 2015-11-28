@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels.Notes
+namespace OpenLawOffice.Web.ViewModels.Notes
 {
     using System;
     using AutoMapper;

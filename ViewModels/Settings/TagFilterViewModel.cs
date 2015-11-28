@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels.Settings
+namespace OpenLawOffice.Web.ViewModels.Settings
 {
     using AutoMapper;
     using OpenLawOffice.Common.Models;

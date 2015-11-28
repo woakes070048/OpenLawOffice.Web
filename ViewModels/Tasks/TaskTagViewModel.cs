@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels.Tasks
+namespace OpenLawOffice.Web.ViewModels.Tasks
 {
     using AutoMapper;
     using OpenLawOffice.Common.Models;

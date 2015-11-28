@@ -20,7 +20,7 @@
 // -----------------------------------------------------------------------
 
 
-namespace OpenLawOffice.WebClient.ViewModels
+namespace OpenLawOffice.Web.ViewModels
 {
     using System;
     using System.ComponentModel.DataAnnotations;

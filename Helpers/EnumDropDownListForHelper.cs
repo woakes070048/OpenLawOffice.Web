@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.Helpers
+namespace OpenLawOffice.Web.Helpers
 {
     using System;
     using System.Collections.Generic;

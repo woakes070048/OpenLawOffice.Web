@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.Controllers
+namespace OpenLawOffice.Web.Controllers
 {
     using System.IO;
     using System.Web.Mvc;

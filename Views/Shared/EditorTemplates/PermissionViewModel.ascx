@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" Inherits="System.Web.Mvc.ViewUserControl<OpenLawOffice.WebClient.ViewModels.PermissionsViewModel>" %>
+﻿<%@ Control Language="C#" Inherits="System.Web.Mvc.ViewUserControl<OpenLawOffice.Web.ViewModels.PermissionsViewModel>" %>
 <table style="border: none; width: 150px;">
     <tr>
         <td style="border: none;">

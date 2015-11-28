@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels
+namespace OpenLawOffice.Web.ViewModels
 {
     using System.ComponentModel.DataAnnotations;
     using System.Web.Security;

@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels.Contacts
+namespace OpenLawOffice.Web.ViewModels.Contacts
 {
     using System;
     using System.ComponentModel.DataAnnotations;

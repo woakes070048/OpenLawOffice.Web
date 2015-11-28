@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels.Tagging
+namespace OpenLawOffice.Web.ViewModels.Tagging
 {
     using System;
     using AutoMapper;

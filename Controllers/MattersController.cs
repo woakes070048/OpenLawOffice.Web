@@ -19,16 +19,16 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.Controllers
+namespace OpenLawOffice.Web.Controllers
 {
     using System;
     using System.Collections.Generic;
     using System.Web.Mvc;
     using AutoMapper;
-    using Ionic.Zip;
     using System.Web.Profile;
     using System.Web.Security;
     using System.Linq;
+    using AutoMapper.Internal;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class MattersController : BaseController

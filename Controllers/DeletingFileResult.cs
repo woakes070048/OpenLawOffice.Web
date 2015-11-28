@@ -1,4 +1,4 @@
-﻿namespace OpenLawOffice.WebClient.Controllers
+﻿namespace OpenLawOffice.Web.Controllers
 {
     using System.Web.Mvc;
 

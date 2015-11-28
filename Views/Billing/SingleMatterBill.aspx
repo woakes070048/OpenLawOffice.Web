@@ -1,5 +1,5 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Views/Shared/SiteNoRightBar.Master" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.WebClient.ViewModels.Billing.InvoiceViewModel>" %>
-<%@ Import Namespace="OpenLawOffice.WebClient.Helpers" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Views/Shared/SiteNoRightBar.Master" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.Web.ViewModels.Billing.InvoiceViewModel>" %>
+<%@ Import Namespace="OpenLawOffice.Web.Helpers" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="TitleContent" runat="server">
 	SingleBill
@@ -292,7 +292,7 @@
                     for (int i=0; i<Model.Expenses.Count; i++)
                     {
                         object o = ViewContext.ViewData.ModelState;
-                        OpenLawOffice.WebClient.ViewModels.Billing.InvoiceExpenseViewModel item = Model.Expenses[i];
+                        OpenLawOffice.Web.ViewModels.Billing.InvoiceExpenseViewModel item = Model.Expenses[i];
                         altRow = !altRow;
                         expSum += item.Amount;
                         if (altRow)
@@ -366,7 +366,7 @@
                     altRow = true;
                     for (int i=0; i<Model.Fees.Count; i++)
                     {
-                        OpenLawOffice.WebClient.ViewModels.Billing.InvoiceFeeViewModel item = Model.Fees[i];
+                        OpenLawOffice.Web.ViewModels.Billing.InvoiceFeeViewModel item = Model.Fees[i];
                         altRow = !altRow;
                         feeSum += item.Amount;
                         if (altRow)
@@ -443,7 +443,7 @@
                     decimal timeSum = 0;
                     for (int i=0; i<Model.Times.Count; i++)
                     {
-                        OpenLawOffice.WebClient.ViewModels.Billing.InvoiceTimeViewModel item = Model.Times[i];
+                        OpenLawOffice.Web.ViewModels.Billing.InvoiceTimeViewModel item = Model.Times[i];
                         altRow = !altRow; 
                         timeSum += (decimal)item.Duration.TotalHours * item.PricePerHour;                        
                         if (altRow)

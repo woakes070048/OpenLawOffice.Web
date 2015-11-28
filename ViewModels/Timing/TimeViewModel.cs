@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels.Timing
+namespace OpenLawOffice.Web.ViewModels.Timing
 {
     using System;
     using AutoMapper;

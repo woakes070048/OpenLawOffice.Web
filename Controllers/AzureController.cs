@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 using System.Web.Profile;
 using System.Web.Security;
 
-namespace OpenLawOffice.WebClient.Controllers
+namespace OpenLawOffice.Web.Controllers
 {
     public class AzureController : Controller
     {

@@ -1,5 +1,5 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Views/Shared/SiteNoRightBar.Master" 
-    Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.WebClient.ViewModels.Tasks.TaskTemplateViewModel>" %>
+    Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.Web.ViewModels.Tasks.TaskTemplateViewModel>" %>
 <asp:Content ID="Contnt1" ContentPlaceHolderID="TitleContent" runat="server">
     Edit Task Template
 </asp:Content>

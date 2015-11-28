@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels.Events
+namespace OpenLawOffice.Web.ViewModels.Events
 {
     using AutoMapper;
     using OpenLawOffice.Common.Models;

@@ -19,7 +19,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace OpenLawOffice.WebClient.ViewModels.Documents
+namespace OpenLawOffice.Web.ViewModels.Documents
 {
     using System;
     using AutoMapper;

@@ -7,7 +7,7 @@ using System.Web.Routing;
 using System.IO;
 using System.Web.Profile;
 
-namespace OpenLawOffice.WebClient.Controllers
+namespace OpenLawOffice.Web.Controllers
 {
     [HandleError(View = "Errors/Index", Order = 10)]
     public class JsonInterfaceController : Controller

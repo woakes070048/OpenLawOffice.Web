@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" MasterPageFile="~/Views/Shared/SiteNoRightBar.Master" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.WebClient.ViewModels.Home.DashboardViewModel>" %>
+﻿<%@ Page Language="C#" MasterPageFile="~/Views/Shared/SiteNoRightBar.Master" Inherits="System.Web.Mvc.ViewPage<OpenLawOffice.Web.ViewModels.Home.DashboardViewModel>" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="TitleContent" runat="server">
     OpenLawOffice
@@ -39,7 +39,7 @@
             </th>
         </tr>
         <% bool altRow = true;
-           foreach (OpenLawOffice.WebClient.ViewModels.Notes.NoteNotificationViewModel item in Model.NotificationList)
+           foreach (OpenLawOffice.Web.ViewModels.Notes.NoteNotificationViewModel item in Model.NotificationList)
            {
                altRow = !altRow;
                if (altRow)
