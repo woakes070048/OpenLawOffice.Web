@@ -1,17 +1,50 @@
 @model dynamic
 
-@{ 
-    ViewBag.Title = "Complete";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+@{
+    ViewBag.Title = "Installation";
+    Layout = null;
 }
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenLawOffice - Installation</title>
+    <link href="/Content/Site.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div class="page">
+        <div id="header">
+            <div id="title">
+                <h1>
+                    @if (string.IsNullOrEmpty(OpenLawOffice.Common.Settings.Manager.Instance.System.BillingFirmName))
+                    {
+                        <text>OpenLawOffice</text>
+                    }
+                    else
+                    {
+                        @OpenLawOffice.Common.Settings.Manager.Instance.System.BillingFirmName
+                    }
+                </h1>
+            </div>
+            <div id="logindisplay">
+                Not logged in
+            </div>
+        </div>
+        <div id="main" style="margin-right: 0px; margin-left: 0px;">
 
-<h2>
-    Complete</h2>
-Installation has completed. After login, please make sure to update account profile for the Administrator user.
-To login to the system, click the link below. Your initial account information is as follows:
-<br />
-<br />
-Username: Administrator<br />
-Password: password<br />
-<br />
-@(Html.ActionLink("Login", "Login", "Account")) 
+            <h2>
+                Complete
+            </h2>
+            Installation has completed. After login, please make sure to update account profile for the Administrator user.
+            To login to the system, click the link below. Your initial account information was setup as you requested.
+            <br />
+            @(Html.ActionLink("Login", "Login", "Account"))
+            
+            <div id="footer">
+                Version: @(ViewContext.Controller.GetType().Assembly.GetName().Version) created @(System.IO.File.GetCreationTime(ViewContext.Controller.GetType().Assembly.Location))
+            </div>
+        </div>
+    </div>
+</body>
+</html>

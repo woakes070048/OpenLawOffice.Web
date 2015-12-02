@@ -1,40 +1,76 @@
 @model OpenLawOffice.Web.ViewModels.Installation.InstallationViewModel
 
-@{ 
+@{
     ViewBag.Title = "Installation";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = null;
 }
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenLawOffice - Installation</title>
+    <link href="/Content/Site.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div class="page">
+        <div id="header">
+            <div id="title">
+                <h1>
+                    @if (string.IsNullOrEmpty(OpenLawOffice.Common.Settings.Manager.Instance.System.BillingFirmName))
+                    {
+                        <text>OpenLawOffice</text>
+                    }
+                    else
+                    {
+                        @OpenLawOffice.Common.Settings.Manager.Instance.System.BillingFirmName
+                    }
+                </h1>
+            </div>
+            <div id="logindisplay">Not logged in
+            </div>
+        </div>
+        <div id="main" style="margin-right: 0px; margin-left: 0px;">
 
-<h2>
-    Installation</h2>
-Welcome to OpenLawOffice!
-<br />
-<br />
-I'm the installation helper. I will help you install OpenLawOffice. During this
-process I will create the necessary database information.
-<br />
-<br />
-I can give you two options, I can install only the database and mandatory data or
-I can do that and setup some basic data for use in the system. If you are going
-to be using me in production, I highly suggest doing only the "Install Only" and
-not "Install with Data".
-<br />
-<br />
-Before starting this, I need you to create a database within an accessable postgres
-database server and then setup my connection string in Web.config.
-<br />
-<br />
+            <h2>
+                Installation
+            </h2>
+            Welcome to OpenLawOffice!
+            <br />
+            <br />
+            I'm the installation helper. I will help you install OpenLawOffice. During this
+            process I will create the necessary database information.
+            <br />
+            <br />
+            I can give you two options, I can install only the database and mandatory data or
+            I can do that and setup some basic data for use in the system. If you are going
+            to be using me in production, I highly suggest doing only the "Install Only" and
+            not "Install with Data".
+            <br />
+            <br />
+            Before starting this, I need you to create a database within an accessable postgres
+            database server and then setup my connection string in Web.config.
+            <br />
+            <br />
 
-After that, give me a username and password so that I can create a new administrator account
-for you.
-<br />
-    
-@using (Html.BeginForm())
-{
-    <text>
-    @(Html.ValidationSummary(true))
-    Username: @Html.TextBoxFor(model => model.Username)<br />
-    Password: @Html.PasswordFor(model => model.Password)<br />
-    <input type="submit" value="Install Now" />
-    </text>
-} 
+            After that, give me a username and password so that I can create a new administrator account
+            for you.
+            <br />
+
+            @using (Html.BeginForm())
+            {
+                <text>
+                    @(Html.ValidationSummary(true))
+                    Username: @Html.TextBoxFor(model => model.Username)<br />
+                    Password: @Html.PasswordFor(model => model.Password)<br />
+                    <input type="submit" value="Install Now" />
+                </text>
+            }
+            
+            <div id="footer">
+                Version: @(ViewContext.Controller.GetType().Assembly.GetName().Version) created @(System.IO.File.GetCreationTime(ViewContext.Controller.GetType().Assembly.Location))
+            </div>
+        </div>
+    </div>
+</body>
+</html>

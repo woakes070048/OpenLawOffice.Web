@@ -27,8 +27,7 @@ namespace OpenLawOffice.Web.Controllers
     using System;
 
     [HandleError(View = "Errors/Index", Order = 10)]
-
-    [Authorize]
+    
     public class InstallationController : Controller
     {
         public ActionResult Index()

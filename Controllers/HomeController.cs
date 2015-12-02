@@ -69,40 +69,48 @@ namespace OpenLawOffice.Web.Controllers
                 if (profile.ContactId != null && !string.IsNullOrEmpty(profile.ContactId))
                     id = int.Parse(profile.ContactId);
                 else
-                    throw new ArgumentNullException("Must supply an Id or have a ContactId set in profile.");
+                    id = -1; // Happens on initial setup
             }
 
-            employee = Data.Contacts.Contact.Get(id);
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            viewModel = new ViewModels.Home.DashboardViewModel();
-            viewModel.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(employee);
-
-            viewModel.MyTodoList = new List<Tuple<ViewModels.Matters.MatterViewModel, ViewModels.Tasks.TaskViewModel>>();
-
-            tagFilter = Data.Settings.UserTaskSettings.ListTagFiltersFor(currentUser);
-
-            Data.Tasks.Task.GetTodoListFor(employee, tagFilter).ForEach(x =>
+            if (id <= 0)
             {
-                matter = Data.Tasks.Task.GetRelatedMatter(x.Id.Value);
-                viewModel.MyTodoList.Add(
-                    new Tuple<ViewModels.Matters.MatterViewModel, ViewModels.Tasks.TaskViewModel>(
-                    Mapper.Map<ViewModels.Matters.MatterViewModel>(matter),
-                    Mapper.Map<ViewModels.Tasks.TaskViewModel>(x)));
-            });
-
-            viewModel.NotificationList = new List<ViewModels.Notes.NoteNotificationViewModel>();
-            Data.Notes.NoteNotification.ListAllNoteNotificationsForContact(employee.Id.Value).ForEach(x =>
+                employee = null;
+                viewModel = null;
+            }
+            else
             {
-                ViewModels.Notes.NoteNotificationViewModel nnvm = Mapper.Map<ViewModels.Notes.NoteNotificationViewModel>(x);
-                nnvm.Note = Mapper.Map<ViewModels.Notes.NoteViewModel>(Data.Notes.Note.Get(x.Note.Id.Value));
-                viewModel.NotificationList.Add(nnvm);
-            });
+                employee = Data.Contacts.Contact.Get(id);
+                currentUser = Data.Account.Users.Get(User.Identity.Name);
 
-            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
-            {
-                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-            });
+                viewModel = new ViewModels.Home.DashboardViewModel();
+                viewModel.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(employee);
+
+                viewModel.MyTodoList = new List<Tuple<ViewModels.Matters.MatterViewModel, ViewModels.Tasks.TaskViewModel>>();
+
+                tagFilter = Data.Settings.UserTaskSettings.ListTagFiltersFor(currentUser);
+
+                Data.Tasks.Task.GetTodoListFor(employee, tagFilter).ForEach(x =>
+                {
+                    matter = Data.Tasks.Task.GetRelatedMatter(x.Id.Value);
+                    viewModel.MyTodoList.Add(
+                        new Tuple<ViewModels.Matters.MatterViewModel, ViewModels.Tasks.TaskViewModel>(
+                        Mapper.Map<ViewModels.Matters.MatterViewModel>(matter),
+                        Mapper.Map<ViewModels.Tasks.TaskViewModel>(x)));
+                });
+
+                viewModel.NotificationList = new List<ViewModels.Notes.NoteNotificationViewModel>();
+                Data.Notes.NoteNotification.ListAllNoteNotificationsForContact(employee.Id.Value).ForEach(x =>
+                {
+                    ViewModels.Notes.NoteNotificationViewModel nnvm = Mapper.Map<ViewModels.Notes.NoteNotificationViewModel>(x);
+                    nnvm.Note = Mapper.Map<ViewModels.Notes.NoteViewModel>(Data.Notes.Note.Get(x.Note.Id.Value));
+                    viewModel.NotificationList.Add(nnvm);
+                });
+
+                Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
+                {
+                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                });
+            }
 
             ViewBag.EmployeeContactList = employeeContactList;
 

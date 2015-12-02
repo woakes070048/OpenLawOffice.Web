@@ -5,148 +5,186 @@
 }
 @model OpenLawOffice.Web.ViewModels.Home.DashboardViewModel
     
-@using (Html.BeginForm())
-{
-    <script>
-    $(function () {
-        $('#Employee_Id').change(function () {
-            window.location = "/Home/Index/" + $("#Employee_Id").val();
-            //$("form").submit();
-        });
-    });
-    </script>
-    <h4>
-        Dashboard for @Html.DropDownListFor(x => x.Employee.Id,
+@{ if (Model == null)
+    {
+        dynamic profile = System.Web.Profile.ProfileBase.Create(Membership.GetUser().UserName);
+
+        if (OpenLawOffice.Data.Billing.BillingRate.List().Count == 0)
+            {
+            <h1>Setup Required</h1>
+            <p>
+                You need to setup your firm billing rates.  We need at least one to get started.  To setup your billing rate(s), click the 
+                <a class="btn-plus" href="/BillingRates/Create">New Billing Rate</a> icon next to the word "Rates" under "Billing" on the left-hand menu.<br /><br />
+                When you have done that, come back here by clicking "Dashboard".  We will let you know what else needs done to finish your initial setup.
+            </p>
+
+        }
+        else if (OpenLawOffice.Data.Contacts.Contact.ListEmployeesOnly().Count == 0)
+        {
+            <h1>Setup Required</h1>
+            <p>
+                You need to setup an employee contact.  You need to make sure and identify the contact you create as an employee by checking the checkbox for "Our Employee".  This tells OLO that
+                this contact is an employee and can bill for time and be assigned as a resource of the firm.  Add a contact by clicking the <a class="btn-plus" href="/Contacts/Create">New Contact</a> 
+                icon on the left-hand menu next to the word "Contacts".<br /><br />
+                When you have done that, come back here by clicking "Dashboard".  We will let you know what else needs done to finish your initial setup.
+            </p>
+        }
+        else if (profile.ContactId == null || string.IsNullOrEmpty(profile.ContactId))
+        {
+            <h1>Setup Required</h1>
+            <p>
+                You need to setup your profile.  Click "My Profile" on the left-hand menu under "Settings" and complete that information.<br /><br />
+                When you have done that, come back here by clicking "Dashboard".  We will let you know what else needs done to finish your initial setup.
+            </p>
+        }
+    }
+    else
+    {
+        using (Html.BeginForm())
+        {
+            <script>
+                $(function () {
+                    $('#Employee_Id').change(function () {
+                        window.location = "/Home/Index/" + $("#Employee_Id").val();
+                        //$("form").submit();
+                    });
+                });
+            </script>
+            <h4>
+                Dashboard for @Html.DropDownListFor(x => x.Employee.Id,
             new SelectList(ViewBag.EmployeeContactList, "Id", "DisplayName"),
             new { @size = 1, @style = "width: 200px" })
-    </h4>
+            </h4>
 
-    <table class="listing_table">
-        <tr>
-            <td colspan="3" class="listing_table_heading">
-                Notifications
-            </td>
-        </tr>
-        <tr>
-            <th style="text-align: center;">
-                Title
-            </th>
-            <th style="text-align: center;">
-                Body
-            </th>
-            <th style="text-align: center; width: 25px;">
+            <table class="listing_table">
+                <tr>
+                    <td colspan="3" class="listing_table_heading">
+                        Notifications
+                    </td>
+                </tr>
+                <tr>
+                    <th style="text-align: center;">
+                        Title
+                    </th>
+                    <th style="text-align: center;">
+                        Body
+                    </th>
+                    <th style="text-align: center; width: 25px;">
 
-            </th>
-        </tr>
-        @foreach (OpenLawOffice.Web.ViewModels.Notes.NoteNotificationViewModel item in Model.NotificationList)
-        {
-            altRow = !altRow;
-            if (altRow)
-            {
-                <tr class="tr_alternate">
-                    <td>
-                        @(Html.ActionLink(item.Note.Title, "Details", "Notes", new { id = item.Note.Id.Value }, null))
-                    </td>
-                    <td>
-                        @(item.Note.Body)
-                    </td>
-                    <td>
-                        @(Html.ActionLink("Clear", "ClearNotification", "Notes", new { id = item.Id.Value, EmployeeId = Model.Employee.Id }, new { @class = "btn-remove", title = "Clear" }))
-                    </td>
+                    </th>
                 </tr>
-            }
-            else
-            {
+                @foreach (OpenLawOffice.Web.ViewModels.Notes.NoteNotificationViewModel item in Model.NotificationList)
+                {
+                    altRow = !altRow;
+                    if (altRow)
+                    {
+                        <tr class="tr_alternate">
+                            <td>
+                                @(Html.ActionLink(item.Note.Title, "Details", "Notes", new { id = item.Note.Id.Value }, null))
+                            </td>
+                            <td>
+                                @(Html.Raw(item.Note.Body))
+                            </td>
+                            <td>
+                                @(Html.ActionLink("Clear", "ClearNotification", "Notes", new { id = item.Id.Value, EmployeeId = Model.Employee.Id }, new { @class = "btn-remove", title = "Clear" }))
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td>
+                                @(Html.ActionLink(item.Note.Title, "Details", "Notes", new { id = item.Note.Id.Value }, null))
+                            </td>
+                            <td>
+                                @(item.Note.Body)
+                            </td>
+                            <td>
+                                @(Html.ActionLink("Clear", "ClearNotification", "Notes", new { id = item.Id.Value, EmployeeId = Model.Employee.Id }, new { @class = "btn-remove", title = "Clear" }))
+                            </td>
+                        </tr>
+                    }
+                }
+            </table>
+            <br />
+            <table class="listing_table">
                 <tr>
-                    <td>
-                        @(Html.ActionLink(item.Note.Title, "Details", "Notes", new { id = item.Note.Id.Value }, null))
-                    </td>
-                    <td>
-                        @(item.Note.Body)
-                    </td>
-                    <td>
-                        @(Html.ActionLink("Clear", "ClearNotification", "Notes", new { id = item.Id.Value, EmployeeId = Model.Employee.Id }, new { @class = "btn-remove", title = "Clear" }))
+                    <td colspan="3" class="listing_table_heading">
+                        Todo List
                     </td>
                 </tr>
-            }
-        }
-    </table>
-    <br />
-    <table class="listing_table">
-        <tr>
-            <td colspan="3" class="listing_table_heading">
-                Todo List
-            </td>
-        </tr>
-        <tr>
-            <th style="text-align: center;">
-                Matter
-            </th>
-            <th style="text-align: center;">
-                Task
-            </th>
-            <th style="text-align: center;">
-                Due Date
-            </th>
-        </tr>
-        @foreach (var item in Model.MyTodoList)
-        {
-            if (item.Item2.DueDate.HasValue &&
-                item.Item2.DueDate.Value.Date < DateTime.Now.Date)
-            {
-                <tr style="background-color: #FFCECE">
-                    <td>
-                        @Html.ActionLink((string)item.Item1.Title, "Details", "Matters", new { id = item.Item1.Id.Value }, null)
-                    </td>
-                    <td>
-                        @Html.ActionLink((string)item.Item2.Title, "Details", "Tasks", new { id = item.Item2.Id.Value }, null)
-                        @(Html.ActionLink("Add Time", "Create", "TaskTime", new { ContactId = Model.Employee.Id, TaskId = item.Item2.Id.Value }, new { @class = "btn-addtimeentry", title = "Add Time" }))
-                    </td>
-                    <td>
-                        @if (item.Item2.DueDate.HasValue)
-                        {
-                            @(String.Format("{0:g}", item.Item2.DueDate.Value))
-                        }
-                    </td>
-                </tr>
-            }
-            else if (item.Item2.DueDate.HasValue &&
-                item.Item2.DueDate.Value.Date == DateTime.Now.Date)
-            {
-                <tr style="background-color: #FFFFC8">
-                    <td>
-                        @(Html.ActionLink((string)item.Item1.Title, "Details", "Matters", new { id = item.Item1.Id.Value }, null))
-                    </td>
-                    <td>
-                        @Html.ActionLink((string)item.Item2.Title, "Details", "Tasks", new { id = item.Item2.Id.Value }, null)
-                        @(Html.ActionLink("Add Time", "Create", "TaskTime", new { ContactId = Model.Employee.Id, TaskId = item.Item2.Id.Value }, new { @class = "btn-addtimeentry", title = "Add Time" }))
-                    </td>
-                    <td>
-                        @if (item.Item2.DueDate.HasValue)
-                        {
-                            @(String.Format("{0:g}", item.Item2.DueDate.Value))
-                        }
-                    </td>
-                </tr>
-            }
-            else
-            {
                 <tr>
-                    <td>
-                        @(Html.ActionLink((string)item.Item1.Title, "Details", "Matters", new { id = item.Item1.Id.Value }, null))
-                    </td>
-                    <td>
-                        @Html.ActionLink((string)item.Item2.Title, "Details", "Tasks", new { id = item.Item2.Id.Value }, null)
-                        @(Html.ActionLink("Add Time", "Create", "TaskTime", new { ContactId = Model.Employee.Id, TaskId = item.Item2.Id.Value }, new { @class = "btn-addtimeentry", title = "Add Time" }))
-                    </td>
-                    <td>
-                        @if (item.Item2.DueDate.HasValue)
-                        {
-                            @(String.Format("{0:g}", item.Item2.DueDate.Value))
-                        }
-                    </td>
+                    <th style="text-align: center;">
+                        Matter
+                    </th>
+                    <th style="text-align: center;">
+                        Task
+                    </th>
+                    <th style="text-align: center;">
+                        Due Date
+                    </th>
                 </tr>
-            }
+                @foreach (var item in Model.MyTodoList)
+                {
+                    if (item.Item2.DueDate.HasValue &&
+                        item.Item2.DueDate.Value.Date < DateTime.Now.Date)
+                    {
+                        <tr style="background-color: #FFCECE">
+                            <td>
+                                @Html.ActionLink((string)item.Item1.Title, "Details", "Matters", new { id = item.Item1.Id.Value }, null)
+                            </td>
+                            <td>
+                                @Html.ActionLink((string)item.Item2.Title, "Details", "Tasks", new { id = item.Item2.Id.Value }, null)
+                                @(Html.ActionLink("Add Time", "Create", "TaskTime", new { ContactId = Model.Employee.Id, TaskId = item.Item2.Id.Value }, new { @class = "btn-addtimeentry", title = "Add Time" }))
+                            </td>
+                            <td>
+                                @if (item.Item2.DueDate.HasValue)
+                                {
+                                    @(String.Format("{0:g}", item.Item2.DueDate.Value))
+                                }
+                            </td>
+                        </tr>
+                    }
+                    else if (item.Item2.DueDate.HasValue &&
+                        item.Item2.DueDate.Value.Date == DateTime.Now.Date)
+                    {
+                        <tr style="background-color: #FFFFC8">
+                            <td>
+                                @(Html.ActionLink((string)item.Item1.Title, "Details", "Matters", new { id = item.Item1.Id.Value }, null))
+                            </td>
+                            <td>
+                                @Html.ActionLink((string)item.Item2.Title, "Details", "Tasks", new { id = item.Item2.Id.Value }, null)
+                                @(Html.ActionLink("Add Time", "Create", "TaskTime", new { ContactId = Model.Employee.Id, TaskId = item.Item2.Id.Value }, new { @class = "btn-addtimeentry", title = "Add Time" }))
+                            </td>
+                            <td>
+                                @if (item.Item2.DueDate.HasValue)
+                                {
+                                    @(String.Format("{0:g}", item.Item2.DueDate.Value))
+                                }
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td>
+                                @(Html.ActionLink((string)item.Item1.Title, "Details", "Matters", new { id = item.Item1.Id.Value }, null))
+                            </td>
+                            <td>
+                                @Html.ActionLink((string)item.Item2.Title, "Details", "Tasks", new { id = item.Item2.Id.Value }, null)
+                                @(Html.ActionLink("Add Time", "Create", "TaskTime", new { ContactId = Model.Employee.Id, TaskId = item.Item2.Id.Value }, new { @class = "btn-addtimeentry", title = "Add Time" }))
+                            </td>
+                            <td>
+                                @if (item.Item2.DueDate.HasValue)
+                                {
+                                    @(String.Format("{0:g}", item.Item2.DueDate.Value))
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </table>
         }
-    </table>
- }
+    }
+} 
+
