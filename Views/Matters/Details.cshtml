@@ -48,10 +48,57 @@
         @(Html.ActionLink("Permissions", "Acls", "Matters"))</li>*@ 
 }
 
+<style>
+    #opt_selected {
+        margin-top: 20px;
+        font-size: 20px;
+    }
+
+    .phonecall_container {
+        margin: 0px 0px 0px 0px;
+        display: inline;
+    }
+
+    .phonecall_menu {
+        position: absolute;
+        width: 240px !important;
+        margin-top: 3px !important;
+    }
+
+    /* fix for jquery-ui-bootstrap theme */
+    #phonecall_launcher span {
+        display: inline;
+    }
+</style>
+
 <div id="roadmap">
     <div id="current" class="zero">Matter: @(Model.Title)<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
 </div>
-            
+
+<script language="javascript">
+    $(function () {
+        $("#phonecall_drop").jui_dropdown({
+            launcher_id: 'phonecall_launcher',
+            launcher_container_id: 'phonecall_container',
+            menu_id: 'phonecall_menu',
+            containerClass: 'phonecall_container',
+            menuClass: 'phonecall_menu',
+            launcher_is_UI_button: false,
+            onSelect: function (event, data) {
+                if (data.id == 'phonecall_client') {
+                    window.location = '/Tasks/PhoneCall/@(Model.Id)?func=client';
+                    } else if (data.id == 'phonecall_opposingcounsel') {
+                    window.location = '/Tasks/PhoneCall/@(Model.Id)?func=opposingcounsel';
+                    } else if (data.id == 'phonecall_court') {
+                    window.location = '/Tasks/PhoneCall/@(Model.Id)?func=court';
+                    } else if (data.id == 'phonecall_other') {
+                    window.location = '/Tasks/PhoneCall/@(Model.Id)?func=other';
+                    }
+                }
+            });
+    });
+</script>
+
 @using (Html.BeginForm("Close", "Matters", new { Id = ViewContext.RouteData.Values["Id"] }, FormMethod.Post, new { id = "CloseForm" }))
     {
 
@@ -60,12 +107,12 @@ if (Model.Active || ViewBag.AlertText != null)
     <div class="options_div" style="text-align: right;">
 @if (Model.Active)
     {
-    <div style="width: 200px; display: inline;">  
-        <input type="submit" value="Close" 
-            style="background-image: url('/Content/fugue-icons-3.5.6/icons-shadowless/cross.png'); 
+    <div style="width: 200px; display: inline;">
+        <input type="submit" value="Close"
+            style="background-image: url('/Content/fugue-icons-3.5.6/icons-shadowless/cross.png');
             background-position: left center; background-repeat: no-repeat; padding-left: 20px;" />
     </div>
-        
+
     }
     @if (ViewBag.AlertText != null)
     {
@@ -76,7 +123,7 @@ if (Model.Active || ViewBag.AlertText != null)
             <span style="font-weight: bold; text-decoration: underline;">Alerts:</span>
             @(ViewBag.AlertText)
             </p>
-        </div>  
+        </div>
         <script language="javascript">
             $(function () {
                 $("#alertInfoDialog").dialog({
@@ -96,7 +143,7 @@ if (Model.Active || ViewBag.AlertText != null)
                     $("#alertInfoDialog").dialog("open");
                 });
             });
-        </script>
+</script>
     </div>
 }
 </div>
@@ -401,6 +448,25 @@ if (Model.Active || ViewBag.AlertText != null)
     <tr>
         <td colspan="3" class="listing_table_heading">
             Active Tasks
+            <div style="display: inline-block; float: right;">
+                <div style="width: 200px; display: inline; float: right; text-align: right;">
+                    <div id="phonecall_drop" style="text-align: left; display: inline;">
+                        <div id="phonecall_container" style="display: inline;">
+                            <button id="phonecall_launcher" style="background-image: url('/Content/fugue-icons-3.5.6/icons-shadowless/telephone-handset.png');
+                    background-position: left center; background-repeat: no-repeat; padding-left: 20px; height: 20px; font-size: 11px;">
+                                Phone Call
+                            </button>
+                        </div>
+                        <ul id="phonecall_menu">
+                            <li id="phonecall_client"><a href="javascript:void(0);">Client</a></li>
+                            <li id="phonecall_opposingcounsel"><a href="javascript:void(0);">Opposing Counsel</a></li>
+                            <li id="phonecall_court"><a href="javascript:void(0);">Court</a></li>
+                            <li id="phonecall_other"><a href="javascript:void(0);">Other</a></li>
+                        </ul>
+                    </div>
+                </div>
+                @*@(Html.ActionLink("Add", "PhoneCall", "Tasks", new { controller = "Matters", MatterId = Model.Id }, new { @class = "btn-telephone-handset" }))*@
+            </div>
         </td>
     </tr>
     <tr>

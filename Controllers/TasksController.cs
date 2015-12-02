@@ -497,6 +497,90 @@ namespace OpenLawOffice.Web.Controllers
         }
 
         [Authorize(Roles = "Login, User")]
+        public ActionResult PhoneCall()
+        {
+            string phoneCallWith = null;
+            int contactId = -1;
+            ViewModels.Tasks.CreateTaskViewModel viewModel;
+            Common.Models.Matters.Matter matter;
+            List<ViewModels.Account.UsersViewModel> userList;
+            List<ViewModels.Contacts.ContactViewModel> employeeContactList;
+            Newtonsoft.Json.Linq.JArray taskTemplates;
+            Common.Models.Account.Users currentUser;
+
+            currentUser = Data.Account.Users.Get(User.Identity.Name);
+
+            userList = new List<ViewModels.Account.UsersViewModel>();
+            employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
+
+            dynamic profile = ProfileBase.Create(Membership.GetUser().UserName);
+            if (profile.ContactId != null && !string.IsNullOrEmpty(profile.ContactId))
+                contactId = int.Parse(profile.ContactId);
+            
+
+            viewModel = new ViewModels.Tasks.CreateTaskViewModel();
+            viewModel.ResponsibleUser = new ViewModels.Tasks.TaskResponsibleUserViewModel()
+            {
+                User = new ViewModels.Account.UsersViewModel() { PId = Data.Account.Users.Get(Membership.GetUser().UserName).PId },
+            };
+            if (contactId > 0)
+            {
+                viewModel.TaskContact = new ViewModels.Tasks.TaskAssignedContactViewModel()
+                {
+                    Contact = new ViewModels.Contacts.ContactViewModel()
+                    {
+                        Id = contactId
+                    }
+                };
+            }
+
+            matter = Data.Matters.Matter.Get(Guid.Parse(RouteData.Values["Id"].ToString()));
+            
+
+            if (Request["func"] == "client")
+                phoneCallWith = "client";
+            else if (Request["func"] == "opposingcounsel")
+                phoneCallWith = "opposing counsel";
+            else if (Request["func"] == "court")
+                phoneCallWith = "court";
+
+
+            Common.Models.Tasks.Task task = new Common.Models.Tasks.Task();
+            task.Active = true;
+            task.DueDate = DateTime.Now;
+
+            if (string.IsNullOrEmpty(phoneCallWith))
+            {
+                task.Description = "Phone call";
+                task.Title = "Phone call";
+            }
+            else
+            {
+                task.Description = "Phone call with " + phoneCallWith;
+                task.Title = "Phone call with " + phoneCallWith;
+            }
+
+            task = Data.Tasks.Task.Create(task, currentUser);
+
+            Data.Tasks.Task.RelateMatter(task, matter.Id.Value, currentUser);
+            Data.Tasks.TaskResponsibleUser.Create(new Common.Models.Tasks.TaskResponsibleUser()
+            {
+                Task = task,
+                User = currentUser,
+                Responsibility = "lead"
+            }, currentUser);
+            Data.Tasks.TaskAssignedContact.Create(new Common.Models.Tasks.TaskAssignedContact()
+            {
+                Task = task,
+                Contact = new Common.Models.Contacts.Contact() { Id = viewModel.TaskContact.Contact.Id },
+                AssignmentType = Common.Models.Tasks.AssignmentType.Direct
+            }, currentUser);
+
+
+            return RedirectToAction("Create", "TaskTime", new { ContactId = viewModel.TaskContact.Contact.Id, TaskId = task.Id });
+        }
+
+        [Authorize(Roles = "Login, User")]
         public ActionResult TodoListForAll()
         {
             DateTime? start = null;

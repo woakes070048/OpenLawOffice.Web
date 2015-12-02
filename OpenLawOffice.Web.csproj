@@ -543,6 +543,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
+    <Content Include="Views\Tasks\PhoneCall.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
