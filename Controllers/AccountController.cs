@@ -1,35 +1,15 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="AccountController.cs" company="Nodine Legal, LLC">
-// Licensed to Nodine Legal, LLC under one
-// or more contributor license agreements.  See the NOTICE file
-// distributed with this work for additional information
-// regarding copyright ownership.  Nodine Legal, LLC licenses this file
-// to you under the Apache License, Version 2.0 (the
-// "License"); you may not use this file except in compliance
-// with the License.  You may obtain a copy of the License at
-//
-//  http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing,
-// software distributed under the License is distributed on an
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-// KIND, either express or implied.  See the License for the
-// specific language governing permissions and limitations
-// under the License.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using System.Web.Routing;
+using System.Web.Profile;
+using System.Web.Security;
+using AutoMapper;
 
 namespace OpenLawOffice.Web.Controllers
 {
-    using System.Web.Mvc;
-    using System.Web.Routing;
-    using System.Collections.Generic;
-    using System.Web.Security;
-    using System;
-    using System.Web.Profile;
-    using AutoMapper;
-    using System.IO;
-
     [HandleError(View = "Errors/Index", Order = 10)]
     public class AccountController : BaseController
     {
@@ -99,7 +79,7 @@ namespace OpenLawOffice.Web.Controllers
 
         public ActionResult Register()
         {
-            ViewData["PasswordLength"] = MembershipService.MinPasswordLength;
+            ViewBag.PasswordLength = MembershipService.MinPasswordLength;
             return View();
         }
 
@@ -123,14 +103,14 @@ namespace OpenLawOffice.Web.Controllers
             }
 
             // If we got this far, something failed, redisplay form
-            ViewData["PasswordLength"] = MembershipService.MinPasswordLength;
+            ViewBag.PasswordLength = MembershipService.MinPasswordLength;
             return View(model);
         }
 
-        [Authorize(Roles="Login")]
+        [Authorize(Roles = "Login")]
         public ActionResult ChangePassword(string currentPassword)
         {
-            ViewData["PasswordLength"] = MembershipService.MinPasswordLength;
+            ViewBag.PasswordLength = MembershipService.MinPasswordLength;
             if (!string.IsNullOrEmpty(currentPassword))
                 return View(new ViewModels.Account.ChangePasswordViewModel()
                 {
@@ -157,7 +137,7 @@ namespace OpenLawOffice.Web.Controllers
             }
 
             // If we got this far, something failed, redisplay form
-            ViewData["PasswordLength"] = MembershipService.MinPasswordLength;
+            ViewBag.PasswordLength = MembershipService.MinPasswordLength;
             return View(model);
         }
 
@@ -177,8 +157,6 @@ namespace OpenLawOffice.Web.Controllers
             viewModel = Mapper.Map<ViewModels.Account.UsersViewModel>(model);
 
             viewModel.Password = null;
-
-            ViewData["PasswordLength"] = MembershipService.MinPasswordLength;
             return View(viewModel);
         }
 
@@ -198,16 +176,16 @@ namespace OpenLawOffice.Web.Controllers
         }
 
         [Authorize(Roles = "Login, User")]
-        public ActionResult Profile()
+        public new ActionResult Profile()
         {
             int? contactId = null;
             string externalAppKey = null;
             dynamic profile;
             List<ViewModels.Contacts.ContactViewModel> employeeList;
-            
+
             profile = ProfileBase.Create(Membership.GetUser().UserName);
 
-            if (profile != null && profile.ContactId != null 
+            if (profile != null && profile.ContactId != null
                 && !string.IsNullOrEmpty(profile.ContactId))
                 contactId = int.Parse(profile.ContactId);
 
@@ -215,7 +193,7 @@ namespace OpenLawOffice.Web.Controllers
                 && !string.IsNullOrEmpty(profile.ExternalAppKey))
                 externalAppKey = profile.ExternalAppKey;
 
-            if (string.IsNullOrEmpty(externalAppKey) || 
+            if (string.IsNullOrEmpty(externalAppKey) ||
                 (Request["newAppKey"] != null && Request["newAppKey"] == "true"))
             {
                 Common.Encryption enc = new Common.Encryption();
@@ -235,14 +213,14 @@ namespace OpenLawOffice.Web.Controllers
                 employeeList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
             });
 
-            ViewData["EmployeeContactList"] = employeeList;
+            ViewBag.EmployeeContactList = employeeList;
 
             return View(new ViewModels.Account.ProfileViewModel() { ContactId = contactId, ExternalAppKey = externalAppKey });
         }
 
         [HttpPost]
         [Authorize(Roles = "Login, User")]
-        public ActionResult Profile(ViewModels.Account.ProfileViewModel viewModel)
+        public new ActionResult Profile(ViewModels.Account.ProfileViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
@@ -326,7 +304,7 @@ namespace OpenLawOffice.Web.Controllers
                 {
                     MembershipUser user = Membership.GetUser(viewModel.UserName);
                     if (user == null)
-                        ViewData["Error"] = "username";
+                        ViewBag.Error = "username";
                     else
                     {
                         SendResetEmail(user);
@@ -338,7 +316,7 @@ namespace OpenLawOffice.Web.Controllers
                     MembershipUserCollection coll = Membership.FindUsersByEmail(viewModel.Email);
                     if (coll.Count != 1)
                     {
-                        ViewData["Error"] = "email";
+                        ViewBag.Error = "email";
                     }
                     else
                     {

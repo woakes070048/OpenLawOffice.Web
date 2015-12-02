@@ -27,6 +27,8 @@ namespace OpenLawOffice.Web.Controllers
     using AutoMapper;
 
     [HandleError(View = "Errors/Index", Order = 10)]
+
+    [Authorize]
     public class FeesController : Controller
     {
         [Authorize(Roles = "Login, User")]

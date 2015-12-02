@@ -26,6 +26,8 @@ namespace OpenLawOffice.Web.Controllers
     using AutoMapper;
 
     [HandleError(View = "Errors/Index", Order = 10)]
+
+    [Authorize]
     public class SearchController : Controller
     {
         [Authorize(Roles = "Login, User")]

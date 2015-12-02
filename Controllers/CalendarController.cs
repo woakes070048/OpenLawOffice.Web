@@ -28,6 +28,8 @@ namespace OpenLawOffice.Web.Controllers
     using System.Web.Security;
     using System.Web.Profile;
 
+    [Authorize]
+
     public class CalendarController : Controller
     {
         [Authorize(Roles = "Login, User")]

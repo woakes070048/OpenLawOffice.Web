@@ -10,6 +10,7 @@ using System.Web.Profile;
 namespace OpenLawOffice.Web.Controllers
 {
     [HandleError(View = "Errors/Index", Order = 10)]
+    [Authorize]
     public class JsonInterfaceController : Controller
     {
         public AccountMembershipService MembershipService { get; set; }

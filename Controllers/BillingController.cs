@@ -376,7 +376,7 @@ namespace OpenLawOffice.Web.Controllers
             billingGroup = Data.Billing.BillingGroup.Get(id);
             previousInvoice = Data.Billing.Invoice.GetMostRecentInvoiceForContact(billingGroup.BillTo.Id.Value);
 
-            billingGroup.NextRun = new DateTime(DateTime.Now.Year, DateTime.Now.Month + 1, 1);
+            billingGroup.NextRun = new DateTime(DateTime.Now.Year, DateTime.Now.AddMonths(1).Month, 1);
 
             viewModel.Id = Guid.NewGuid();
             viewModel.BillTo = Mapper.Map<ViewModels.Contacts.ContactViewModel>(Data.Contacts.Contact.Get(billingGroup.BillTo.Id.Value));

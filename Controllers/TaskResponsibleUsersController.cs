@@ -47,10 +47,10 @@ namespace OpenLawOffice.Web.Controllers
             PopulateCoreDetails(viewModel);
 
             matter = Data.Tasks.Task.GetRelatedMatter(model.Task.Id.Value);
-            ViewData["Task"] = model.Task.Title;
-            ViewData["TaskId"] = model.Task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = model.Task.Title;
+            ViewBag.TaskId = model.Task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModel);
         }
@@ -74,13 +74,13 @@ namespace OpenLawOffice.Web.Controllers
                 userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
             });
 
-            ViewData["UserList"] = userViewModelList;
+            ViewBag.UserList = userViewModelList;
 
             matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
-            ViewData["Task"] = task.Title;
-            ViewData["TaskId"] = task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = task.Title;
+            ViewBag.TaskId = task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(new ViewModels.Tasks.TaskResponsibleUserViewModel() { Task = taskViewModel });
         }
@@ -120,7 +120,7 @@ namespace OpenLawOffice.Web.Controllers
                         userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
                     });
 
-                    ViewData["UserList"] = userViewModelList;
+                    ViewBag.UserList = userViewModelList;
 
                     return View(new ViewModels.Tasks.TaskResponsibleUserViewModel() { Task = taskViewModel });
                 }
@@ -165,13 +165,13 @@ namespace OpenLawOffice.Web.Controllers
                 userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
             });
 
-            ViewData["UserList"] = userViewModelList;
+            ViewBag.UserList = userViewModelList;
 
             matter = Data.Tasks.Task.GetRelatedMatter(model.Task.Id.Value);
-            ViewData["Task"] = model.Task.Title;
-            ViewData["TaskId"] = model.Task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = model.Task.Title;
+            ViewBag.TaskId = model.Task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModel);
         }

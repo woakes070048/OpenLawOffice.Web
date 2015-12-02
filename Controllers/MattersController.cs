@@ -326,20 +326,20 @@ namespace OpenLawOffice.Web.Controllers
 
             totalValue = feesBilled + feesUnbilled + expensesBilled + expensesUnbilled + timeBilledDollars;
 
-            ViewData["FeesBilled"] = feesBilled;
-            ViewData["FeesUnbilled"] = feesUnbilled;
-            ViewData["Fees"] = feesBilled + feesUnbilled;
-            ViewData["ExpensesBilled"] = expensesBilled;
-            ViewData["ExpensesUnbilled"] = expensesUnbilled;
-            ViewData["Expenses"] = expensesBilled + expensesUnbilled;
-            ViewData["TimeBilledDollars"] = timeBilledDollars;
-            ViewData["TimeBilledSpan"] = timeBilledSpan;
-            ViewData["TimeUnbilledSpan"] = timeUnbilledSpan;
-            ViewData["TimeBilled"] = timeBilledDollars.ToString("C") + " (" + Helpers.TimeSpanHelper.TimeSpan(timeBilledSpan, false) + ")";
-            ViewData["TimeUnbilled"] = "(" + Helpers.TimeSpanHelper.TimeSpan(timeUnbilledSpan, false) + ")";
-            ViewData["TotalValue"] = totalValue.ToString("C") + " (Unbilled Time: " + Helpers.TimeSpanHelper.TimeSpan(timeUnbilledSpan, false) + ")";
-            ViewData["NonBillableTime"] = nonBillableTimeSpan;
-            ViewData["EffHourlyRate"] = string.Format("{0:C}", (((double)timeBilledDollars + (double)feesBilled) / timeBilledSpan.TotalHours));
+            ViewBag.FeesBilled = feesBilled;
+            ViewBag.FeesUnbilled = feesUnbilled;
+            ViewBag.Fees = feesBilled + feesUnbilled;
+            ViewBag.ExpensesBilled = expensesBilled;
+            ViewBag.ExpensesUnbilled = expensesUnbilled;
+            ViewBag.Expenses = expensesBilled + expensesUnbilled;
+            ViewBag.TimeBilledDollars = timeBilledDollars;
+            ViewBag.TimeBilledSpan = timeBilledSpan;
+            ViewBag.TimeUnbilledSpan = timeUnbilledSpan;
+            ViewBag.TimeBilled = timeBilledDollars.ToString("C") + " (" + Helpers.TimeSpanHelper.TimeSpan(timeBilledSpan, false) + ")";
+            ViewBag.TimeUnbilled = "(" + Helpers.TimeSpanHelper.TimeSpan(timeUnbilledSpan, false) + ")";
+            ViewBag.TotalValue = totalValue.ToString("C") + " (Unbilled Time: " + Helpers.TimeSpanHelper.TimeSpan(timeUnbilledSpan, false) + ")";
+            ViewBag.NonBillableTime = nonBillableTimeSpan;
+            ViewBag.EffHourlyRate = string.Format("{0:C}", (((double)timeBilledDollars + (double)feesBilled) / timeBilledSpan.TotalHours));
 
             viewModel.Notes = new List<ViewModels.Notes.NoteViewModel>();
             Data.Notes.NoteMatter.ListForMatter(id).ForEach(x =>
@@ -384,7 +384,7 @@ namespace OpenLawOffice.Web.Controllers
                 alertText += "<li>Missing role 'Client' or 'Appointed Client' - one or the other is needed.</li>";
 
             if (alertText.Length > 0)
-                ViewData["AlertText"] = "<ul>" + alertText + "</ul>";
+                ViewBag.AlertText = "<ul>" + alertText + "</ul>";
 
             return View(viewModel);
         }
@@ -434,11 +434,11 @@ namespace OpenLawOffice.Web.Controllers
                 matterTypeList.Add(vm);
             });
 
-            ViewData["UserList"] = userList;
-            ViewData["EmployeeContactList"] = employeeContactList;
-            ViewData["BillingRateList"] = billingRateList;
-            ViewData["BillingGroupList"] = billingGroupList;
-            ViewData["MatterTypeList"] = matterTypeList;
+            ViewBag.UserList = userList;
+            ViewBag.EmployeeContactList = employeeContactList;
+            ViewBag.BillingRateList = billingRateList;
+            ViewBag.BillingGroupList = billingGroupList;
+            ViewBag.MatterTypeList = matterTypeList;
 
             return View();
         }
@@ -509,14 +509,14 @@ namespace OpenLawOffice.Web.Controllers
                         matterTypeList.Add(vm);
                     });
 
-                    ViewData["ErrorMessage"] = "Matter possibly conflicts with the following existing matters:<ul>" + errorListString + "</ul>Click Save again to create the matter anyway.";
-                    ViewData["OverrideConflict"] = "True";
+                    ViewBag.ErrorMessage = "Matter possibly conflicts with the following existing matters:<ul>" + errorListString + "</ul>Click Save again to create the matter anyway.";
+                    ViewBag.OverrideConflict = "True";
 
-                    ViewData["UserList"] = userList;
-                    ViewData["EmployeeContactList"] = employeeContactList;
-                    ViewData["BillingRateList"] = billingRateList;
-                    ViewData["BillingGroupList"] = billingGroupList;
-                    ViewData["MatterTypeList"] = matterTypeList;
+                    ViewBag.UserList = userList;
+                    ViewBag.EmployeeContactList = employeeContactList;
+                    ViewBag.BillingRateList = billingRateList;
+                    ViewBag.BillingGroupList = billingGroupList;
+                    ViewBag.MatterTypeList = matterTypeList;
 
                     return View(viewModel);
                 }
@@ -562,10 +562,10 @@ namespace OpenLawOffice.Web.Controllers
 
                 ModelState.AddModelError("LeadAttorney", "Lead Attorney is required");
 
-                ViewData["UserList"] = userList;
-                ViewData["EmployeeContactList"] = employeeContactList;
-                ViewData["BillingRateList"] = billingRateList;
-                ViewData["BillingGroupList"] = billingGroupList;
+                ViewBag.UserList = userList;
+                ViewBag.EmployeeContactList = employeeContactList;
+                ViewBag.BillingRateList = billingRateList;
+                ViewBag.BillingGroupList = billingGroupList;
                 return View(viewModel);
             }
 
@@ -714,12 +714,12 @@ namespace OpenLawOffice.Web.Controllers
             viewModel.Matter.DefaultBillingRate = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(model.DefaultBillingRate);
             viewModel.Matter.BillingGroup = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(model.BillingGroup);
 
-            ViewData["EmployeeContactList"] = employeeContactList;
-            ViewData["BillingRateList"] = billingRateList;
-            ViewData["BillingGroupList"] = billingGroupList;
-            ViewData["MatterTypeList"] = matterTypeList;
-            ViewData["Matter"] = model.Title;
-            ViewData["MatterId"] = model.Id;
+            ViewBag.EmployeeContactList = employeeContactList;
+            ViewBag.BillingRateList = billingRateList;
+            ViewBag.BillingGroupList = billingGroupList;
+            ViewBag.MatterTypeList = matterTypeList;
+            ViewBag.Matter = model.Title;
+            ViewBag.MatterId = model.Id;
 
             return View(viewModel);
         }
@@ -749,9 +749,9 @@ namespace OpenLawOffice.Web.Controllers
 
                 ModelState.AddModelError("LeadAttorney", "Lead Attorney is required");
 
-                ViewData["EmployeeContactList"] = employeeContactList;
-                ViewData["Matter"] = model.Title;
-                ViewData["MatterId"] = model.Id;
+                ViewBag.EmployeeContactList = employeeContactList;
+                ViewBag.Matter = model.Title;
+                ViewBag.MatterId = model.Id;
                 return View(viewModel);
             }
 
@@ -770,9 +770,9 @@ namespace OpenLawOffice.Web.Controllers
 
                 ModelState.AddModelError("BillTo", "Bill To is required");
 
-                ViewData["EmployeeContactList"] = employeeContactList;
-                ViewData["Matter"] = model.Title;
-                ViewData["MatterId"] = model.Id;
+                ViewBag.EmployeeContactList = employeeContactList;
+                ViewBag.Matter = model.Title;
+                ViewBag.MatterId = model.Id;
                 return View(viewModel);
             }
 
@@ -802,8 +802,8 @@ namespace OpenLawOffice.Web.Controllers
             });
 
             matter = Data.Matters.Matter.Get(id);
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }
@@ -829,8 +829,8 @@ namespace OpenLawOffice.Web.Controllers
             });
 
             matter = Data.Matters.Matter.Get(id);
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }
@@ -856,8 +856,8 @@ namespace OpenLawOffice.Web.Controllers
             });
 
             matter = Data.Matters.Matter.Get(id);
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }
@@ -883,8 +883,8 @@ namespace OpenLawOffice.Web.Controllers
             }
 
             matter = Data.Matters.Matter.Get(id);
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(TasksController.GetListForMatter(id, active));
         }
@@ -896,8 +896,8 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.Matter matter;
 
             matter = Data.Matters.Matter.Get(id);
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             Data.Forms.FormFieldMatter.ListForMatter(id).ForEach(x =>
             {
@@ -966,8 +966,8 @@ namespace OpenLawOffice.Web.Controllers
             });
 
             matter = Data.Matters.Matter.Get(id);
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(list);
         }
@@ -990,8 +990,8 @@ namespace OpenLawOffice.Web.Controllers
                 viewModelList.Add(ntvm);
             });
 
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }
@@ -1013,8 +1013,8 @@ namespace OpenLawOffice.Web.Controllers
             });
 
             matter = Data.Matters.Matter.Get(id);
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }
@@ -1036,8 +1036,8 @@ namespace OpenLawOffice.Web.Controllers
             });
 
             matter = Data.Matters.Matter.Get(id);
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }
@@ -1065,8 +1065,8 @@ namespace OpenLawOffice.Web.Controllers
             });
 
             matter = Data.Matters.Matter.Get(id);
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }
@@ -1187,8 +1187,8 @@ namespace OpenLawOffice.Web.Controllers
             });
 
             matter = Data.Matters.Matter.Get(id);
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModel);
         }
@@ -1232,9 +1232,9 @@ namespace OpenLawOffice.Web.Controllers
             });
 
             matter = Data.Matters.Matter.Get(id);
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
-            ViewData["EmployeeContactList"] = employeeContactList;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
+            ViewBag.EmployeeContactList = employeeContactList;
             return View(viewModel);
         }
 
@@ -1295,13 +1295,13 @@ namespace OpenLawOffice.Web.Controllers
 
 
             if (from.HasValue)
-                ViewData["From"] = from.Value;
+                ViewBag.From = from.Value;
             if (to.HasValue)
-                ViewData["To"] = to.Value;
+                ViewBag.To = to.Value;
 
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
-            ViewData["EmployeeContactList"] = employeeContactList;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
+            ViewBag.EmployeeContactList = employeeContactList;
             return View(viewModel);
         }
         
@@ -1369,15 +1369,15 @@ namespace OpenLawOffice.Web.Controllers
 
 
             if (from.HasValue)
-                ViewData["From"] = from.Value;
+                ViewBag.From = from.Value;
             if (to.HasValue)
-                ViewData["To"] = to.Value;
+                ViewBag.To = to.Value;
 
-            ViewData["Matter"] = matter.Title;
-            ViewData["Jurisdiction"] = matter.Jurisdiction;
-            ViewData["CaseNumber"] = matter.CaseNumber;
-            ViewData["MatterId"] = matter.Id;
-            ViewData["EmployeeContactList"] = employeeContactList;
+            ViewBag.Matter = matter.Title;
+            ViewBag.Jurisdiction = matter.Jurisdiction;
+            ViewBag.CaseNumber = matter.CaseNumber;
+            ViewBag.MatterId = matter.Id;
+            ViewBag.EmployeeContactList = employeeContactList;
             return View(viewModel);
         }
 
@@ -1445,15 +1445,15 @@ namespace OpenLawOffice.Web.Controllers
 
 
             if (from.HasValue)
-                ViewData["From"] = from.Value;
+                ViewBag.From = from.Value;
             if (to.HasValue)
-                ViewData["To"] = to.Value;
+                ViewBag.To = to.Value;
 
-            ViewData["Matter"] = matter.Title;
-            ViewData["Jurisdiction"] = matter.Jurisdiction;
-            ViewData["CaseNumber"] = matter.CaseNumber;
-            ViewData["MatterId"] = matter.Id;
-            ViewData["EmployeeContactList"] = employeeContactList;
+            ViewBag.Matter = matter.Title;
+            ViewBag.Jurisdiction = matter.Jurisdiction;
+            ViewBag.CaseNumber = matter.CaseNumber;
+            ViewBag.MatterId = matter.Id;
+            ViewBag.EmployeeContactList = employeeContactList;
             return View(viewModel);
         }
 
@@ -1521,15 +1521,15 @@ namespace OpenLawOffice.Web.Controllers
 
 
             if (from.HasValue)
-                ViewData["From"] = from.Value;
+                ViewBag.From = from.Value;
             if (to.HasValue)
-                ViewData["To"] = to.Value;
+                ViewBag.To = to.Value;
 
-            ViewData["Matter"] = matter.Title;
-            ViewData["Jurisdiction"] = matter.Jurisdiction;
-            ViewData["CaseNumber"] = matter.CaseNumber;
-            ViewData["MatterId"] = matter.Id;
-            ViewData["EmployeeContactList"] = employeeContactList;
+            ViewBag.Matter = matter.Title;
+            ViewBag.Jurisdiction = matter.Jurisdiction;
+            ViewBag.CaseNumber = matter.CaseNumber;
+            ViewBag.MatterId = matter.Id;
+            ViewBag.EmployeeContactList = employeeContactList;
             return View(viewModel);
         }
 
@@ -1550,8 +1550,8 @@ namespace OpenLawOffice.Web.Controllers
             });
             
             matter = Data.Matters.Matter.Get(id);
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }

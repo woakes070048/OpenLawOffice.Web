@@ -133,7 +133,7 @@ namespace OpenLawOffice.Web.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult CreateUser()
         {
-            ViewData["PasswordLength"] = MembershipService.MinPasswordLength;
+            ViewBag.PasswordLength = MembershipService.MinPasswordLength;
             return View();
         }
 
@@ -157,7 +157,7 @@ namespace OpenLawOffice.Web.Controllers
             }
 
             // If we got this far, something failed, redisplay form
-            ViewData["PasswordLength"] = MembershipService.MinPasswordLength;
+            ViewBag.PasswordLength = MembershipService.MinPasswordLength;
             return View(viewModel);
         }
 
@@ -173,7 +173,7 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModel.Password = null;
 
-            ViewData["PasswordLength"] = MembershipService.MinPasswordLength;
+            ViewBag.PasswordLength = MembershipService.MinPasswordLength;
             return View(viewModel);
         }
 

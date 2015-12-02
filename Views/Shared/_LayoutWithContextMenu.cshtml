@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <link href="/Content/Site.css" rel="stylesheet" type="text/css" />
+    <link href="/Content/jquery-ui-1.10.4.custom.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="/Scripts/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="/Scripts/jquery-ui-1.10.4.custom.js"></script>
+    <link href="/Scripts/jui_dropdown-1.0.4/jquery.jui_dropdown.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="/Scripts/jui_dropdown-1.0.4/jquery.jui_dropdown.js"></script>
+    <script type="text/javascript" src="/Scripts/jquery.hoverIntent.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("#pageInfoDialog").dialog({
+                autoOpen: false,
+                width: 400,
+                show: {
+                    effect: "blind",
+                    duration: 100
+                },
+                hide: {
+                    effect: "fade",
+                    duration: 100
+                }
+            });
+
+            $("#pageInfo").click(function () {
+                $("#pageInfoDialog").dialog("open");
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="page">
+        <div id="header">
+            <div id="title">
+                <h1>
+
+                    @if (string.IsNullOrEmpty(OpenLawOffice.Common.Settings.Manager.Instance.System.BillingFirmName))
+                    {
+                        <text>OpenLawOffice</text>
+                    }
+                    else
+                    {
+                        @OpenLawOffice.Common.Settings.Manager.Instance.System.BillingFirmName
+                    }
+                </h1>
+            </div>
+            <div id="logindisplay">
+                @if (Request.IsAuthenticated)
+                {
+                    <text>Logged in as:
+                        @User.Identity.Name [@Html.ActionLink("Logout", "Logout", "Account")]
+                    </text>
+                }
+                else
+                {
+                    <text>Not logged in</text>
+                }
+            </div>
+        </div>
+        <div id="nav">
+            @{Html.RenderPartial("_LeftMenu");}
+
+        </div>
+        <div id="menucontainer">
+            <ul id="menu">
+                @RenderSection("ContextMenu")
+            </ul>
+        </div>
+        <div id="main">
+            @RenderBody()
+            <div id="footer">
+                Version: @(ViewContext.Controller.GetType().Assembly.GetName().Version) created @(System.IO.File.GetCreationTime(ViewContext.Controller.GetType().Assembly.Location))
+            </div>
+        </div>
+    </div>
+</body>
+</html>

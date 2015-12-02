@@ -1,0 +1,51 @@
+@model IEnumerable<OpenLawOffice.Web.ViewModels.Contacts.SelectableContactViewModel>
+
+@{ 
+    ViewBag.Title = "Select Contact for Time Entry";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="roadmap">
+    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
+    <div class="one">Task: [@(Html.ActionLink((string)ViewBag.Task, "Details", "Tasks", new { id = ViewBag.TaskId }, null))]</div>
+    <div id="current" class="two">Select Contact for Time Entry<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
+</div>
+    
+<p>
+    Select the person that did the work.</p>
+<table class="listing_table">
+    <tr>
+        <th>
+            Display Name
+        </th>
+        <th>
+            City, State
+        </th>
+        <th style="width: 150px;">
+        </th>
+    </tr>
+    @foreach (var item in Model)
+        {
+    <tr>
+        <td>
+            @(Html.ActionLink(item.DisplayName, "Details", "Contacts", new { id = item.Id }, null))
+        </td>
+        <td>
+            @(item.Address1AddressCity + ", " + item.Address1AddressStateOrProvince)
+        </td>
+        <td>
+            @(Html.ActionLink("Select", "Create", "TaskTime", new { ContactId = item.Id, TaskId = Request["TaskId"] }, new { @class = "btn-assigncontact", title = "Assign Contact" }))
+        </td>
+    </tr>
+    }
+</table>
+<div id="pageInfoDialog" title="Help">
+    <p>
+    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
+    This page allows a contact to be assigned to a time entry.<br /><br />
+    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
+    Click the contact to show details of the contact.
+    To assign a contact to a time entry, click the 
+    <img src="../../Content/fugue-icons-3.5.6/icons-shadowless/user-arrow.png" /> (assign contact icon)
+    </p>
+</div> 

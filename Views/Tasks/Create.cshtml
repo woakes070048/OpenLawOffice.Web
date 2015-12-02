@@ -1,0 +1,188 @@
+@model OpenLawOffice.Web.ViewModels.Tasks.CreateTaskViewModel
+
+
+@{ 
+    ViewBag.Title = "Create Task";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript" src="/Scripts/moment.min.js"></script>
+<script type="text/javascript" src="/Scripts/tinymce/tinymce.min.js"></script>
+
+<script language="javascript">
+    var templates = @(Html.Raw(ViewBag.TemplateJson));
+    function taskTemplateClick(id) {
+        for (var i = 0; i < templates.length; i++) {
+            if (templates[i].Id == id) {
+                $("#Task_Title").val(templates[i].Title);
+                tinymce.activeEditor.setContent(templates[i].Title);
+                //$("#Task_Description").val(templates[i].Description);
+                if (templates[i].Active)
+                    $("#Task_Active").prop('checked',true);
+                else
+                    $("#Task_Active").prop('checked',false);
+                if (templates[i].ProjectedStart != null)
+                    $("#Task_ProjectedStart").val(moment(templates[i].ProjectedStart).format("M/D/YYYY h:mm:ss A"));
+                else 
+                    $("#Task_ProjectedStart").val(null);
+                if (templates[i].DueDate != null)
+                    $("#Task_DueDate").val(moment(templates[i].DueDate).format("M/D/YYYY h:mm:ss A"));
+                else 
+                    $("#Task_DueDate").val(null);
+                if (templates[i].ProjectedEnd != null)
+                    $("#Task_ProjectedEnd").val(moment(templates[i].ProjectedEnd).format("M/D/YYYY h:mm:ss A"));
+                else 
+                    $("#Task_ProjectedEnd").val(null);
+                if (templates[i].ActualEnd != null)
+                    $("#Task_ActualEnd").val(moment(templates[i].ActualEnd).format("M/D/YYYY h:mm:ss A"));
+                else 
+                    $("#Task_ActualEnd").val(null);
+            }
+        }
+        return false;
+    }
+    $(document).ready(function () {
+        tinymce.init({
+            selector: "#Task_Description",
+            theme: "modern",
+            toolbar: "insertfile undo redo | styleselect | bold underline italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image"
+        });
+    });
+</script>
+            
+<div id="roadmap">
+    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
+    <div id="current" class="one">Create Task<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
+</div>
+    
+@using (Html.BeginForm())
+    {
+@(Html.ValidationSummary(true))
+<input type="hidden" id="MatterId" value="@(Request["MatterId"].ToString())" />
+<table class="detail_table">
+    <tr>
+        <td class="display-label">
+            Title<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">
+            @(Html.TextBoxFor(model => model.Task.Title, new { @style = "width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Task.Title))
+        </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td>
+            @*// Needs to build to the json being built to hold values*@
+            @foreach(var x in Model.TaskTemplates)
+            { 
+                <text>[<a href="javascript:taskTemplateClick('@(x.Id.Value)')">@(x.TaskTemplateTitle)</a>]</text>
+            }
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Description<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">
+            @(Html.TextAreaFor(model => model.Task.Description, new { style = "height: 300px; width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Task.Description))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Active<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.Task.Active, new { Checked = true }))
+            Uncheck if the task is already completed
+        </td>
+    </tr>
+    @*<tr>
+        <td class="display-label">
+            Projected Start
+        </td>
+        <td class="display-field">
+            @(Html.EditorFor(model => model.Task.ProjectedStart))
+            @(Html.ValidationMessageFor(model => model.Task.ProjectedStart))
+        </td>
+    </tr>*@
+    <tr>
+        <td class="display-label">
+            Due Date
+        </td>
+        <td class="display-field">
+            @(Html.EditorFor(model => model.Task.DueDate))
+            @(Html.ValidationMessageFor(model => model.Task.DueDate))
+        </td>
+    </tr>
+    @*<tr>
+        <td class="display-label">
+            Projected End
+        </td>
+        <td class="display-field">
+            @(Html.EditorFor(model => model.Task.ProjectedEnd))
+            @(Html.ValidationMessageFor(model => model.Task.ProjectedEnd))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Actual End
+        </td>
+        <td class="display-field">
+            @(Html.EditorFor(model => model.Task.ActualEnd))
+            @(Html.ValidationMessageFor(model => model.Task.ActualEnd))
+        </td>
+    </tr>*@
+    <tr>
+        <td class="display-label">
+            Responsible User
+        </td>
+        <td class="display-field">
+            @(Html.DropDownListFor(x => x.ResponsibleUser.User.PId,
+                    new SelectList(ViewBag.UserList, "PId", "Username"),
+                    new { @size = 5, @style = "width: 100%" }))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Responsiblity<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">
+            @(Html.TextBoxFor(model => model.ResponsibleUser.Responsibility, new { @style = "width: 100%;", @Value = "Lead" }))
+            @(Html.ValidationMessageFor(model => model.ResponsibleUser.Responsibility))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Assigned Contact
+        </td>
+        <td class="display-field">
+            @(Html.DropDownListFor(x => x.TaskContact.Contact.Id,
+                    new SelectList(ViewBag.EmployeeContactList, "Id", "DisplayName"),
+                    new { @size = 5, @style = "width: 100%" }))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Assignment<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">
+            @(Html.EnumDropDownListFor(model => model.TaskContact.AssignmentType))
+        </td>
+    </tr>
+        
+</table>
+<p>
+    <input type="submit" value="Save" />
+</p>
+}
+<div id="pageInfoDialog" title="Help">
+    <p>
+    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
+    Fill in the information on this page to create a new task.  Required fields are indicated with an
+    <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span><br /><br />
+    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
+    Select a "parent" task to make this task be a "subtask" of another task.  To deselect a parent task, click "clear". 
+    Fields marked with an <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span> are required.
+    </p>
+</div> 

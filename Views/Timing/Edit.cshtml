@@ -1,0 +1,81 @@
+@model OpenLawOffice.Web.ViewModels.Timing.TimeViewModel
+
+@{ 
+    ViewBag.Title = "Edit Time Entry";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="roadmap">
+    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
+    <div class="one">Task: [@(Html.ActionLink((string)ViewBag.Task, "Details", "Tasks", new { id = ViewBag.TaskId }, null))]</div>
+    <div id="current" class="two">Edit Time Entry<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
+</div>
+    
+@using (Html.BeginForm())
+    {
+@(Html.ValidationSummary(true))
+<table class="detail_table">
+    <tr>
+        <td class="display-label">
+            Start<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">
+            @(Html.TextBoxFor(model => model.Start, new { @Value = Model.Start.ToString("M/d/yyyy h:mm tt") }))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Stop<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">
+            @if (Model.Stop.HasValue)
+                {
+                @(Html.TextBoxFor(model => model.Stop, new { @Value = Model.Stop.Value.ToString("M/d/yyyy h:mm tt") }))
+            }
+                else
+                {                
+                @(Html.TextBoxFor(model => model.Stop))
+            }
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Billable<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.Billable))
+            Check if time is billable.
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Worker<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">            
+            @(Html.DropDownListFor(model => model.Worker.Id,
+                    new SelectList(ViewBag.EmployeeContactList, "Id", "DisplayName"),
+                    new { @size = 5 }))            
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Details:
+        </td>
+        <td class="display-field">
+            @(Html.TextAreaFor(model => model.Details, new { style = "width: 500px; height: 100px;" }))
+        </td>
+    </tr>
+</table>
+<p>
+    <input type="submit" value="Save" />
+</p>
+}
+<div id="pageInfoDialog" title="Help">
+    <p>
+    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
+    Fill in the information on this page to modify the time entry.  Required fields are indicated with an
+    <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span><br /><br />
+    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
+    Fields marked with an <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span> are required.
+    </p>
+</div> 

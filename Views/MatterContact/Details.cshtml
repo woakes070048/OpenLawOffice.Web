@@ -1,0 +1,61 @@
+@model OpenLawOffice.Web.ViewModels.Matters.MatterContactViewModel
+
+@{ 
+    ViewBag.Title = "Details of Contact Assignment to Matter";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="roadmap">
+    <div class="zero">Matter: [@(Html.ActionLink((string)ViewData["Matter"], "Details", "Matters", new { id = ViewData["MatterId"] }, null))]</div>
+    <div id="current" class="one">Details of Contact Assignment to Matter<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
+</div>
+            
+<div class="options_div" style="text-align: right;">
+    <div style="width: 200px; display: inline;">
+        <a href="../Edit/@(ViewContext.RouteData.Values["Id"])">
+            <input type="button" value="Edit" id="Edit"
+                   style="background-image: url('/Content/fugue-icons-3.5.6/icons-shadowless/pencil.png');
+                background-position: left center; background-repeat: no-repeat; padding-left: 20px;" />
+        </a>
+        <a href="../Delete/@(ViewContext.RouteData.Values["Id"])">
+            <input type="button" value="Delete" id="Delete"
+                   style="background-image: url('/Content/fugue-icons-3.5.6/icons-shadowless/cross.png');
+                background-position: left center; background-repeat: no-repeat; padding-left: 20px;" />
+        </a>
+    </div>
+</div>
+
+<table class="detail_table">
+    <tr>
+        <td class="display-label">
+            Matter
+        </td>
+        <td class="display-field">
+            @(Html.ActionLink(Model.Matter.Title, "Details", "Matters", new { id = Model.Matter.Id.Value }, null))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Contact
+        </td>
+        <td class="display-field">
+            @(Html.ActionLink(Model.Contact.DisplayName, "Details", "Contacts", new { id = Model.Contact.Id.Value }, null))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Role
+        </td>
+        <td class="display-field">
+            @(Model.Role)
+        </td>
+    </tr>
+</table>
+@{ Html.RenderPartial("_CoreDetails");}
+
+<div id="pageInfoDialog" title="Help">
+    <p>
+    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
+    Displays detailed information regarding the assignment of the contact to the matter.
+    </p>
+</div> 

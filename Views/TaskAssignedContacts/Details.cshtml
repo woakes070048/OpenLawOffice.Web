@@ -1,0 +1,62 @@
+@model OpenLawOffice.Web.ViewModels.Tasks.TaskAssignedContactViewModel
+
+@{ 
+    ViewBag.Title = "Details of Contact Assignment to Task";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="roadmap">
+    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
+    <div class="one">Task: [@(Html.ActionLink((string)ViewBag.Task, "Details", "Tasks", new { id = ViewBag.TaskId }, null))]</div>
+    <div id="current" class="two">Details of Contact Assignment to Task<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
+</div>
+    
+<div class="options_div" style="text-align: right;">
+    <div style="width: 200px; display: inline;">
+        <a href="../Edit/@(ViewContext.RouteData.Values["Id"])">
+            <input type="button" value="Edit" id="Edit"
+                   style="background-image: url('/Content/fugue-icons-3.5.6/icons-shadowless/pencil.png');
+                background-position: left center; background-repeat: no-repeat; padding-left: 20px;" />
+        </a>
+        <a href="../Delete/@(ViewContext.RouteData.Values["Id"])">
+            <input type="button" value="Delete" id="Delete"
+                   style="background-image: url('/Content/fugue-icons-3.5.6/icons-shadowless/cross.png');
+                background-position: left center; background-repeat: no-repeat; padding-left: 20px;" />
+        </a>
+    </div>
+</div>
+
+<table class="detail_table">
+    <tr>
+        <td class="display-label">
+            Task
+        </td>
+        <td class="display-field">
+            @(Html.ActionLink(Model.Task.Title, "Details", "Tasks", new { id = Model.Task.Id }, null))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            User
+        </td>
+        <td class="display-field">
+            @(Html.ActionLink(Model.Contact.DisplayName, "Details", "Contacts", new { id = Model.Contact.Id }, null))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Assignment
+        </td>
+        <td class="display-field">
+            @(Model.AssignmentType)
+        </td>
+    </tr>
+</table>
+@{ Html.RenderPartial("_CoreDetails");}
+
+<div id="pageInfoDialog" title="Help">
+    <p>
+    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
+    Displays detailed information regarding the assignment of the contact to the task.
+    </p>
+</div>

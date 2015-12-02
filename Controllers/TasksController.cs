@@ -242,8 +242,8 @@ namespace OpenLawOffice.Web.Controllers
 
             matter = Data.Tasks.Task.GetRelatedMatter(model.Id.Value);
 
-            ViewData["MatterId"] = matter.Id.Value;
-            ViewData["Matter"] = matter.Title;
+            ViewBag.MatterId = matter.Id.Value;
+            ViewBag.Matter = matter.Title;
 
             return View(viewModel);
         }
@@ -272,8 +272,8 @@ namespace OpenLawOffice.Web.Controllers
 
             matter = Data.Tasks.Task.GetRelatedMatter(model.Id.Value);
 
-            ViewData["MatterId"] = matter.Id.Value;
-            ViewData["Matter"] = matter.Title;
+            ViewBag.MatterId = matter.Id.Value;
+            ViewBag.Matter = matter.Title;
 
             return View(viewModel);
         }
@@ -303,8 +303,8 @@ namespace OpenLawOffice.Web.Controllers
                     //  Task is trying to set itself as its parent
                     ModelState.AddModelError("Parent.Id", "Parent cannot be the task itself.");
 
-                    ViewData["MatterId"] = matterModel.Id.Value;
-                    ViewData["Matter"] = matterModel.Title;
+                    ViewBag.MatterId = matterModel.Id.Value;
+                    ViewBag.Matter = matterModel.Title;
 
                     return View(viewModel);
                 }
@@ -409,11 +409,11 @@ namespace OpenLawOffice.Web.Controllers
 
 
             matter = Data.Matters.Matter.Get(Guid.Parse(Request["MatterId"]));
-            ViewData["MatterId"] = matter.Id.Value;
-            ViewData["Matter"] = matter.Title;
-            ViewData["UserList"] = userList;
-            ViewData["EmployeeContactList"] = employeeContactList;
-            ViewData["TemplateJson"] = taskTemplates.ToString();
+            ViewBag.MatterId = matter.Id.Value;
+            ViewBag.Matter = matter.Title;
+            ViewBag.UserList = userList;
+            ViewBag.EmployeeContactList = employeeContactList;
+            ViewBag.TemplateJson = taskTemplates.ToString();
 
             return View(new ViewModels.Tasks.CreateTaskViewModel()
             {
@@ -655,10 +655,10 @@ namespace OpenLawOffice.Web.Controllers
 
             task = Data.Tasks.Task.Get(id);
             matter = Data.Tasks.Task.GetRelatedMatter(id);
-            ViewData["Task"] = task.Title;
-            ViewData["TaskId"] = task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = task.Title;
+            ViewBag.TaskId = task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }
@@ -687,10 +687,10 @@ namespace OpenLawOffice.Web.Controllers
 
             task = Data.Tasks.Task.Get(id);
             matter = Data.Tasks.Task.GetRelatedMatter(id);
-            ViewData["Task"] = task.Title;
-            ViewData["TaskId"] = task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = task.Title;
+            ViewBag.TaskId = task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }
@@ -711,10 +711,10 @@ namespace OpenLawOffice.Web.Controllers
 
             task = Data.Tasks.Task.Get(id);
             matter = Data.Tasks.Task.GetRelatedMatter(id);
-            ViewData["Task"] = task.Title;
-            ViewData["TaskId"] = task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = task.Title;
+            ViewBag.TaskId = task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }
@@ -743,10 +743,10 @@ namespace OpenLawOffice.Web.Controllers
 
             task = Data.Tasks.Task.Get(id);
             matter = Data.Tasks.Task.GetRelatedMatter(id);
-            ViewData["Task"] = task.Title;
-            ViewData["TaskId"] = task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = task.Title;
+            ViewBag.TaskId = task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }
@@ -770,10 +770,10 @@ namespace OpenLawOffice.Web.Controllers
 
             task = Data.Tasks.Task.Get(id);
             matter = Data.Tasks.Task.GetRelatedMatter(id);
-            ViewData["Task"] = task.Title;
-            ViewData["TaskId"] = task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = task.Title;
+            ViewBag.TaskId = task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }
@@ -800,10 +800,10 @@ namespace OpenLawOffice.Web.Controllers
 
             task = Data.Tasks.Task.Get(id);
             matter = Data.Tasks.Task.GetRelatedMatter(id);
-            ViewData["Task"] = task.Title;
-            ViewData["TaskId"] = task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = task.Title;
+            ViewBag.TaskId = task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }
@@ -827,10 +827,10 @@ namespace OpenLawOffice.Web.Controllers
 
             task = Data.Tasks.Task.Get(id);
             matter = Data.Tasks.Task.GetRelatedMatter(id);
-            ViewData["Task"] = task.Title;
-            ViewData["TaskId"] = task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = task.Title;
+            ViewBag.TaskId = task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }

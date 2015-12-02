@@ -50,8 +50,8 @@ namespace OpenLawOffice.Web.Controllers
             if (noteTask != null)
             { // Note belongs to a task
                 noteMatter = Data.Tasks.Task.GetRelatedMatter(noteTask.Id.Value);
-                ViewData["TaskId"] = noteTask.Id.Value;
-                ViewData["Task"] = noteTask.Title;
+                ViewBag.TaskId = noteTask.Id.Value;
+                ViewBag.Task = noteTask.Title;
             }
             
             viewModel.NoteNotifications = new List<ViewModels.Notes.NoteNotificationViewModel>();
@@ -65,8 +65,8 @@ namespace OpenLawOffice.Web.Controllers
 
             PopulateCoreDetails(viewModel);
 
-            ViewData["MatterId"] = noteMatter.Id.Value;
-            ViewData["Matter"] = noteMatter.Title;
+            ViewBag.MatterId = noteMatter.Id.Value;
+            ViewBag.Matter = noteMatter.Title;
             return View(viewModel);
         }
 
@@ -105,8 +105,8 @@ namespace OpenLawOffice.Web.Controllers
             if (task != null)
             {
                 matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
-                ViewData["TaskId"] = task.Id.Value;
-                ViewData["Task"] = task.Title;
+                ViewBag.TaskId = task.Id.Value;
+                ViewBag.Task = task.Title;
             }
 
             Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
@@ -121,9 +121,9 @@ namespace OpenLawOffice.Web.Controllers
                 viewModel.NotifyContactIds[i] = notesNotifications[i].Contact.Id.Value.ToString();
             }
 
-            ViewData["MatterId"] = matter.Id.Value;
-            ViewData["Matter"] = matter.Title;
-            ViewData["EmployeeContactList"] = employeeContactList;
+            ViewBag.MatterId = matter.Id.Value;
+            ViewBag.Matter = matter.Title;
+            ViewBag.EmployeeContactList = employeeContactList;
 
             return View(viewModel);
         }
@@ -175,8 +175,8 @@ namespace OpenLawOffice.Web.Controllers
             {
                 task = Data.Tasks.Task.Get(long.Parse(Request["TaskId"]));
                 matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
-                ViewData["TaskId"] = task.Id.Value;
-                ViewData["Task"] = task.Title;
+                ViewBag.TaskId = task.Id.Value;
+                ViewBag.Task = task.Title;
             }
 
             Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
@@ -184,9 +184,9 @@ namespace OpenLawOffice.Web.Controllers
                 employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
             });
 
-            ViewData["MatterId"] = matter.Id.Value;
-            ViewData["Matter"] = matter.Title;
-            ViewData["EmployeeContactList"] = employeeContactList;
+            ViewBag.MatterId = matter.Id.Value;
+            ViewBag.Matter = matter.Title;
+            ViewBag.EmployeeContactList = employeeContactList;
 
             return View(new ViewModels.Notes.NoteViewModel() { Timestamp = DateTime.Now });
         }

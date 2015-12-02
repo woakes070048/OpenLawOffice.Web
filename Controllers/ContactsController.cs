@@ -128,9 +128,9 @@ namespace OpenLawOffice.Web.Controllers
                 to = new DateTime(now.Year, now.Month, 1).AddMonths(1).AddDays(-1);
 
             if (from.HasValue)
-                ViewData["From"] = from.Value;
+                ViewBag.From = from.Value;
             if (to.HasValue)
-                ViewData["To"] = to.Value;
+                ViewBag.To = to.Value;
 
             return View(viewModel);
         }
@@ -181,9 +181,9 @@ namespace OpenLawOffice.Web.Controllers
             });
 
             if (from.HasValue)
-                ViewData["From"] = from.Value;
+                ViewBag.From = from.Value;
             if (to.HasValue)
-                ViewData["To"] = to.Value;
+                ViewBag.To = to.Value;
 
             return View(viewModel);
         }
@@ -202,7 +202,7 @@ namespace OpenLawOffice.Web.Controllers
                 billingRateList.Add(vm);
             });
 
-            ViewData["BillingRateList"] = billingRateList;
+            ViewBag.BillingRateList = billingRateList;
 
             return View();
         }
@@ -241,9 +241,9 @@ namespace OpenLawOffice.Web.Controllers
                         billingRateList.Add(vm);
                     });
 
-                    ViewData["ErrorMessage"] = "Contact possibly conflicts with the following existing contacts:<ul>" + errorListString + "</ul>Click Save again to create the contact anyway.";
-                    ViewData["OverrideConflict"] = "True";
-                    ViewData["BillingRateList"] = billingRateList;
+                    ViewBag.ErrorMessage = "Contact possibly conflicts with the following existing contacts:<ul>" + errorListString + "</ul>Click Save again to create the contact anyway.";
+                    ViewBag.OverrideConflict = "True";
+                    ViewBag.BillingRateList = billingRateList;
                     return View(viewModel);
                 }
             }
@@ -279,7 +279,7 @@ namespace OpenLawOffice.Web.Controllers
                 billingRateList.Add(vm);
             });
 
-            ViewData["BillingRateList"] = billingRateList;
+            ViewBag.BillingRateList = billingRateList;
 
             return View(viewModel);
         }

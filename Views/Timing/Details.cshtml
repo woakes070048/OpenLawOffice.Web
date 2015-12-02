@@ -1,0 +1,96 @@
+@model OpenLawOffice.Web.ViewModels.Timing.TimeViewModel
+
+@{ 
+    ViewBag.Title = "Time Entry Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="roadmap">
+    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
+    <div class="one">Task: [@(Html.ActionLink((string)ViewBag.Task, "Details", "Tasks", new { id = ViewBag.TaskId }, null))]</div>
+    <div id="current" class="two">Time Entry Details<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
+</div>
+    
+<div class="options_div" style="text-align: right;">
+    <div style="width: 200px; display: inline;">
+        <a href="../Edit/@(ViewContext.RouteData.Values["Id"])">
+            <input type="button" value="Edit" id="Edit"
+                   style="background-image: url('/Content/fugue-icons-3.5.6/icons-shadowless/pencil.png');
+                background-position: left center; background-repeat: no-repeat; padding-left: 20px;" />
+        </a>
+    </div>
+</div>
+
+<table class="detail_table">
+    <tr>
+        <td class="display-label">
+            Id
+        </td>
+        <td class="display-field">
+            @(Model.Id)
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Duration
+        </td>
+        <td class="display-field">
+            @if (Model.Stop.HasValue)
+                {
+                <text>@(Math.Round(((TimeSpan)(Model.Stop - Model.Start)).TotalMinutes, 0)) min.</text>
+            }
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Start
+        </td>
+        <td class="display-field">
+            @(String.Format("{0:g}", Model.Start))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Stop
+        </td>
+        <td class="display-field">
+            @if (Model.Stop.HasValue)
+                {
+                @(String.Format("{0:g}", Model.Stop.Value))
+            }
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label" style="width: 125px;">
+            Billable
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.Billable, new { disabled = true }))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Worker
+        </td>
+        <td class="display-field">
+            @(Html.ActionLink(Model.Worker.DisplayName, "Details", "Contacts", new { id = Model.Worker.Id }, null))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Details
+        </td>
+        <td class="display-field">
+            @(Model.Details)
+        </td>
+    </tr>
+</table>
+@{ Html.RenderPartial("_CoreDetails");}
+
+
+<div id="pageInfoDialog" title="Help">
+    <p>
+    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
+    Displays detailed information about the time entry.
+    </p>
+</div> 

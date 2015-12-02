@@ -193,10 +193,12 @@ namespace OpenLawOffice.Web.Controllers
         {
             Common.Models.Account.Users currentUser;
             Common.Models.Matters.MatterContact model;
+            Guid matterId;
 
             currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            model = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel);
+            
+            model = Data.Matters.MatterContact.Get(viewModel.Id.Value);
+            matterId = model.Matter.Id.Value;
 
             model = Data.Matters.MatterContact.Disable(model, currentUser);
 
@@ -208,7 +210,7 @@ namespace OpenLawOffice.Web.Controllers
             }
 
             return RedirectToAction("Contacts", "Matters",
-                new { id = model.Matter.Id.Value.ToString() });
+                new { id = matterId.ToString() });
         }
     }
 }

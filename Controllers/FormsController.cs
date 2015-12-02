@@ -38,7 +38,9 @@ namespace OpenLawOffice.Web.Controllers
 
             Data.Forms.Form.List().ForEach(x =>
             {
-                vmList.Add(Mapper.Map<ViewModels.Forms.FormViewModel>(x));
+                ViewModels.Forms.FormViewModel vm = Mapper.Map<ViewModels.Forms.FormViewModel>(x);
+                vm.MatterType = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(Data.Matters.MatterType.Get(x.MatterType.Id.Value));
+                vmList.Add(vm);
             });
 
             return View(vmList);
@@ -80,7 +82,7 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModel = Mapper.Map<ViewModels.Forms.FormViewModel>(model);
 
-            ViewData["MatterTypeList"] = matterTypeList;
+            ViewBag.MatterTypeList = matterTypeList;
             return View(viewModel);
         }
 
@@ -88,6 +90,9 @@ namespace OpenLawOffice.Web.Controllers
         [Authorize(Roles = "Login, User")]
         public ActionResult Edit(int id, ViewModels.Forms.FormViewModel viewModel)
         {
+            string newExt = null;
+            string oldExt = null;
+
             // TODO : Cleanup - should probably wrap this in a transaction with rollback on 
             // error from the SaveAs method of FileUpload
 
@@ -101,16 +106,29 @@ namespace OpenLawOffice.Web.Controllers
 
             // Path is based on base path + id, so, during an edit, it should NEVER change under
             // the current model - May change in the future if versioning or something similar 
-            // is supported
+            // is supported - EXCEPT extension
             model.Path = currentModel.Path;
+            if (Path.HasExtension(model.Path))
+                oldExt = Path.GetExtension(model.Path);
+            if (Path.HasExtension(viewModel.FileUpload.FileName))
+                newExt = Path.GetExtension(viewModel.FileUpload.FileName);
+            if (oldExt != newExt)
+                model.Path = model.Path.Replace(oldExt, newExt);
 
             model = Data.Forms.Form.Edit(model, currentUser);
 
             // Only overwrite is the user gave us a file to use, otherwise, keep
             // the existing file - user just wants to update the matter type
             if (viewModel.FileUpload != null && viewModel.FileUpload.ContentLength > 0)
-            { // Posted file - overwrites existing
-                viewModel.FileUpload.SaveAs(model.Path);
+            { // Posted file
+                if (newExt == oldExt) // overwrite
+                    viewModel.FileUpload.SaveAs(model.Path);
+                else
+                {
+                    // Delete old
+                    System.IO.File.Delete(currentModel.Path);
+                    viewModel.FileUpload.SaveAs(model.Path);
+                }
             }
 
             return RedirectToAction("Index");
@@ -129,7 +147,7 @@ namespace OpenLawOffice.Web.Controllers
                 matterTypeList.Add(vm);
             });
 
-            ViewData["MatterTypeList"] = matterTypeList;
+            ViewBag.MatterTypeList = matterTypeList;
 
             return View();
         }

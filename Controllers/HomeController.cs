@@ -104,7 +104,7 @@ namespace OpenLawOffice.Web.Controllers
                 employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
             });
 
-            ViewData["EmployeeContactList"] = employeeContactList;
+            ViewBag.EmployeeContactList = employeeContactList;
 
             return View(viewModel);
         }

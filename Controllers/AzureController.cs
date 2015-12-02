@@ -13,6 +13,7 @@ using System.Web.Security;
 
 namespace OpenLawOffice.Web.Controllers
 {
+    [Authorize]
     public class AzureController : Controller
     {
         //

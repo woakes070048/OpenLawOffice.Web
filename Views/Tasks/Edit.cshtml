@@ -1,0 +1,151 @@
+@model OpenLawOffice.Web.ViewModels.Tasks.TaskViewModel
+
+@{ 
+    ViewBag.Title = "Edit Task";
+    Layout = "~/Views/Shared/_LayoutWithContextMenu.cshtml";
+}
+
+@section ContextMenu {
+    <li>Actions</li>
+    <ul style="list-style: none outside none; padding-left: 1em;">
+        <li>
+            @(Html.ActionLink("New Task", "Create", new { MatterId = ViewBag.MatterId }))
+        </li>
+        <li>
+            @(Html.ActionLink("Details", "Details", new { id = Model.Id }))
+        </li>
+    </ul>
+    <li>
+        @(Html.ActionLink("Matter", "Details", "Matters", new { id = ViewBag.MatterId }, null))
+    </li>
+    <li>
+        @(Html.ActionLink("Tags", "Tags", "Tasks", new { id = Model.Id }, null))
+    </li>
+    <li>
+        @(Html.ActionLink("Responsible Users", "ResponsibleUsers", "Tasks", new { id = Model.Id }, null))
+    </li>
+    <li>
+        @(Html.ActionLink("Contacts", "Contacts", "Tasks", new { id = Model.Id }, null))
+    </li>
+    <li>
+        @(Html.ActionLink("Notes", "Notes", "Tasks", new { id = Model.Id }, null))
+        (@(Html.ActionLink("Add", "Create", "Notes", new { controller = "Tasks", TaskId = Model.Id }, null)))
+    </li>
+    <li>
+        @(Html.ActionLink("Documents", "Documents", "Tasks", new { id = Model.Id }, null))
+        (@(Html.ActionLink("Add", "Create", "Documents", new { controller = "Tasks", TaskId = Model.Id }, null)))
+    </li>
+    <li>
+        @(Html.ActionLink("Time", "Time", "Tasks", new { id = Model.Id }, null))
+        (@(Html.ActionLink("Add", "SelectContactToAssign", "TaskTime", new { TaskId = Model.Id }, null)))
+    </li>
+}
+
+
+<script type="text/javascript" src="/Scripts/tinymce/tinymce.min.js"></script>
+    
+<script language="javascript">
+    $(document).ready(function () {
+        tinymce.init({
+            selector: "#Description",
+            theme: "modern",
+            toolbar: "insertfile undo redo | styleselect | bold underline italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image"
+        });
+    });
+</script>
+<div id="roadmap">
+    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
+    <div id="current" class="one">Edit Task<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
+</div>
+            
+@using (Html.BeginForm())
+    {
+@(Html.ValidationSummary(true))
+<table class="detail_table">
+    <tr>
+        <td class="display-label">
+            Id
+        </td>
+        <td class="display-field">
+            @(Model.Id)
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Title<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">
+            @(Html.TextBoxFor(model => model.Title, new { @style = "width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Title))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Description<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">
+            @(Html.TextAreaFor(model => model.Description, new { style = "height: 300px; width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Description))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Active<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.Active))
+            A check indicates there is something left to complete.  Once completed, uncheck.
+        </td>
+    </tr>
+    @*<tr>
+        <td class="display-label">
+            Projected Start
+        </td>
+        <td class="display-field">
+            @(Html.EditorFor(model => model.ProjectedStart))
+            @(Html.ValidationMessageFor(model => model.ProjectedStart))
+        </td>
+    </tr>*@
+    <tr>
+        <td class="display-label">
+            Due Date
+        </td>
+        <td class="display-field">
+            @(Html.EditorFor(model => model.DueDate))
+            @(Html.ValidationMessageFor(model => model.DueDate))
+        </td>
+    </tr>
+    @*<tr>
+        <td class="display-label">
+            Projected End
+        </td>
+        <td class="display-field">
+            @(Html.EditorFor(model => model.ProjectedEnd))
+            @(Html.ValidationMessageFor(model => model.ProjectedEnd))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Actual End
+        </td>
+        <td class="display-field">
+            @(Html.EditorFor(model => model.ActualEnd))
+            @(Html.ValidationMessageFor(model => model.ActualEnd))
+        </td>
+    </tr>*@
+
+</table>
+<p>
+    <input type="submit" value="Save" />
+</p>
+}
+<div id="pageInfoDialog" title="Help">
+    <p>
+    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
+    Fill in the information on this page to modify the task.  Required fields are indicated with an
+    <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span><br /><br />
+    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
+    Select a "parent" task to make this task be a "subtask" of another task.  To deselect a parent task, click "clear". 
+    Fields marked with an <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span> are required.
+    </p>
+</div> 

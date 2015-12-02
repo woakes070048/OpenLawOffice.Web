@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props" Condition="Exists('packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -7,7 +9,7 @@
     <ProductVersion>
     </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{86B8A28F-68E0-4F8A-B96A-72B72829C494}</ProjectGuid>
+    <ProjectGuid>{F988D48B-DE72-4DA2-BB81-738C94CBB6F0}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -20,12 +22,10 @@
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">.\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <TargetFrameworkProfile />
+    <ApplicationInsightsResourceId>/subscriptions/ecc19d72-18f9-42ab-b9af-1da03015ab86/resourcegroups/Default-ApplicationInsights-CentralUS/providers/microsoft.insights/components/OpenLawOffice.Web</ApplicationInsightsResourceId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -49,20 +49,16 @@
       <HintPath>packages\AutoMapper.4.1.1\lib\net45\AutoMapper.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Common.Logging, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
-      <HintPath>packages\Common.Logging.3.3.1\lib\net40\Common.Logging.dll</HintPath>
+    <Reference Include="Common.Logging, Version=3.1.0.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>packages\Common.Logging.3.1.0\lib\net40\Common.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Common.Logging.Core, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
-      <HintPath>packages\Common.Logging.Core.3.3.1\lib\net40\Common.Logging.Core.dll</HintPath>
+    <Reference Include="Common.Logging.Core, Version=3.1.0.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>packages\Common.Logging.Core.3.1.0\lib\net40\Common.Logging.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CsQuery, Version=1.3.3.249, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\CsQuery.1.3.4\lib\net40\CsQuery.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="DotNetOpenAuth.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
-      <HintPath>packages\DotNetOpenAuth.Core.4.3.4.13329\lib\net45-full\DotNetOpenAuth.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Elmah, Version=1.2.14706.0, Culture=neutral, processorArchitecture=MSIL">
@@ -73,19 +69,11 @@
       <HintPath>packages\HtmlSanitizer.2.0.5735.24296\lib\net40\HtmlSanitizer.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Mono.Security, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>packages\Mono.Security.3.2.3.0\lib\net45\Mono.Security.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Npgsql, Version=3.0.3.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
       <HintPath>packages\Npgsql.3.0.3\lib\net45\Npgsql.dll</HintPath>
       <Private>True</Private>
@@ -96,80 +84,77 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http">
-      <HintPath>packages\Microsoft.Net.Http.2.0.20505.0\lib\net40\System.Net.Http.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.WebRequest">
-      <HintPath>packages\Microsoft.Net.Http.2.0.20505.0\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.Mvc, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Web.Abstractions" />
     <Reference Include="System.Web.Routing" />
-    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
-    <Reference Include="System.Transactions" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
-    <Reference Include="System.Net.Http.Formatting, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.4.0.30506.0\lib\net40\System.Net.Http.Formatting.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.4.0.30506.0\lib\net40\System.Web.Http.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Http.WebHost, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.4.0.30506.0\lib\net40\System.Web.Http.WebHost.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Web.WebPages.OAuth, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.OAuth.2.0.30506.0\lib\net40\Microsoft.Web.WebPages.OAuth.dll</HintPath>
+      <HintPath>packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="WebMatrix.Data, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNet.WebPages.Data.3.2.3\lib\net45\WebMatrix.Data.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="System.Net.Http">
     </Reference>
-    <Reference Include="WebMatrix.WebData, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNet.WebPages.WebData.3.2.3\lib\net45\WebMatrix.WebData.dll</HintPath>
+    <Reference Include="System.Net.Http.WebRequest">
+    </Reference>
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Optimization">
+      <HintPath>packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="WebGrease">
+      <Private>True</Private>
+      <HintPath>packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
+    </Reference>
+    <Reference Include="Antlr3.Runtime">
+      <Private>True</Private>
+      <HintPath>packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccountMembershipService.cs" />
     <Compile Include="AccountRoleService.cs" />
+    <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\AzureController.cs" />
@@ -291,64 +276,23 @@
     <Compile Include="ViewModels\Tasks\TaskMatterViewModel.cs" />
     <Compile Include="ViewModels\Tasks\TaskResponsibleUserViewModel.cs" />
     <Compile Include="ViewModels\Tasks\TaskTagViewModel.cs" />
+    <Compile Include="ViewModels\Tasks\TaskTemplateViewModel.cs" />
     <Compile Include="ViewModels\Tasks\TaskTimeViewModel.cs" />
     <Compile Include="ViewModels\Tasks\TaskViewModel.cs" />
-    <Compile Include="ViewModels\Tasks\TaskTemplateViewModel.cs" />
     <Compile Include="ViewModels\Timing\DayViewModel.cs" />
     <Compile Include="ViewModels\Timing\TimeViewModel.cs" />
     <Compile Include="ViewModels\ValidatePasswordLengthAttribute.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_Readme\Elmah.txt" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\alarm-clock-pencil.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\alarm-clock-plus.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\alarm-clock-select.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\calendar-arrow.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\cross.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\download-cloud.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\exclamation-red-frame.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\exclamation-shield.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\gear-arrow.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\hourglass-select.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\money-arrow.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\pencil.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\plus.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\printer.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\question.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\task-arrow.png" />
-    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\user-arrow.png" />
-    <Content Include="Content\fullcalendar.css" />
-    <Content Include="Content\fullcalendar.print.css" />
-    <Content Include="Content\images\animated-overlay.gif" />
-    <Content Include="Content\images\ui-bg_flat_0_aaaaaa_40x100.png" />
-    <Content Include="Content\images\ui-bg_flat_55_fbec88_40x100.png" />
-    <Content Include="Content\images\ui-bg_glass_75_d0e5f5_1x400.png" />
-    <Content Include="Content\images\ui-bg_glass_85_dfeffc_1x400.png" />
-    <Content Include="Content\images\ui-bg_glass_95_fef1ec_1x400.png" />
-    <Content Include="Content\images\ui-bg_gloss-wave_55_5c9ccc_500x100.png" />
-    <Content Include="Content\images\ui-bg_inset-hard_100_f5f8f9_1x100.png" />
-    <Content Include="Content\images\ui-bg_inset-hard_100_fcfdfd_1x100.png" />
-    <Content Include="Content\images\ui-icons_217bc0_256x240.png" />
-    <Content Include="Content\images\ui-icons_2e83ff_256x240.png" />
-    <Content Include="Content\images\ui-icons_469bdd_256x240.png" />
-    <Content Include="Content\images\ui-icons_6da8d5_256x240.png" />
-    <Content Include="Content\images\ui-icons_cd0a0a_256x240.png" />
-    <Content Include="Content\images\ui-icons_d8e7f3_256x240.png" />
-    <Content Include="Content\images\ui-icons_f9bd01_256x240.png" />
+    <Content Include=".gitignore" />
     <Content Include="Content\jquery-ui-1.10.4.custom.css" />
     <Content Include="Content\jquery-ui-1.10.4.custom.min.css" />
     <Content Include="Content\Site.css" />
     <Content Include="DatabaseSchemaUpdates.txt" />
+    <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="LICENSE.txt" />
-    <Content Include="Scripts\fullcalendar\fullcalendar.js" />
-    <Content Include="Scripts\fullcalendar\fullcalendar.min.js" />
-    <Content Include="Scripts\fullcalendar\gcal.js" />
-    <Content Include="Scripts\jqGrid-4.6.0\grid.locale-en.js" />
-    <Content Include="Scripts\jqGrid-4.6.0\jquery-1.11.0.min.js" />
-    <Content Include="Scripts\jqGrid-4.6.0\jquery.jqGrid.min.js" />
-    <Content Include="Scripts\jqGrid-4.6.0\ui.jqgrid.css" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-ui-1.10.4.custom.js" />
     <Content Include="Scripts\jquery-ui-1.10.4.custom.min.js" />
@@ -356,414 +300,246 @@
     <Content Include="Scripts\jquery-ui.custom.min.js" />
     <Content Include="Scripts\jquery.hoverIntent.min.js" />
     <Content Include="Scripts\jquery.min.js" />
-    <Content Include="Scripts\jui_dropdown-1.0.4\jquery.jui_dropdown.css" />
-    <Content Include="Scripts\jui_dropdown-1.0.4\jquery.jui_dropdown.js" />
-    <Content Include="Scripts\jui_dropdown-1.0.4\jquery.jui_dropdown.min.js" />
     <Content Include="Scripts\moment.min.js" />
-    <Content Include="Scripts\tinymce\license.txt" />
-    <Content Include="Scripts\tinymce\plugins\advlist\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\advlist\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\anchor\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\anchor\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\autolink\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\autolink\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\autoresize\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\autoresize\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\autosave\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\autosave\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\bbcode\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\bbcode\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\charmap\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\charmap\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\codesample\css\prism.css" />
-    <Content Include="Scripts\tinymce\plugins\codesample\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\codesample\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\code\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\code\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\colorpicker\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\colorpicker\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\compat3x\css\dialog.css" />
-    <Content Include="Scripts\tinymce\plugins\compat3x\img\buttons.png" />
-    <Content Include="Scripts\tinymce\plugins\compat3x\img\icons.gif" />
-    <Content Include="Scripts\tinymce\plugins\compat3x\img\items.gif" />
-    <Content Include="Scripts\tinymce\plugins\compat3x\img\menu_arrow.gif" />
-    <Content Include="Scripts\tinymce\plugins\compat3x\img\menu_check.gif" />
-    <Content Include="Scripts\tinymce\plugins\compat3x\img\progress.gif" />
-    <Content Include="Scripts\tinymce\plugins\compat3x\img\tabs.gif" />
-    <Content Include="Scripts\tinymce\plugins\compat3x\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\compat3x\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\compat3x\tiny_mce_popup.js" />
-    <Content Include="Scripts\tinymce\plugins\compat3x\utils\editable_selects.js" />
-    <Content Include="Scripts\tinymce\plugins\compat3x\utils\form_utils.js" />
-    <Content Include="Scripts\tinymce\plugins\compat3x\utils\mctabs.js" />
-    <Content Include="Scripts\tinymce\plugins\compat3x\utils\validate.js" />
-    <Content Include="Scripts\tinymce\plugins\contextmenu\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\contextmenu\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\directionality\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\directionality\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-cool.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-cry.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-embarassed.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-foot-in-mouth.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-frown.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-innocent.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-kiss.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-laughing.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-money-mouth.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-sealed.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-smile.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-surprised.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-tongue-out.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-undecided.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-wink.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\img\smiley-yell.gif" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\emoticons\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\example\dialog.html" />
-    <Content Include="Scripts\tinymce\plugins\example\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\example\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\example_dependency\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\example_dependency\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\fullpage\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\fullpage\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\fullscreen\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\fullscreen\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\hr\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\hr\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\imagetools\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\imagetools\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\image\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\image\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\importcss\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\importcss\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\insertdatetime\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\insertdatetime\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\layer\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\layer\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\legacyoutput\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\legacyoutput\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\link\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\link\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\lists\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\lists\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\media\moxieplayer.swf" />
-    <Content Include="Scripts\tinymce\plugins\media\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\media\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\nonbreaking\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\nonbreaking\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\noneditable\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\noneditable\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\pagebreak\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\pagebreak\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\paste\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\paste\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\preview\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\preview\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\print\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\print\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\save\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\save\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\searchreplace\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\searchreplace\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\spellchecker\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\spellchecker\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\tabfocus\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\tabfocus\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\table\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\table\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\template\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\template\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\textcolor\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\textcolor\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\textpattern\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\textpattern\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\css\visualblocks.css" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\address.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\article.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\aside.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\blockquote.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\div.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\dl.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\figure.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\h1.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\h2.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\h3.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\h4.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\h5.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\h6.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\hgroup.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\ol.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\p.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\pre.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\section.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\img\ul.gif" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\visualblocks\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\visualchars\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\visualchars\plugin.min.js" />
-    <Content Include="Scripts\tinymce\plugins\wordcount\plugin.js" />
-    <Content Include="Scripts\tinymce\plugins\wordcount\plugin.min.js" />
-    <Content Include="Scripts\tinymce\skins\lightgray\content.inline.min.css" />
-    <Content Include="Scripts\tinymce\skins\lightgray\content.min.css" />
-    <Content Include="Scripts\tinymce\skins\lightgray\fonts\tinymce-small.svg" />
-    <Content Include="Scripts\tinymce\skins\lightgray\fonts\tinymce.svg" />
-    <Content Include="Scripts\tinymce\skins\lightgray\img\anchor.gif" />
-    <Content Include="Scripts\tinymce\skins\lightgray\img\loader.gif" />
-    <Content Include="Scripts\tinymce\skins\lightgray\img\object.gif" />
-    <Content Include="Scripts\tinymce\skins\lightgray\img\trans.gif" />
-    <Content Include="Scripts\tinymce\skins\lightgray\skin.ie7.min.css" />
-    <Content Include="Scripts\tinymce\skins\lightgray\skin.min.css" />
-    <Content Include="Scripts\tinymce\themes\modern\theme.js" />
-    <Content Include="Scripts\tinymce\themes\modern\theme.min.js" />
-    <Content Include="Scripts\tinymce\tinymce.js" />
-    <Content Include="Scripts\tinymce\tinymce.min.js" />
-    <Content Include="Views\Account\ChangePassword.aspx" />
-    <Content Include="Views\Account\ChangePasswordSuccess.aspx" />
-    <Content Include="Views\Account\EditUser.aspx" />
-    <Content Include="Views\Account\Login.aspx" />
-    <Content Include="Views\Account\Profile.aspx" />
-    <Content Include="Views\Account\Recovery.aspx" />
-    <Content Include="Views\Account\RecoveryEmailSent.aspx" />
-    <Content Include="Views\Account\Register.aspx" />
-    <Content Include="Views\Admin\ChangePassword.aspx" />
-    <Content Include="Views\Admin\CreateUser.aspx" />
-    <Content Include="Views\Admin\DetailsUser.aspx" />
-    <Content Include="Views\Admin\DisableUser.aspx" />
-    <Content Include="Views\Admin\EditUser.aspx" />
-    <Content Include="Views\Admin\Index.aspx" />
-    <Content Include="Views\Admin\UnlockUser.aspx" />
-    <Content Include="Views\Admin\UserRoles.aspx" />
-    <Content Include="Views\Azure\Connect.aspx" />
-    <Content Include="Views\Azure\Index.aspx" />
-    <Content Include="Views\BillingGroups\Create.aspx" />
-    <Content Include="Views\BillingGroups\Details.aspx" />
-    <Content Include="Views\BillingGroups\Edit.aspx" />
-    <Content Include="Views\BillingGroups\Index.aspx" />
-    <Content Include="Views\BillingGroups\Invoices.aspx" />
-    <Content Include="Views\BillingRates\Create.aspx" />
-    <Content Include="Views\BillingRates\Edit.aspx" />
-    <Content Include="Views\BillingRates\Index.aspx" />
-    <Content Include="Views\Billing\Index.aspx" />
-    <Content Include="Views\Billing\SingleGroupBill.aspx" />
-    <Content Include="Views\Billing\SingleMatterBill.aspx" />
-    <Content Include="Views\Calendar\Contact.aspx" />
-    <Content Include="Views\Calendar\Index.aspx" />
-    <Content Include="Views\Calendar\SelectContact.aspx" />
-    <Content Include="Views\Calendar\SelectUser.aspx" />
-    <Content Include="Views\Calendar\User.aspx" />
-    <Content Include="Views\Contacts\Conflicts.aspx" />
-    <Content Include="Views\Contacts\Create.aspx" />
-    <Content Include="Views\Contacts\Details.aspx" />
-    <Content Include="Views\Contacts\Edit.aspx" />
-    <Content Include="Views\Contacts\Index.aspx" />
-    <Content Include="Views\Contacts\Matters.aspx" />
-    <Content Include="Views\Contacts\Tasks.aspx" />
-    <Content Include="Views\Contacts\Timesheets.aspx" />
-    <Content Include="Views\Contacts\Timesheets_Print3rdParty.aspx" />
-    <Content Include="Views\Documents\Create.aspx" />
-    <Content Include="Views\Documents\Details.aspx" />
-    <Content Include="Views\Documents\Edit.aspx" />
-    <Content Include="Views\EventAssignedContact\AssignContact.aspx" />
-    <Content Include="Views\EventAssignedContact\Delete.aspx" />
-    <Content Include="Views\EventAssignedContact\Details.aspx" />
-    <Content Include="Views\EventAssignedContact\Edit.aspx" />
-    <Content Include="Views\EventAssignedContact\SelectContactToAssign.aspx" />
-    <Content Include="Views\EventMatter\AssignEvent.aspx" />
-    <Content Include="Views\EventMatter\AssignMatter.aspx" />
-    <Content Include="Views\EventMatter\SelectEvent.aspx" />
-    <Content Include="Views\EventMatter\SelectMatter.aspx" />
-    <Content Include="Views\EventMatter\Unlink.aspx" />
-    <Content Include="Views\EventResponsibleUsers\Create.aspx" />
-    <Content Include="Views\EventResponsibleUsers\Delete.aspx" />
-    <Content Include="Views\EventResponsibleUsers\Details.aspx" />
-    <Content Include="Views\EventResponsibleUsers\Edit.aspx" />
-    <Content Include="Views\Events\ContactAgenda.aspx" />
-    <Content Include="Views\Events\Contacts.aspx" />
-    <Content Include="Views\Events\Create.aspx" />
-    <Content Include="Views\Events\Details.aspx" />
-    <Content Include="Views\Events\Edit.aspx" />
-    <Content Include="Views\Events\Matters.aspx" />
-    <Content Include="Views\Events\Notes.aspx" />
-    <Content Include="Views\Events\ResponsibleUsers.aspx" />
-    <Content Include="Views\Events\SelectContact.aspx" />
-    <Content Include="Views\Events\SelectUser.aspx" />
-    <Content Include="Views\Events\Tags.aspx" />
-    <Content Include="Views\Events\Tasks.aspx" />
-    <Content Include="Views\Events\UserAgenda.aspx" />
-    <Content Include="Views\EventTags\Create.aspx" />
-    <Content Include="Views\EventTags\Delete.aspx" />
-    <Content Include="Views\EventTags\Details.aspx" />
-    <Content Include="Views\EventTags\Edit.aspx" />
-    <Content Include="Views\EventTasks\AssignEvent.aspx" />
-    <Content Include="Views\EventTasks\AssignTask.aspx" />
-    <Content Include="Views\EventTasks\SelectEvent.aspx" />
-    <Content Include="Views\EventTasks\SelectTask.aspx" />
-    <Content Include="Views\EventTasks\Unlink.aspx" />
-    <Content Include="Views\Expenses\Create.aspx" />
-    <Content Include="Views\Expenses\Edit.aspx" />
-    <Content Include="Views\Fees\Create.aspx" />
-    <Content Include="Views\Fees\Edit.aspx" />
-    <Content Include="Views\FormFields\Create.aspx" />
-    <Content Include="Views\FormFields\Delete.aspx" />
-    <Content Include="Views\FormFields\Details.aspx" />
-    <Content Include="Views\FormFields\Edit.aspx" />
-    <Content Include="Views\FormFields\Index.aspx" />
-    <Content Include="Views\Forms\Create.aspx" />
-    <Content Include="Views\Forms\Delete.aspx" />
-    <Content Include="Views\Forms\Details.aspx" />
-    <Content Include="Views\Forms\Edit.aspx" />
-    <Content Include="Views\Forms\Index.aspx" />
-    <Content Include="Views\Home\About.aspx" />
-    <Content Include="Views\Home\Index.aspx" />
-    <Content Include="Views\Installation\Complete.aspx" />
-    <Content Include="Views\Installation\Index.aspx" />
-    <Content Include="Views\Installation\MissingDbInstallScript.aspx" />
-    <Content Include="Views\Invoices\GroupDetails.aspx" />
-    <Content Include="Views\Invoices\GroupPrint_Full.aspx" />
-    <Content Include="Views\Invoices\GroupPrint_Summary.aspx" />
-    <Content Include="Views\Invoices\MatterDetails.aspx" />
-    <Content Include="Views\Invoices\MatterPrint.aspx" />
-    <Content Include="Views\MatterContact\AssignContact.aspx" />
-    <Content Include="Views\MatterContact\Delete.aspx" />
-    <Content Include="Views\MatterContact\Details.aspx" />
-    <Content Include="Views\MatterContact\Edit.aspx" />
-    <Content Include="Views\MatterContact\SelectContactToAssign.aspx" />
-    <Content Include="Views\Matters\Contacts.aspx" />
-    <Content Include="Views\Matters\Create.aspx" />
-    <Content Include="Views\Matters\Details.aspx" />
-    <Content Include="Views\Matters\Documents.aspx" />
-    <Content Include="Views\Matters\Edit.aspx" />
-    <Content Include="Views\Matters\Events.aspx" />
-    <Content Include="Views\Matters\Expenses.aspx" />
-    <Content Include="Views\Matters\Fees.aspx" />
-    <Content Include="Views\Matters\FormFields.aspx" />
-    <Content Include="Views\Matters\Index.aspx" />
-    <Content Include="Views\Matters\Invoices.aspx" />
-    <Content Include="Views\Matters\Notes.aspx" />
-    <Content Include="Views\Matters\ResponsibleUsers.aspx" />
-    <Content Include="Views\Matters\Tags.aspx" />
-    <Content Include="Views\Matters\Tasks.aspx" />
-    <Content Include="Views\Matters\Time.aspx" />
-    <Content Include="Views\Matters\Timesheet.aspx" />
-    <Content Include="Views\Matters\Timesheet_Print3rdParty.aspx" />
-    <Content Include="Views\Matters\Timesheet_PrintClient.aspx" />
-    <Content Include="Views\Matters\Timesheet_PrintInternal.aspx" />
-    <Content Include="Views\MatterTags\Create.aspx" />
-    <Content Include="Views\MatterTags\Delete.aspx" />
-    <Content Include="Views\MatterTags\Details.aspx" />
-    <Content Include="Views\MatterTags\Edit.aspx" />
-    <Content Include="Views\MatterTypes\Create.aspx" />
-    <Content Include="Views\MatterTypes\Delete.aspx" />
-    <Content Include="Views\MatterTypes\Details.aspx" />
-    <Content Include="Views\MatterTypes\Edit.aspx" />
-    <Content Include="Views\MatterTypes\Index.aspx" />
-    <Content Include="Views\Notes\Create.aspx" />
-    <Content Include="Views\Notes\Details.aspx" />
-    <Content Include="Views\Notes\Edit.aspx" />
-    <Content Include="Views\ResponsibleUsers\Create.aspx" />
-    <Content Include="Views\ResponsibleUsers\Delete.aspx" />
-    <Content Include="Views\ResponsibleUsers\Details.aspx" />
-    <Content Include="Views\ResponsibleUsers\Edit.aspx" />
-    <Content Include="Views\Search\Tags.aspx" />
-    <Content Include="Views\Shared\CoreDetailsView.ascx" />
-    <Content Include="Views\Shared\DisplayTemplates\PermissionViewModel.ascx" />
-    <Content Include="Views\Shared\EditorTemplates\PermissionViewModel.ascx" />
-    <Content Include="Views\Shared\Errors\Index.aspx" />
-    <Content Include="Views\Shared\Errors\InvalidRequest.aspx" />
-    <Content Include="Views\Shared\Errors\NotFound.aspx" />
-    <Content Include="Views\Shared\InsufficientRights.aspx" />
-    <Content Include="Views\Shared\LeftMenu.ascx" />
-    <Content Include="Views\TaskAssignedContacts\AssignContact.aspx" />
-    <Content Include="Views\TaskAssignedContacts\Delete.aspx" />
-    <Content Include="Views\TaskAssignedContacts\Details.aspx" />
-    <Content Include="Views\TaskAssignedContacts\Edit.aspx" />
-    <Content Include="Views\TaskAssignedContacts\SelectContactToAssign.aspx" />
-    <Content Include="Views\TaskResponsibleUsers\Create.aspx" />
-    <Content Include="Views\TaskResponsibleUsers\Delete.aspx" />
-    <Content Include="Views\TaskResponsibleUsers\Details.aspx" />
-    <Content Include="Views\TaskResponsibleUsers\Edit.aspx" />
-    <Content Include="Views\Tasks\Contacts.aspx" />
-    <Content Include="Views\Tasks\Create.aspx" />
-    <Content Include="Views\Tasks\Details.aspx" />
-    <Content Include="Views\Tasks\Documents.aspx" />
-    <Content Include="Views\Tasks\Edit.aspx" />
-    <Content Include="Views\Tasks\Events.aspx" />
-    <Content Include="Views\Tasks\Notes.aspx" />
-    <Content Include="Views\Tasks\ResponsibleUsers.aspx" />
-    <Content Include="Views\Tasks\Tags.aspx" />
-    <Content Include="Views\Tasks\Time.aspx" />
-    <Content Include="Views\TaskTags\Create.aspx" />
-    <Content Include="Views\TaskTags\Delete.aspx" />
-    <Content Include="Views\TaskTags\Details.aspx" />
-    <Content Include="Views\TaskTags\Edit.aspx" />
-    <Content Include="Views\TaskTemplates\Create.aspx" />
-    <Content Include="Views\TaskTemplates\Delete.aspx" />
-    <Content Include="Views\TaskTemplates\Details.aspx" />
-    <Content Include="Views\TaskTemplates\Edit.aspx" />
-    <Content Include="Views\TaskTemplates\Index.aspx" />
-    <Content Include="Views\TaskTime\AssignFastTime.aspx" />
-    <Content Include="Views\TaskTime\Create.aspx" />
-    <Content Include="Views\TaskTime\RelateTask.aspx" />
-    <Content Include="Views\TaskTime\SelectContactToAssign.aspx" />
-    <Content Include="Views\Templates\AccountRecoveryEmail.aspx" />
-    <Content Include="Views\Timing\DayView.aspx" />
-    <Content Include="Views\Timing\Details.aspx" />
-    <Content Include="Views\Timing\Edit.aspx" />
-    <Content Include="Views\Timing\FastTime.aspx" />
-    <Content Include="Views\Timing\FastTimeList.aspx" />
-    <Content Include="Views\UserTaskSettings\CreateFilter.aspx" />
-    <Content Include="Views\UserTaskSettings\DeleteFilter.aspx" />
-    <Content Include="Views\UserTaskSettings\DetailsFilter.aspx" />
-    <Content Include="Views\UserTaskSettings\EditFilter.aspx" />
-    <Content Include="Views\UserTaskSettings\Index.aspx" />
-    <Content Include="Views\Versions\Create.aspx" />
-    <Content Include="Views\Versions\Details.aspx" />
-    <Content Include="Web.config">
-      <SubType>Designer</SubType>
-    </Content>
+    <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
     <Content Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
+    <Content Include="Views\Web.config" />
+    <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Views\Shared\Error.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <ProjectReference Include="..\OpenLawOffice.Common\OpenLawOffice.Common.csproj">
+    <Folder Include="Content\fugue-icons-3.5.6\" />
+    <Folder Include="Scripts\tinymce\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\OpenLawOffice\OpenLawOffice.Common\OpenLawOffice.Common.csproj">
       <Project>{042206b5-2d13-42e0-b1b9-30254952baca}</Project>
       <Name>OpenLawOffice.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\OpenLawOffice.Data\OpenLawOffice.Data.csproj">
+    <ProjectReference Include="..\..\..\OpenLawOffice\OpenLawOffice.Data\OpenLawOffice.Data.csproj">
       <Project>{596a8bcb-2716-47bd-82c3-5b52f0082f10}</Project>
       <Name>OpenLawOffice.Data</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\jui_dropdown-1.0.4\MIT_LICENSE" />
-    <Content Include="Views\Shared\Calendar.Master" />
-    <Content Include="Views\Shared\Site.Master" />
-    <Content Include="Views\Shared\SiteNoRightBar.Master" />
-    <Content Include="Views\Web.config" />
+    <Content Include="Views\Shared\_LeftMenu.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+    <Content Include="Views\Home\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="packages.config">
-      <SubType>Designer</SubType>
-    </Content>
-    <None Include="Properties\PublishProfiles\Profile1.pubxml" />
-    <Content Include="Scripts\tinymce\skins\lightgray\fonts\tinymce.woff" />
-    <Content Include="Scripts\tinymce\skins\lightgray\fonts\tinymce.ttf" />
-    <Content Include="Scripts\tinymce\skins\lightgray\fonts\tinymce.json" />
-    <Content Include="Scripts\tinymce\skins\lightgray\fonts\tinymce.eot" />
-    <Content Include="Scripts\tinymce\skins\lightgray\fonts\tinymce-small.woff" />
-    <Content Include="Scripts\tinymce\skins\lightgray\fonts\tinymce-small.ttf" />
-    <Content Include="Scripts\tinymce\skins\lightgray\fonts\tinymce-small.json" />
-    <Content Include="Scripts\tinymce\skins\lightgray\fonts\tinymce-small.eot" />
-    <Content Include="Scripts\tinymce\skins\lightgray\fonts\readme.md" />
-    <Content Include="Scripts\tinymce\langs\readme.md" />
+    <Content Include="Views\Account\ChangePassword.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Account\ChangePasswordSuccess.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Account\EditUser.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Account\Login.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Account\Profile.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Account\Recovery.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Account\RecoveryEmailSent.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Account\Register.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Admin\ChangePassword.cshtml" />
+    <Content Include="Views\Admin\CreateUser.cshtml" />
+    <Content Include="Views\Admin\DetailsUser.cshtml" />
+    <Content Include="Views\Admin\DisableUser.cshtml" />
+    <Content Include="Views\Admin\EditUser.cshtml" />
+    <Content Include="Views\Admin\Index.cshtml" />
+    <Content Include="Views\Admin\UnlockUser.cshtml" />
+    <Content Include="Views\Admin\UserRoles.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Billing\Index.cshtml" />
+    <Content Include="Views\Billing\SingleGroupBill.cshtml" />
+    <Content Include="Views\Billing\SingleMatterBill.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Timing\DayView.cshtml" />
+    <Content Include="Views\Timing\Details.cshtml" />
+    <Content Include="Views\Timing\Edit.cshtml" />
+    <Content Include="Views\Timing\FastTime.cshtml" />
+    <Content Include="Views\Timing\FastTimeList.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\TaskTime\AssignFastTime.cshtml" />
+    <Content Include="Views\TaskTime\Create.cshtml" />
+    <Content Include="Views\TaskTime\RelateTask.cshtml" />
+    <Content Include="Views\TaskTime\SelectContactToAssign.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\TaskTemplates\Create.cshtml" />
+    <Content Include="Views\TaskTemplates\Delete.cshtml" />
+    <Content Include="Views\TaskTemplates\Details.cshtml" />
+    <Content Include="Views\TaskTemplates\Edit.cshtml" />
+    <Content Include="Views\TaskTemplates\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Tasks\Contacts.cshtml" />
+    <Content Include="Views\Tasks\Create.cshtml" />
+    <Content Include="Views\Tasks\Details.cshtml" />
+    <Content Include="Views\Tasks\Documents.cshtml" />
+    <Content Include="Views\Tasks\Edit.cshtml" />
+    <Content Include="Views\Tasks\Events.cshtml" />
+    <Content Include="Views\Tasks\Notes.cshtml" />
+    <Content Include="Views\Tasks\ResponsibleUsers.cshtml" />
+    <Content Include="Views\Tasks\Tags.cshtml" />
+    <Content Include="Views\Tasks\Time.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\TaskResponsibleUsers\Create.cshtml" />
+    <Content Include="Views\TaskResponsibleUsers\Delete.cshtml" />
+    <Content Include="Views\TaskResponsibleUsers\Details.cshtml" />
+    <Content Include="Views\TaskResponsibleUsers\Edit.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\TaskAssignedContacts\AssignContact.cshtml" />
+    <Content Include="Views\TaskAssignedContacts\Delete.cshtml" />
+    <Content Include="Views\TaskAssignedContacts\Details.cshtml" />
+    <Content Include="Views\TaskAssignedContacts\Edit.cshtml" />
+    <Content Include="Views\TaskAssignedContacts\SelectContactToAssign.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\ResponsibleUsers\Create.cshtml" />
+    <Content Include="Views\ResponsibleUsers\Delete.cshtml" />
+    <Content Include="Views\ResponsibleUsers\Details.cshtml" />
+    <Content Include="Views\ResponsibleUsers\Edit.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Notes\Create.cshtml" />
+    <Content Include="Views\Notes\Details.cshtml" />
+    <Content Include="Views\Notes\Edit.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\MatterTypes\Create.cshtml" />
+    <Content Include="Views\MatterTypes\Delete.cshtml" />
+    <Content Include="Views\MatterTypes\Details.cshtml" />
+    <Content Include="Views\MatterTypes\Edit.cshtml" />
+    <Content Include="Views\MatterTypes\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Matters\Contacts.cshtml" />
+    <Content Include="Views\Matters\Create.cshtml" />
+    <Content Include="Views\Matters\Details.cshtml" />
+    <Content Include="Views\Matters\Documents.cshtml" />
+    <Content Include="Views\Matters\Edit.cshtml" />
+    <Content Include="Views\Matters\Events.cshtml" />
+    <Content Include="Views\Matters\Expenses.cshtml" />
+    <Content Include="Views\Matters\Fees.cshtml" />
+    <Content Include="Views\Matters\FormFields.cshtml" />
+    <Content Include="Views\Matters\Index.cshtml" />
+    <Content Include="Views\Matters\Invoices.cshtml" />
+    <Content Include="Views\Matters\Notes.cshtml" />
+    <Content Include="Views\Matters\ResponsibleUsers.cshtml" />
+    <Content Include="Views\Matters\Tags.cshtml" />
+    <Content Include="Views\Matters\Tasks.cshtml" />
+    <Content Include="Views\Matters\Time.cshtml" />
+    <Content Include="Views\Matters\Timesheet.cshtml" />
+    <Content Include="Views\Matters\Timesheet_Print3rdParty.cshtml" />
+    <Content Include="Views\Matters\Timesheet_PrintClient.cshtml" />
+    <Content Include="Views\Matters\Timesheet_PrintInternal.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\MatterContact\AssignContact.cshtml" />
+    <Content Include="Views\MatterContact\Delete.cshtml" />
+    <Content Include="Views\MatterContact\Details.cshtml" />
+    <Content Include="Views\MatterContact\Edit.cshtml" />
+    <Content Include="Views\MatterContact\SelectContactToAssign.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Invoices\GroupDetails.cshtml" />
+    <Content Include="Views\Invoices\GroupPrint_Full.cshtml" />
+    <Content Include="Views\Invoices\GroupPrint_Summary.cshtml" />
+    <Content Include="Views\Invoices\MatterDetails.cshtml" />
+    <Content Include="Views\Invoices\MatterPrint.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Installation\Complete.cshtml" />
+    <Content Include="Views\Installation\Index.cshtml" />
+    <Content Include="Views\Installation\MissingDbInstallScript.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Home\About.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Forms\Create.cshtml" />
+    <Content Include="Views\Forms\Delete.cshtml" />
+    <Content Include="Views\Forms\Details.cshtml" />
+    <Content Include="Views\Forms\Edit.cshtml" />
+    <Content Include="Views\Forms\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\FormFields\Create.cshtml" />
+    <Content Include="Views\FormFields\Delete.cshtml" />
+    <Content Include="Views\FormFields\Details.cshtml" />
+    <Content Include="Views\FormFields\Edit.cshtml" />
+    <Content Include="Views\FormFields\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Fees\Create.cshtml" />
+    <Content Include="Views\Fees\Edit.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Expenses\Create.cshtml" />
+    <Content Include="Views\Expenses\Edit.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Documents\Create.cshtml" />
+    <Content Include="Views\Documents\Details.cshtml" />
+    <Content Include="Views\Documents\Edit.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Contacts\Conflicts.cshtml" />
+    <Content Include="Views\Contacts\Create.cshtml" />
+    <Content Include="Views\Contacts\Details.cshtml" />
+    <Content Include="Views\Contacts\Edit.cshtml" />
+    <Content Include="Views\Contacts\Index.cshtml" />
+    <Content Include="Views\Contacts\Matters.cshtml" />
+    <Content Include="Views\Contacts\Tasks.cshtml" />
+    <Content Include="Views\Contacts\Timesheets.cshtml" />
+    <Content Include="Views\Contacts\Timesheets_Print3rdParty.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\BillingRates\Create.cshtml" />
+    <Content Include="Views\BillingRates\Edit.cshtml" />
+    <Content Include="Views\BillingRates\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\BillingGroups\Create.cshtml" />
+    <Content Include="Views\BillingGroups\Details.cshtml" />
+    <Content Include="Views\BillingGroups\Edit.cshtml" />
+    <Content Include="Views\BillingGroups\Index.cshtml" />
+    <Content Include="Views\BillingGroups\Invoices.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\_CoreDetails.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\_LayoutWithContextMenu.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -781,9 +557,9 @@
         <WebProjectProperties>
           <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>47265</DevelopmentServerPort>
+          <DevelopmentServerPort>53763</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:47265/</IISUrl>
+          <IISUrl>http://localhost:53763/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
@@ -793,4 +569,17 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target> -->
 </Project>

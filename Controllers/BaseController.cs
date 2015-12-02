@@ -27,6 +27,8 @@ namespace OpenLawOffice.Web.Controllers
     using System.IO;
     using System.Net.Mail;
 
+    [Authorize]
+
     public class BaseController : Controller
     {
         public ViewModels.Account.UsersViewModel GetUser(Guid id)

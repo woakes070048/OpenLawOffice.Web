@@ -46,10 +46,10 @@ namespace OpenLawOffice.Web.Controllers
 
             task = Data.Tasks.Task.Get(long.Parse(Request["TaskId"]));
             matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
-            ViewData["Task"] = task.Title;
-            ViewData["TaskId"] = task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = task.Title;
+            ViewBag.TaskId = task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(modelList);
         }
@@ -85,10 +85,10 @@ namespace OpenLawOffice.Web.Controllers
             };
 
             matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
-            ViewData["Task"] = task.Title;
-            ViewData["TaskId"] = task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = task.Title;
+            ViewBag.TaskId = task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModel);
         }
@@ -127,10 +127,10 @@ namespace OpenLawOffice.Web.Controllers
                     viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(task);
                     viewModel.Time.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
                     
-                    ViewData["Task"] = task.Title;
-                    ViewData["TaskId"] = task.Id;
-                    ViewData["Matter"] = matter.Title;
-                    ViewData["MatterId"] = matter.Id;
+                    ViewBag.Task = task.Title;
+                    ViewBag.TaskId = task.Id;
+                    ViewBag.Matter = matter.Title;
+                    ViewBag.MatterId = matter.Id;
                     
                     foreach (Common.Models.Timing.Time time in conflicts)
                     {
@@ -148,7 +148,7 @@ namespace OpenLawOffice.Web.Controllers
                         errorListString += "</li>";
                     }
                     
-                    ViewData["ErrorMessage"] = "Time conflicts with the following other time entries:<ul>" + errorListString + "</ul>";
+                    ViewBag.ErrorMessage = "Time conflicts with the following other time entries:<ul>" + errorListString + "</ul>";
                     return View(viewModel);
                 }
             }

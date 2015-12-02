@@ -52,13 +52,13 @@ namespace OpenLawOffice.Web.Controllers
 
             PopulateCoreDetails(viewModel);
 
-            ViewData["IsFastTime"] = Data.Timing.Time.IsFastTime(id);
+            ViewBag.IsFastTime = Data.Timing.Time.IsFastTime(id);
 
             matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
-            ViewData["Task"] = task.Title;
-            ViewData["TaskId"] = task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = task.Title;
+            ViewBag.TaskId = task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
             return View(viewModel);
         }
 
@@ -89,14 +89,14 @@ namespace OpenLawOffice.Web.Controllers
                 employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
             });
 
-            ViewData["TaskId"] = task.Id.Value;
+            ViewBag.TaskId = task.Id.Value;
 
             matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
-            ViewData["Task"] = task.Title;
-            ViewData["TaskId"] = task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
-            ViewData["EmployeeContactList"] = employeeContactList;
+            ViewBag.Task = task.Title;
+            ViewBag.TaskId = task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
+            ViewBag.EmployeeContactList = employeeContactList;
 
             return View(viewModel);
         }
@@ -132,10 +132,10 @@ namespace OpenLawOffice.Web.Controllers
                     ModelState.AddModelError(String.Empty, "Time conflicts with other time entries.");
 
                     matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
-                    ViewData["Task"] = task.Title;
-                    ViewData["TaskId"] = task.Id;
-                    ViewData["Matter"] = matter.Title;
-                    ViewData["MatterId"] = matter.Id;
+                    ViewBag.Task = task.Title;
+                    ViewBag.TaskId = task.Id;
+                    ViewBag.Matter = matter.Title;
+                    ViewBag.MatterId = matter.Id;
                     return View(viewModel);
                 }
             }
@@ -243,8 +243,8 @@ namespace OpenLawOffice.Web.Controllers
                 employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
             });
 
-            ViewData["Date"] = date;
-            ViewData["EmployeeContactList"] = employeeContactList;
+            ViewBag.Date = date;
+            ViewBag.EmployeeContactList = employeeContactList;
             return View(dayViewVM);
         }
     }

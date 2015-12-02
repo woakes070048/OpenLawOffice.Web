@@ -45,8 +45,8 @@ namespace OpenLawOffice.Web.Controllers
 
             PopulateCoreDetails(viewModel);
 
-            ViewData["MatterId"] = model.Matter.Id.Value;
-            ViewData["Matter"] = model.Matter.Title;
+            ViewBag.MatterId = model.Matter.Id.Value;
+            ViewBag.Matter = model.Matter.Title;
 
             return View(viewModel);
         }
@@ -69,10 +69,10 @@ namespace OpenLawOffice.Web.Controllers
                 userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
             });
 
-            ViewData["UserList"] = userViewModelList;
+            ViewBag.UserList = userViewModelList;
 
-            ViewData["MatterId"] = matter.Id.Value;
-            ViewData["Matter"] = matter.Title;
+            ViewBag.MatterId = matter.Id.Value;
+            ViewBag.Matter = matter.Title;
 
             return View(new ViewModels.Matters.ResponsibleUserViewModel() { Matter = matterViewModel });
         }
@@ -114,10 +114,10 @@ namespace OpenLawOffice.Web.Controllers
                         userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
                     });
 
-                    ViewData["UserList"] = userViewModelList;
+                    ViewBag.UserList = userViewModelList;
 
-                    ViewData["MatterId"] = matter.Id.Value;
-                    ViewData["Matter"] = matter.Title;
+                    ViewBag.MatterId = matter.Id.Value;
+                    ViewBag.Matter = matter.Title;
                     return View(new ViewModels.Matters.ResponsibleUserViewModel() { Matter = matterViewModel });
                 }
 
@@ -158,10 +158,10 @@ namespace OpenLawOffice.Web.Controllers
                 userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
             });
 
-            ViewData["UserList"] = userViewModelList;
+            ViewBag.UserList = userViewModelList;
 
-            ViewData["MatterId"] = model.Matter.Id.Value;
-            ViewData["Matter"] = model.Matter.Title;
+            ViewBag.MatterId = model.Matter.Id.Value;
+            ViewBag.Matter = model.Matter.Title;
             return View(viewModel);
         }
 
@@ -193,14 +193,16 @@ namespace OpenLawOffice.Web.Controllers
         {
             Common.Models.Account.Users currentUser;
             Common.Models.Matters.ResponsibleUser model;
+            Guid matterId;
 
             currentUser = Data.Account.Users.Get(User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Matters.ResponsibleUser>(viewModel);
+            model = Data.Matters.ResponsibleUser.Get(viewModel.Id.Value);
+            matterId = model.Matter.Id.Value;
 
             model = Data.Matters.ResponsibleUser.Disable(model, currentUser);
 
-            return RedirectToAction("ResponsibleUsers", "Matters", new { Id = model.Matter.Id.Value });
+            return RedirectToAction("ResponsibleUsers", "Matters", new { Id = matterId.ToString() });
         }
     }
 }

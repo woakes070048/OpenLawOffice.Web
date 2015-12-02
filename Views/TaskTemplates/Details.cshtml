@@ -1,0 +1,81 @@
+@model OpenLawOffice.Web.ViewModels.Tasks.TaskTemplateViewModel
+
+@{ 
+    ViewBag.Title = "Task Template Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>
+    Task Template Details<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></h2>
+    
+<div class="options_div" style="text-align: right;">
+    <div style="width: 200px; display: inline;">
+        <a href="../Edit/@(ViewContext.RouteData.Values["Id"])">
+            <input type="button" value="Edit" id="Edit"
+                   style="background-image: url('/Content/fugue-icons-3.5.6/icons-shadowless/pencil.png');
+                background-position: left center; background-repeat: no-repeat; padding-left: 20px;" />
+        </a>
+        <a href="../Delete/@(ViewContext.RouteData.Values["Id"])">
+            <input type="button" value="Delete" id="Delete"
+                   style="background-image: url('/Content/fugue-icons-3.5.6/icons-shadowless/cross.png');
+                background-position: left center; background-repeat: no-repeat; padding-left: 20px;" />
+        </a>
+    </div>
+</div>
+
+<table class="detail_table">
+    <tr>
+        <td class="display-label">
+            Title
+        </td>
+        <td class="display-field">
+            @(Model.Title)
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label" style="width: 125px;">
+            Projected Start
+        </td>
+        <td class="display-field">
+            @(Model.ProjectedStart)
+        </td>            
+        <td></td>
+        <td class="display-label" style="width: 125px;">
+            Projected End
+        </td>
+        <td class="display-field">
+            @(Model.ProjectedEnd)
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label" style="width: 125px;">
+            Due Date
+        </td>
+        <td class="display-field">
+            @(Model.DueDate)
+        </td>      
+        <td></td>
+        <td class="display-label" style="width: 125px;">
+            Actual End
+        </td>
+        <td class="display-field">
+            @(Model.ActualEnd)
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label" style="width: 125px;">
+            Active
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.Active, new { disabled = true }))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label" style="width: 125px;">
+            Description
+        </td>
+        <td class="display-field" colspan="4">
+            @(Model.Description)
+        </td>
+    </tr>
+</table> 

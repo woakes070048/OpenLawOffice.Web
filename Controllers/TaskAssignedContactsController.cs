@@ -45,10 +45,10 @@ namespace OpenLawOffice.Web.Controllers
 
             task = Data.Tasks.Task.Get(id);
             matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
-            ViewData["Task"] = task.Title;
-            ViewData["TaskId"] = task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = task.Title;
+            ViewBag.TaskId = task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(modelList);
         }
@@ -75,10 +75,10 @@ namespace OpenLawOffice.Web.Controllers
             vm.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(Data.Contacts.Contact.Get(id));
             vm.AssignmentType = ViewModels.AssignmentTypeViewModel.Delegated;
 
-            ViewData["Task"] = task.Title;
-            ViewData["TaskId"] = task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = task.Title;
+            ViewBag.TaskId = task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(vm);
         }
@@ -129,10 +129,10 @@ namespace OpenLawOffice.Web.Controllers
             viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.Contact);
 
             matter = Data.Tasks.Task.GetRelatedMatter(model.Task.Id.Value);
-            ViewData["Task"] = model.Task.Title;
-            ViewData["TaskId"] = model.Task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = model.Task.Title;
+            ViewBag.TaskId = model.Task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModel);
         }
@@ -177,10 +177,10 @@ namespace OpenLawOffice.Web.Controllers
             PopulateCoreDetails(viewModel);
 
             matter = Data.Tasks.Task.GetRelatedMatter(model.Task.Id.Value);
-            ViewData["Task"] = model.Task.Title;
-            ViewData["TaskId"] = model.Task.Id;
-            ViewData["Matter"] = matter.Title;
-            ViewData["MatterId"] = matter.Id;
+            ViewBag.Task = model.Task.Title;
+            ViewBag.TaskId = model.Task.Id;
+            ViewBag.Matter = matter.Title;
+            ViewBag.MatterId = matter.Id;
 
             return View(viewModel);
         }
