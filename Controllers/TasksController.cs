@@ -475,23 +475,37 @@ namespace OpenLawOffice.Web.Controllers
 
             model = Mapper.Map<Common.Models.Tasks.Task>(viewModel.Task);
             model.Description = new Ganss.XSS.HtmlSanitizer().Sanitize(model.Description);
-            model = Data.Tasks.Task.Create(model, currentUser);
 
             matterid = Guid.Parse(Request["MatterId"]);
 
-            Data.Tasks.Task.RelateMatter(model, matterid, currentUser);
-            Data.Tasks.TaskResponsibleUser.Create(new Common.Models.Tasks.TaskResponsibleUser()
+            using (Data.Transaction t = Data.Transaction.Create(true))
             {
-                Task = model,
-                User = new Common.Models.Account.Users() { PId = viewModel.ResponsibleUser.User.PId },
-                Responsibility = viewModel.ResponsibleUser.Responsibility
-            }, currentUser);
-            Data.Tasks.TaskAssignedContact.Create(new Common.Models.Tasks.TaskAssignedContact()
-            {
-                Task = model,
-                Contact = new Common.Models.Contacts.Contact() { Id = viewModel.TaskContact.Contact.Id },
-                AssignmentType = (Common.Models.Tasks.AssignmentType)(int)viewModel.TaskContact.AssignmentType
-            }, currentUser);
+                try
+                {
+                    model = Data.Tasks.Task.Create(t, model, currentUser);
+
+                    Data.Tasks.Task.RelateMatter(t, model, matterid, currentUser);
+                    Data.Tasks.TaskResponsibleUser.Create(t, new Common.Models.Tasks.TaskResponsibleUser()
+                    {
+                        Task = model,
+                        User = new Common.Models.Account.Users() { PId = viewModel.ResponsibleUser.User.PId },
+                        Responsibility = viewModel.ResponsibleUser.Responsibility
+                    }, currentUser);
+                    Data.Tasks.TaskAssignedContact.Create(t, new Common.Models.Tasks.TaskAssignedContact()
+                    {
+                        Task = model,
+                        Contact = new Common.Models.Contacts.Contact() { Id = viewModel.TaskContact.Contact.Id },
+                        AssignmentType = (Common.Models.Tasks.AssignmentType)(int)viewModel.TaskContact.AssignmentType
+                    }, currentUser);
+
+                    t.Commit();
+                }
+                catch
+                {
+                    t.Rollback();
+                    throw;
+                }
+            }
 
             return RedirectToAction("Details", new { Id = model.Id });
         }
@@ -500,42 +514,20 @@ namespace OpenLawOffice.Web.Controllers
         public ActionResult PhoneCall()
         {
             string phoneCallWith = null;
-            int contactId = -1;
-            ViewModels.Tasks.CreateTaskViewModel viewModel;
+            string title;
             Common.Models.Matters.Matter matter;
-            List<ViewModels.Account.UsersViewModel> userList;
-            List<ViewModels.Contacts.ContactViewModel> employeeContactList;
-            Newtonsoft.Json.Linq.JArray taskTemplates;
             Common.Models.Account.Users currentUser;
+            List<ViewModels.Contacts.ContactViewModel> employeeContactList;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            userList = new List<ViewModels.Account.UsersViewModel>();
             employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
 
-            dynamic profile = ProfileBase.Create(Membership.GetUser().UserName);
-            if (profile.ContactId != null && !string.IsNullOrEmpty(profile.ContactId))
-                contactId = int.Parse(profile.ContactId);
-            
-
-            viewModel = new ViewModels.Tasks.CreateTaskViewModel();
-            viewModel.ResponsibleUser = new ViewModels.Tasks.TaskResponsibleUserViewModel()
-            {
-                User = new ViewModels.Account.UsersViewModel() { PId = Data.Account.Users.Get(Membership.GetUser().UserName).PId },
-            };
-            if (contactId > 0)
-            {
-                viewModel.TaskContact = new ViewModels.Tasks.TaskAssignedContactViewModel()
-                {
-                    Contact = new ViewModels.Contacts.ContactViewModel()
-                    {
-                        Id = contactId
-                    }
-                };
-            }
-
+            currentUser = Data.Account.Users.Get(User.Identity.Name);
             matter = Data.Matters.Matter.Get(Guid.Parse(RouteData.Values["Id"].ToString()));
-            
+
+            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
+            {
+                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+            });
 
             if (Request["func"] == "client")
                 phoneCallWith = "client";
@@ -544,40 +536,122 @@ namespace OpenLawOffice.Web.Controllers
             else if (Request["func"] == "court")
                 phoneCallWith = "court";
 
-
-            Common.Models.Tasks.Task task = new Common.Models.Tasks.Task();
-            task.Active = true;
-            task.DueDate = DateTime.Now;
-
             if (string.IsNullOrEmpty(phoneCallWith))
             {
-                task.Description = "Phone call";
-                task.Title = "Phone call";
+                title = "Phone call";
             }
             else
             {
-                task.Description = "Phone call with " + phoneCallWith;
-                task.Title = "Phone call with " + phoneCallWith;
+                title = "Phone call with " + phoneCallWith;
             }
 
-            task = Data.Tasks.Task.Create(task, currentUser);
+            ViewBag.Matter = matter.Title;
 
-            Data.Tasks.Task.RelateMatter(task, matter.Id.Value, currentUser);
-            Data.Tasks.TaskResponsibleUser.Create(new Common.Models.Tasks.TaskResponsibleUser()
+            return View(new ViewModels.Tasks.PhoneCallViewModel()
             {
-                Task = task,
+                MakeTime = true,
+                MakeNote = true,
+                Start = DateTime.Now,
+                Stop = DateTime.Now.AddMinutes(6),
+                Billable = true,
+                Title = title,
+                TimeDetails = title,
+                EmployeeContactList = employeeContactList
+            });
+        }
+
+        [ValidateInput(false)]
+        [Authorize(Roles = "Login, User")]
+        [HttpPost]
+        public ActionResult PhoneCall(ViewModels.Tasks.PhoneCallViewModel viewModel)
+        {
+            int contactId;
+            Common.Models.Account.Users currentUser;
+            Common.Models.Matters.Matter matter;
+
+            dynamic profile = ProfileBase.Create(Membership.GetUser().UserName);
+            if (profile.ContactId == null && string.IsNullOrEmpty(profile.ContactId))
+                throw new Exception("Profile.ContactId not configured.");
+
+            contactId = int.Parse(profile.ContactId);
+            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            matter = Data.Matters.Matter.Get(Guid.Parse(RouteData.Values["Id"].ToString()));
+
+            // Task
+            Common.Models.Tasks.Task task = new Common.Models.Tasks.Task()
+            {
+                Active = true,
+                DueDate = DateTime.Now,
+                Title = viewModel.Title,
+                Description = new Ganss.XSS.HtmlSanitizer().Sanitize(viewModel.TaskAndNoteDetails)
+            };
+
+            // TaskResponsibleUser
+            Common.Models.Tasks.TaskResponsibleUser taskResponsibleUser = new Common.Models.Tasks.TaskResponsibleUser()
+            {
                 User = currentUser,
-                Responsibility = "lead"
-            }, currentUser);
-            Data.Tasks.TaskAssignedContact.Create(new Common.Models.Tasks.TaskAssignedContact()
-            {
                 Task = task,
-                Contact = new Common.Models.Contacts.Contact() { Id = viewModel.TaskContact.Contact.Id },
+                Responsibility = "Lead"
+            };
+
+            // TaskAssignedContact
+            Common.Models.Tasks.TaskAssignedContact taskAssignedContact = new Common.Models.Tasks.TaskAssignedContact()
+            {
+                Contact = new Common.Models.Contacts.Contact() { Id = contactId },
+                Task = task,
                 AssignmentType = Common.Models.Tasks.AssignmentType.Direct
-            }, currentUser);
+            };
+
+            // Time
+            Common.Models.Timing.Time time = new Common.Models.Timing.Time()
+            {
+                Billable = viewModel.Billable,
+                Details = viewModel.TimeDetails,
+                Start = viewModel.Start,
+                Stop = viewModel.Stop,
+                Worker = new Common.Models.Contacts.Contact() { Id = contactId }
+            };
+
+            // Note
+            Common.Models.Notes.Note note = new Common.Models.Notes.Note()
+            {
+                Body = viewModel.TaskAndNoteDetails,
+                Timestamp = DateTime.Now,
+                Title = viewModel.Title
+            };
 
 
-            return RedirectToAction("Create", "TaskTime", new { ContactId = viewModel.TaskContact.Contact.Id, TaskId = task.Id });
+            task = Data.Tasks.Task.Create(task, currentUser);
+            Data.Tasks.Task.RelateMatter(task, matter.Id.Value, currentUser);
+            Data.Tasks.TaskResponsibleUser.Create(taskResponsibleUser, currentUser);
+            Data.Tasks.TaskAssignedContact.Create(taskAssignedContact, currentUser);
+
+            if (viewModel.MakeTime)
+            {
+                time = Data.Timing.Time.Create(time, currentUser);
+                Data.Timing.Time.RelateTask(time, task.Id.Value, currentUser);
+            }
+
+            if (viewModel.MakeNote)
+            {
+                note = Data.Notes.Note.Create(note, currentUser);
+                Data.Notes.Note.RelateTask(note, task.Id.Value, currentUser);
+
+                if (viewModel.NotifyContactIds != null)
+                {
+                    foreach (string x in viewModel.NotifyContactIds)
+                    {
+                        Data.Notes.NoteNotification.Create(new Common.Models.Notes.NoteNotification()
+                        {
+                            Contact = new Common.Models.Contacts.Contact() { Id = int.Parse(x) },
+                            Note = note,
+                            Cleared = null
+                        }, currentUser);
+                    };
+                }
+            }
+
+            return RedirectToAction("Details", "Tasks", new { Id = task.Id });
         }
 
         [Authorize(Roles = "Login, User")]

@@ -97,7 +97,7 @@
                                 @(Html.ActionLink(item.Note.Title, "Details", "Notes", new { id = item.Note.Id.Value }, null))
                             </td>
                             <td>
-                                @(item.Note.Body)
+                                @(Html.Raw(item.Note.Body))
                             </td>
                             <td>
                                 @(Html.ActionLink("Clear", "ClearNotification", "Notes", new { id = item.Id.Value, EmployeeId = Model.Employee.Id }, new { @class = "btn-remove", title = "Clear" }))

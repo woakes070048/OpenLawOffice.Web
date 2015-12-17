@@ -26,42 +26,43 @@ namespace OpenLawOffice.Web.Controllers
     using AutoMapper;
     using System.IO;
     using System.Net.Mail;
+    using System.Data;
 
     [Authorize]
 
     public class BaseController : Controller
     {
-        public ViewModels.Account.UsersViewModel GetUser(Guid id)
+        public ViewModels.Account.UsersViewModel GetUser(Guid id, IDbConnection conn = null)
         {
             Common.Models.Account.Users user = null;
 
-            user = Data.Account.Users.Get(id);
+            user = Data.Account.Users.Get(id, conn, false);
 
             if (user == null) return null;
 
             return Mapper.Map<ViewModels.Account.UsersViewModel>(user);
         }
 
-        public void PopulateCoreDetails(ViewModels.CoreViewModel model)
+        public void PopulateCoreDetails(ViewModels.CoreViewModel model, IDbConnection conn = null)
         {
             if (model.CreatedBy != null)
             {
                 if (model.CreatedBy.PId.HasValue)
-                    model.CreatedBy = GetUser(model.CreatedBy.PId.Value);
+                    model.CreatedBy = GetUser(model.CreatedBy.PId.Value, conn);
                 else
                     model.CreatedBy = null;
             }
             if (model.ModifiedBy != null)
             {
                 if (model.ModifiedBy.PId.HasValue)
-                    model.ModifiedBy = GetUser(model.ModifiedBy.PId.Value);
+                    model.ModifiedBy = GetUser(model.ModifiedBy.PId.Value, conn);
                 else
                     model.ModifiedBy = null;
             }
             if (model.DisabledBy != null)
             {
                 if (model.DisabledBy.PId.HasValue)
-                    model.DisabledBy = GetUser(model.DisabledBy.PId.Value);
+                    model.DisabledBy = GetUser(model.DisabledBy.PId.Value, conn);
                 else
                     model.DisabledBy = null;
             }

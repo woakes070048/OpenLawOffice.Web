@@ -52,7 +52,7 @@ namespace OpenLawOffice.Web
             {
                 Data.Account.Users.List();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return false;
             }

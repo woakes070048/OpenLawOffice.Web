@@ -24,6 +24,7 @@ namespace OpenLawOffice.Web.Controllers
             base.Initialize(requestContext);
         }
 
+        [AllowAnonymous]
         public ActionResult Login()
         {
             List<Common.Models.Account.Users> users = null;
@@ -43,6 +44,7 @@ namespace OpenLawOffice.Web.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
         public ActionResult Login(ViewModels.Account.LoginViewModel viewModel, string returnUrl)
         {
@@ -77,12 +79,14 @@ namespace OpenLawOffice.Web.Controllers
             return RedirectToAction("Login", "Account");
         }
 
+        [AllowAnonymous]
         public ActionResult Register()
         {
             ViewBag.PasswordLength = MembershipService.MinPasswordLength;
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
         public ActionResult Register(ViewModels.Account.RegisterViewModel model)
         {

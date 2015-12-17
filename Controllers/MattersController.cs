@@ -29,6 +29,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Web.Security;
     using System.Linq;
     using AutoMapper.Internal;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class MattersController : BaseController
@@ -258,125 +259,133 @@ namespace OpenLawOffice.Web.Controllers
                 timeUnbilledSpan = new TimeSpan(),
                 nonBillableTimeSpan = new TimeSpan();
 
-            model = Data.Matters.Matter.Get(id);
-
-            if (model.LeadAttorney != null)
-                model.LeadAttorney = Data.Contacts.Contact.Get(model.LeadAttorney.Id.Value);
-
-            if (model.BillTo != null)
-                model.BillTo = Data.Contacts.Contact.Get(model.BillTo.Id.Value);
-
-            viewModel = Mapper.Map<ViewModels.Matters.MatterViewModel>(model);
-            if (viewModel.MatterType != null)
-                viewModel.MatterType = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(
-                    Data.Matters.MatterType.Get(viewModel.MatterType.Id.Value));
-            viewModel.Clients = new List<ViewModels.Contacts.ContactViewModel>();
-            viewModel.Tasks = TasksController.GetListForMatter(id, true);
-            viewModel.LeadAttorney = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.LeadAttorney);
-            viewModel.BillTo = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.BillTo);
-            if (viewModel.DefaultBillingRate != null)
-                viewModel.DefaultBillingRate = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(
-                    Data.Billing.BillingRate.Get(viewModel.DefaultBillingRate.Id.Value));
-            if (viewModel.BillingGroup != null)
-                viewModel.BillingGroup = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(
-                    Data.Billing.BillingGroup.Get(viewModel.BillingGroup.Id.Value));
-
-            // -- Financial Info
-            billedExpenseList = Data.Billing.InvoiceExpense.ListForMatter(model.Id.Value);
-            unbilledExpenseList = Data.Billing.Expense.ListUnbilledExpensesForMatter(model.Id.Value);
-            billedFeeList = Data.Billing.InvoiceFee.ListForMatter(model.Id.Value);
-            unbilledFeeList = Data.Billing.Fee.ListUnbilledFeesForMatter(model.Id.Value);
-            billedTimeList = Data.Billing.InvoiceTime.ListForMatter(model.Id.Value);
-            unbilledTimeList = Data.Timing.Time.ListUnbilledTimeForMatter(model.Id.Value);
-
-            billedFeeList.ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                feesBilled += x.Amount;
-            });
-            unbilledFeeList.ForEach(x =>
-            {
-                feesUnbilled += x.Amount;
-            });
+                IDbConnection conna = conn;
 
-            billedExpenseList.ForEach(x =>
-            {
-                expensesBilled += x.Amount;
-            });
-            unbilledExpenseList.ForEach(x =>
-            {
-                expensesUnbilled += x.Amount;
-            });
+                model = Data.Matters.Matter.Get(id, conn, false);
 
-            billedTimeList.ForEach(x =>
-            {
-                timeBilledSpan = timeBilledSpan.Add(x.Duration);
-                timeBilledDollars += ((decimal)x.Duration.TotalHours * x.PricePerHour);
-            });
-            unbilledTimeList.ForEach(x =>
-            {
-                if (x.Billable)
+                if (model.LeadAttorney != null)
+                    model.LeadAttorney = Data.Contacts.Contact.Get(model.LeadAttorney.Id.Value, conn, false);
+
+                if (model.BillTo != null)
+                    model.BillTo = Data.Contacts.Contact.Get(model.BillTo.Id.Value, conn, false);
+
+                viewModel = Mapper.Map<ViewModels.Matters.MatterViewModel>(model);
+                if (viewModel.MatterType != null)
+                    viewModel.MatterType = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(
+                        Data.Matters.MatterType.Get(viewModel.MatterType.Id.Value, conn, false));
+                viewModel.Clients = new List<ViewModels.Contacts.ContactViewModel>();
+                viewModel.Tasks = TasksController.GetListForMatter(id, true);
+                viewModel.LeadAttorney = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.LeadAttorney);
+                viewModel.BillTo = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.BillTo);
+                if (viewModel.DefaultBillingRate != null)
+                    viewModel.DefaultBillingRate = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(
+                        Data.Billing.BillingRate.Get(viewModel.DefaultBillingRate.Id.Value, conn, false));
+                if (viewModel.BillingGroup != null)
+                    viewModel.BillingGroup = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(
+                        Data.Billing.BillingGroup.Get(viewModel.BillingGroup.Id.Value, conn, false));
+
+                // -- Financial Info
+                billedExpenseList = Data.Billing.InvoiceExpense.ListForMatter(model.Id.Value, conn, false);
+                unbilledExpenseList = Data.Billing.Expense.ListUnbilledExpensesForMatter(model.Id.Value, null, null, conn, false);
+                billedFeeList = Data.Billing.InvoiceFee.ListForMatter(model.Id.Value, conn, false);
+                unbilledFeeList = Data.Billing.Fee.ListUnbilledFeesForMatter(model.Id.Value, null, null, conn, false);
+                billedTimeList = Data.Billing.InvoiceTime.ListForMatter(model.Id.Value, conn, false);
+                unbilledTimeList = Data.Timing.Time.ListUnbilledTimeForMatter(model.Id.Value, conn, false);
+
+                billedFeeList.ForEach(x =>
                 {
-                    if (x.Stop.HasValue)
-                        timeUnbilledSpan = timeUnbilledSpan.Add(x.Stop.Value - x.Start);
-                }
-                else
-                    if (x.Stop.HasValue)
+                    feesBilled += x.Amount;
+                });
+                unbilledFeeList.ForEach(x =>
+                {
+                    feesUnbilled += x.Amount;
+                });
+
+                billedExpenseList.ForEach(x =>
+                {
+                    expensesBilled += x.Amount;
+                });
+                unbilledExpenseList.ForEach(x =>
+                {
+                    expensesUnbilled += x.Amount;
+                });
+
+                billedTimeList.ForEach(x =>
+                {
+                    timeBilledSpan = timeBilledSpan.Add(x.Duration);
+                    timeBilledDollars += ((decimal)x.Duration.TotalHours * x.PricePerHour);
+                });
+                unbilledTimeList.ForEach(x =>
+                {
+                    if (x.Billable)
+                    {
+                        if (x.Stop.HasValue)
+                            timeUnbilledSpan = timeUnbilledSpan.Add(x.Stop.Value - x.Start);
+                    }
+                    else
+                        if (x.Stop.HasValue)
                         nonBillableTimeSpan = nonBillableTimeSpan.Add(x.Stop.Value - x.Start);
-            });
+                });
 
-            totalValue = feesBilled + feesUnbilled + expensesBilled + expensesUnbilled + timeBilledDollars;
+                totalValue = feesBilled + feesUnbilled + expensesBilled + expensesUnbilled + timeBilledDollars;
 
-            ViewBag.FeesBilled = feesBilled;
-            ViewBag.FeesUnbilled = feesUnbilled;
-            ViewBag.Fees = feesBilled + feesUnbilled;
-            ViewBag.ExpensesBilled = expensesBilled;
-            ViewBag.ExpensesUnbilled = expensesUnbilled;
-            ViewBag.Expenses = expensesBilled + expensesUnbilled;
-            ViewBag.TimeBilledDollars = timeBilledDollars;
-            ViewBag.TimeBilledSpan = timeBilledSpan;
-            ViewBag.TimeUnbilledSpan = timeUnbilledSpan;
-            ViewBag.TimeBilled = timeBilledDollars.ToString("C") + " (" + Helpers.TimeSpanHelper.TimeSpan(timeBilledSpan, false) + ")";
-            ViewBag.TimeUnbilled = "(" + Helpers.TimeSpanHelper.TimeSpan(timeUnbilledSpan, false) + ")";
-            ViewBag.TotalValue = totalValue.ToString("C") + " (Unbilled Time: " + Helpers.TimeSpanHelper.TimeSpan(timeUnbilledSpan, false) + ")";
-            ViewBag.NonBillableTime = nonBillableTimeSpan;
-            ViewBag.EffHourlyRate = string.Format("{0:C}", (((double)timeBilledDollars + (double)feesBilled) / timeBilledSpan.TotalHours));
+                ViewBag.FeesBilled = feesBilled;
+                ViewBag.FeesUnbilled = feesUnbilled;
+                ViewBag.Fees = feesBilled + feesUnbilled;
+                ViewBag.ExpensesBilled = expensesBilled;
+                ViewBag.ExpensesUnbilled = expensesUnbilled;
+                ViewBag.Expenses = expensesBilled + expensesUnbilled;
+                ViewBag.TimeBilledDollars = timeBilledDollars;
+                ViewBag.TimeBilledSpan = timeBilledSpan;
+                ViewBag.TimeUnbilledSpan = timeUnbilledSpan;
+                ViewBag.TimeBilled = timeBilledDollars.ToString("C") + " (" + Helpers.TimeSpanHelper.TimeSpan(timeBilledSpan, false) + ")";
+                ViewBag.TimeUnbilled = "(" + Helpers.TimeSpanHelper.TimeSpan(timeUnbilledSpan, false) + ")";
+                ViewBag.TotalValue = totalValue.ToString("C") + " (Unbilled Time: " + Helpers.TimeSpanHelper.TimeSpan(timeUnbilledSpan, false) + ")";
+                ViewBag.NonBillableTime = nonBillableTimeSpan;
+                ViewBag.EffHourlyRate = string.Format("{0:C}", (((double)timeBilledDollars + (double)feesBilled) / timeBilledSpan.TotalHours));
 
-            viewModel.Notes = new List<ViewModels.Notes.NoteViewModel>();
-            Data.Notes.NoteMatter.ListForMatter(id).ForEach(x =>
-            {
-                viewModel.Notes.Add(Mapper.Map<ViewModels.Notes.NoteViewModel>(x));
-            });
-
-            viewModel.TaskNotes = new List<ViewModels.Notes.NoteTaskViewModel>();
-            Data.Matters.Matter.ListAllTaskNotes(model).ForEach(x =>
-            {
-                ViewModels.Notes.NoteTaskViewModel ntvm = Mapper.Map<ViewModels.Notes.NoteTaskViewModel>(x);
-                ntvm.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(Data.Tasks.Task.Get(x.Task.Id.Value));
-                ntvm.Note = Mapper.Map<ViewModels.Notes.NoteViewModel>(Data.Notes.Note.Get(x.Note.Id.Value));
-                viewModel.TaskNotes.Add(ntvm);
-            });
-
-            PopulateCoreDetails(viewModel);
-
-            neededRoles = new List<string>(new string[] {"Lead Attorney", "Client", "Appointed Client"});
-
-            Data.Matters.MatterContact.ListForMatter(model.Id.Value).ForEach(x =>
-            {
-                if (x.Role == "Lead Attorney")
-                    neededRoles.Remove("Lead Attorney");
-                if (x.Role == "Appointed Client")
+                viewModel.Notes = new List<ViewModels.Notes.NoteViewModel>();
+                Data.Notes.NoteMatter.ListForMatter(id, conn, false).ForEach(x =>
                 {
-                    neededRoles.Remove("Appointed Client");
-                    Common.Models.Contacts.Contact contactModel = Data.Contacts.Contact.Get(x.Contact.Id.Value);
-                    viewModel.Clients.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(contactModel));
-                }
-                if (x.Role == "Client")
+                    viewModel.Notes.Add(Mapper.Map<ViewModels.Notes.NoteViewModel>(x));
+                });
+
+                viewModel.TaskNotes = new List<ViewModels.Notes.NoteTaskViewModel>();
+                Data.Matters.Matter.ListAllTaskNotes(model, conn, false).ForEach(x =>
                 {
-                    neededRoles.Remove("Client");
-                    Common.Models.Contacts.Contact contactModel = Data.Contacts.Contact.Get(x.Contact.Id.Value);
-                    viewModel.Clients.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(contactModel));
-                }
-            });
+                    ViewModels.Notes.NoteTaskViewModel ntvm = Mapper.Map<ViewModels.Notes.NoteTaskViewModel>(x);
+                    ntvm.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(Data.Tasks.Task.Get(x.Task.Id.Value, conn, false));
+                    ntvm.Note = Mapper.Map<ViewModels.Notes.NoteViewModel>(Data.Notes.Note.Get(x.Note.Id.Value, conn, false));
+                    viewModel.TaskNotes.Add(ntvm);
+                });
+
+                PopulateCoreDetails(viewModel, conn);
+
+                neededRoles = new List<string>(new string[] { "Lead Attorney", "Client", "Appointed Client" });
+
+                Data.Matters.MatterContact.ListForMatter(model.Id.Value, conn, false).ForEach(x =>
+                {
+                    if (x.Role == "Lead Attorney")
+                        neededRoles.Remove("Lead Attorney");
+                    if (x.Role == "Appointed Client")
+                    {
+                        neededRoles.Remove("Appointed Client");
+                        Common.Models.Contacts.Contact contactModel = Data.Contacts.Contact.Get(x.Contact.Id.Value, conn, false);
+                        viewModel.Clients.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(contactModel));
+                    }
+                    if (x.Role == "Client")
+                    {
+                        neededRoles.Remove("Client");
+                        Common.Models.Contacts.Contact contactModel = Data.Contacts.Contact.Get(x.Contact.Id.Value, conn, false);
+                        viewModel.Clients.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(contactModel));
+                    }
+                });
+
+                if (conna != conn)
+                    throw new Exception();
+            }
 
             if (neededRoles.Contains("Lead Attorney"))
                 alertText += "<li>Missing role 'Lead Attorney'.</li>";
