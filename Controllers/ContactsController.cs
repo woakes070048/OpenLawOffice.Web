@@ -25,6 +25,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Collections.Generic;
     using System.Web.Mvc;
     using AutoMapper;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class ContactsController : BaseController
@@ -35,22 +36,24 @@ namespace OpenLawOffice.Web.Controllers
             List<ViewModels.Contacts.ContactViewModel> viewModelList = null;
             string contactFilter;
 
-
             viewModelList = new List<ViewModels.Contacts.ContactViewModel>();
 
-            if (!string.IsNullOrEmpty(contactFilter = Request["contactFilter"]))
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                Data.Contacts.Contact.List(contactFilter).ForEach(x =>
+                if (!string.IsNullOrEmpty(contactFilter = Request["contactFilter"]))
                 {
-                    viewModelList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-                });
-            }
-            else
-            {
-                Data.Contacts.Contact.List().ForEach(x =>
+                    Data.Contacts.Contact.List(contactFilter, conn, false).ForEach(x =>
+                    {
+                        viewModelList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                    });
+                }
+                else
                 {
-                    viewModelList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-                });
+                    Data.Contacts.Contact.List(conn, false).ForEach(x =>
+                    {
+                        viewModelList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                    });
+                }
             }
 
             return View(viewModelList);
@@ -64,23 +67,12 @@ namespace OpenLawOffice.Web.Controllers
 
             term = Request["term"];
 
-            list = Data.Contacts.Contact.List(term.Trim());
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                list = Data.Contacts.Contact.List(term.Trim(), conn, false);
+            }
 
             return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        private List<ViewModels.Contacts.ContactViewModel> GetList()
-        {
-            List<ViewModels.Contacts.ContactViewModel> modelList = null;
-
-            modelList = new List<ViewModels.Contacts.ContactViewModel>();
-
-            OpenLawOffice.Data.Contacts.Contact.List().ForEach(x =>
-            {
-                modelList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-            });
-
-            return modelList;
         }
 
         [Authorize(Roles = "Login, User")]
@@ -89,20 +81,23 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Contacts.Contact contact = null;
             ViewModels.Contacts.ContactViewModel viewModel;
 
-            contact = OpenLawOffice.Data.Contacts.Contact.Get(id);
-            if (contact.BillingRate != null && contact.BillingRate.Id.HasValue)
-                contact.BillingRate = Data.Billing.BillingRate.Get(contact.BillingRate.Id.Value);
-            else
-                contact.BillingRate = null;
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                contact = OpenLawOffice.Data.Contacts.Contact.Get(id, conn, false);
+                if (contact.BillingRate != null && contact.BillingRate.Id.HasValue)
+                    contact.BillingRate = Data.Billing.BillingRate.Get(contact.BillingRate.Id.Value, conn, false);
+                else
+                    contact.BillingRate = null;
 
-            if (contact == null)
-                return View("InvalidRequest");
+                if (contact == null)
+                    return View("InvalidRequest");
 
-            viewModel = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
-            if (contact.BillingRate != null)
-                viewModel.BillingRate = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(contact.BillingRate);
+                viewModel = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
+                if (contact.BillingRate != null)
+                    viewModel.BillingRate = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(contact.BillingRate);
 
-            PopulateCoreDetails(viewModel);
+                PopulateCoreDetails(viewModel, conn);
+            }
 
             return View(viewModel);
         }
@@ -114,8 +109,12 @@ namespace OpenLawOffice.Web.Controllers
             DateTime? from = null, to = null;
 
             ViewModels.Contacts.TimesheetsViewModel viewModel = new ViewModels.Contacts.TimesheetsViewModel();
-            
-            viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(OpenLawOffice.Data.Contacts.Contact.Get(id));
+
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                    Data.Contacts.Contact.Get(id, conn, false));
+            }
 
             if (!string.IsNullOrEmpty(Request["From"]))
                 from = DateTime.Parse(Request["From"]);
@@ -153,32 +152,36 @@ namespace OpenLawOffice.Web.Controllers
             if (!to.HasValue)
                 to = new DateTime(now.Year, now.Month, 1).AddMonths(1).AddDays(-1);
 
-            viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(Data.Contacts.Contact.Get(id));
-
-            // Method to get all matters for which BillTo is set to this contact
-            Data.Contacts.Contact.ListMattersWhereContactIsBillTo(contactId).ForEach(matter =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                ViewModels.Contacts.TimesheetsViewModel.MatterTimeList mtl = new ViewModels.Contacts.TimesheetsViewModel.MatterTimeList();
-                ViewModels.Contacts.TimesheetsViewModel.TimeItem timeItem;
-                
-                mtl.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(matter);
-                Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, from, to).ForEach(time =>
+                viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                Data.Contacts.Contact.Get(id, conn, false));
+
+                // Method to get all matters for which BillTo is set to this contact
+                Data.Contacts.Contact.ListMattersWhereContactIsBillTo(contactId, conn, false).ForEach(matter =>
                 {
-                    timeItem = new ViewModels.Contacts.TimesheetsViewModel.TimeItem();
+                    ViewModels.Contacts.TimesheetsViewModel.MatterTimeList mtl = new ViewModels.Contacts.TimesheetsViewModel.MatterTimeList();
+                    ViewModels.Contacts.TimesheetsViewModel.TimeItem timeItem;
 
-                    timeItem.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(time);
+                    mtl.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(matter);
+                    Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, from, to, conn, false).ForEach(time =>
+                    {
+                        timeItem = new ViewModels.Contacts.TimesheetsViewModel.TimeItem();
 
-                    timeItem.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(
-                        Data.Timing.Time.GetRelatedTask(timeItem.Time.Id.Value));
+                        timeItem.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(time);
 
-                    timeItem.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(
-                        Data.Tasks.Task.GetRelatedMatter(timeItem.Task.Id.Value));
+                        timeItem.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(
+                            Data.Timing.Time.GetRelatedTask(timeItem.Time.Id.Value, conn, false));
 
-                    mtl.Times.Add(timeItem);
+                        timeItem.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(
+                            Data.Tasks.Task.GetRelatedMatter(timeItem.Task.Id.Value, conn, false));
+
+                        mtl.Times.Add(timeItem);
+                    });
+
+                    viewModel.Matters.Add(mtl);
                 });
-
-                viewModel.Matters.Add(mtl);
-            });
+            }
 
             if (from.HasValue)
                 ViewBag.From = from.Value;
@@ -195,12 +198,15 @@ namespace OpenLawOffice.Web.Controllers
 
             billingRateList = new List<ViewModels.Billing.BillingRateViewModel>();
 
-            Data.Billing.BillingRate.List().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                ViewModels.Billing.BillingRateViewModel vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x);
-                vm.Title += " (" + vm.PricePerUnit.ToString("C") + ")";
-                billingRateList.Add(vm);
-            });
+                Data.Billing.BillingRate.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Billing.BillingRateViewModel vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x);
+                    vm.Title += " (" + vm.PricePerUnit.ToString("C") + ")";
+                    billingRateList.Add(vm);
+                });
+            }
 
             ViewBag.BillingRateList = billingRateList;
 
@@ -217,38 +223,51 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Contacts.Contact model;
             List<Common.Models.Contacts.Contact> possibleDuplicateList;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Contacts.Contact>(viewModel);
-
-            if (Request["OverrideConflict"] != "True")
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                possibleDuplicateList = Data.Contacts.Contact.ListPossibleDuplicates(model);
-
-                if (possibleDuplicateList.Count > 0)
+                try
                 {
-                    billingRateList = new List<ViewModels.Billing.BillingRateViewModel>();
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-                    possibleDuplicateList.ForEach(x =>
+                    model = Mapper.Map<Common.Models.Contacts.Contact>(viewModel);
+
+                    if (Request["OverrideConflict"] != "True")
                     {
-                        errorListString += "<li><a href=\"/Contacts/Details/" + x.Id.Value + "\">" + x.DisplayName + "</a> [<a href=\"/Contacts/Edit/" + x.Id.Value + "\">edit</a>]</li>";
-                    });
+                        possibleDuplicateList = Data.Contacts.Contact.ListPossibleDuplicates(trans, model);
 
-                    Data.Billing.BillingRate.List().ForEach(x =>
-                    {
-                        ViewModels.Billing.BillingRateViewModel vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x);
-                        vm.Title += " (" + vm.PricePerUnit.ToString("C") + ")";
-                        billingRateList.Add(vm);
-                    });
+                        if (possibleDuplicateList.Count > 0)
+                        {
+                            billingRateList = new List<ViewModels.Billing.BillingRateViewModel>();
 
-                    ViewBag.ErrorMessage = "Contact possibly conflicts with the following existing contacts:<ul>" + errorListString + "</ul>Click Save again to create the contact anyway.";
-                    ViewBag.OverrideConflict = "True";
-                    ViewBag.BillingRateList = billingRateList;
-                    return View(viewModel);
+                            possibleDuplicateList.ForEach(x =>
+                            {
+                                errorListString += "<li><a href=\"/Contacts/Details/" + x.Id.Value + "\">" + x.DisplayName + "</a> [<a href=\"/Contacts/Edit/" + x.Id.Value + "\">edit</a>]</li>";
+                            });
+
+                            Data.Billing.BillingRate.List(trans).ForEach(x =>
+                            {
+                                ViewModels.Billing.BillingRateViewModel vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x);
+                                vm.Title += " (" + vm.PricePerUnit.ToString("C") + ")";
+                                billingRateList.Add(vm);
+                            });
+
+                            ViewBag.ErrorMessage = "Contact possibly conflicts with the following existing contacts:<ul>" + errorListString + "</ul>Click Save again to create the contact anyway.";
+                            ViewBag.OverrideConflict = "True";
+                            ViewBag.BillingRateList = billingRateList;
+                            return View(viewModel);
+                        }
+                    }
+            
+                    model = Data.Contacts.Contact.Create(trans, model, currentUser);
+
+                    trans.Commit();
+                }
+                catch
+                {
+                    trans.Rollback();
                 }
             }
-            
-            model = OpenLawOffice.Data.Contacts.Contact.Create(model, currentUser);
 
             return RedirectToAction("Index");
         }
@@ -262,22 +281,25 @@ namespace OpenLawOffice.Web.Controllers
 
             billingRateList = new List<ViewModels.Billing.BillingRateViewModel>();
 
-            model = OpenLawOffice.Data.Contacts.Contact.Get(id);
-
-            viewModel = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model);
-
-            if (model.BillingRate != null && model.BillingRate.Id.HasValue)
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                model.BillingRate = Data.Billing.BillingRate.Get(model.BillingRate.Id.Value);
-                viewModel.BillingRate = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(model.BillingRate);
+                model = Data.Contacts.Contact.Get(id, conn, false);
+
+                viewModel = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model);
+
+                if (model.BillingRate != null && model.BillingRate.Id.HasValue)
+                {
+                    model.BillingRate = Data.Billing.BillingRate.Get(model.BillingRate.Id.Value, conn, false);
+                    viewModel.BillingRate = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(model.BillingRate);
+                }
+
+                Data.Billing.BillingRate.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Billing.BillingRateViewModel vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x);
+                    vm.Title += " (" + vm.PricePerUnit.ToString("C") + ")";
+                    billingRateList.Add(vm);
+                });
             }
-
-            Data.Billing.BillingRate.List().ForEach(x =>
-            {
-                ViewModels.Billing.BillingRateViewModel vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x);
-                vm.Title += " (" + vm.PricePerUnit.ToString("C") + ")";
-                billingRateList.Add(vm);
-            });
 
             ViewBag.BillingRateList = billingRateList;
 
@@ -291,11 +313,23 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser = null;
             Common.Models.Contacts.Contact model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Contacts.Contact>(viewModel);
+                    model = Mapper.Map<Common.Models.Contacts.Contact>(viewModel);
 
-            model = OpenLawOffice.Data.Contacts.Contact.Edit(model, currentUser);
+                    model = Data.Contacts.Contact.Edit(trans, model, currentUser);
+
+                    trans.Commit();
+                }
+                catch
+                {
+                    trans.Rollback();
+                }
+            }
 
             return RedirectToAction("Index");
         }
@@ -308,34 +342,37 @@ namespace OpenLawOffice.Web.Controllers
             List<Tuple<Common.Models.Matters.Matter, Common.Models.Matters.MatterContact, Common.Models.Contacts.Contact>> matterRelationshipList;
             ViewModels.Contacts.ConflictViewModel viewModel = new ViewModels.Contacts.ConflictViewModel();
 
-            contact = Data.Contacts.Contact.Get(id);
-
-            viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
-
-            viewModel.Matters = new List<ViewModels.Contacts.ConflictViewModel.MatterRelationship>();
-
-            matterList = Data.Contacts.Contact.ListMattersForContact(id);
-
-            foreach (var x in matterList)
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                ViewModels.Contacts.ConflictViewModel.MatterRelationship mr = new ViewModels.Contacts.ConflictViewModel.MatterRelationship();
+                contact = Data.Contacts.Contact.Get(id, conn, false);
 
-                mr.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(x);
+                viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
 
-                mr.MatterContacts = new List<ViewModels.Matters.MatterContactViewModel>();
+                viewModel.Matters = new List<ViewModels.Contacts.ConflictViewModel.MatterRelationship>();
 
-                matterRelationshipList = Data.Contacts.Contact.ListMatterRelationshipsForContact(id, x.Id.Value);
+                matterList = Data.Contacts.Contact.ListMattersForContact(id, conn, false);
 
-                matterRelationshipList.ForEach(y =>
+                foreach (var x in matterList)
                 {
-                    ViewModels.Matters.MatterContactViewModel mc = Mapper.Map<ViewModels.Matters.MatterContactViewModel>(y.Item2);
-                    mc.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(y.Item3);
-                    mc.Matter = mr.Matter;
-                    mr.MatterContacts.Add(mc);
-                });
+                    ViewModels.Contacts.ConflictViewModel.MatterRelationship mr = new ViewModels.Contacts.ConflictViewModel.MatterRelationship();
 
-                viewModel.Matters.Add(mr);
-            };
+                    mr.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(x);
+
+                    mr.MatterContacts = new List<ViewModels.Matters.MatterContactViewModel>();
+
+                    matterRelationshipList = Data.Contacts.Contact.ListMatterRelationshipsForContact(id, x.Id.Value, conn, false);
+
+                    matterRelationshipList.ForEach(y =>
+                    {
+                        ViewModels.Matters.MatterContactViewModel mc = Mapper.Map<ViewModels.Matters.MatterContactViewModel>(y.Item2);
+                        mc.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(y.Item3);
+                        mc.Matter = mr.Matter;
+                        mr.MatterContacts.Add(mc);
+                    });
+
+                    viewModel.Matters.Add(mr);
+                };
+            }
 
             return View(viewModel);
         }
@@ -352,10 +389,13 @@ namespace OpenLawOffice.Web.Controllers
                 contactId = int.Parse(Request["ContactId"]);
 
             list = new List<ViewModels.Matters.MatterViewModel>();
-            Data.Matters.Matter.ListAllMattersForContact(contactId).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                list.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
-            });
+                Data.Matters.Matter.ListAllMattersForContact(contactId, conn, false).ForEach(x =>
+                {
+                    list.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
+                });
+            }
 
             return View(list);
         }
@@ -373,26 +413,30 @@ namespace OpenLawOffice.Web.Controllers
                 contactId = int.Parse(Request["ContactId"]);
 
             list = new List<ViewModels.Tasks.TaskViewModel>();
-            Data.Tasks.Task.ListAllTasksForContact(contactId).ForEach(x =>
-            {
-                viewModel = Mapper.Map<ViewModels.Tasks.TaskViewModel>(x);
 
-                if (viewModel.IsGroupingTask)
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                Data.Tasks.Task.ListAllTasksForContact(contactId, conn, false).ForEach(x =>
                 {
-                    if (Data.Tasks.Task.GetTaskForWhichIAmTheSequentialPredecessor(x.Id.Value) != null)
-                        viewModel.Type = "Sequential Group";
+                    viewModel = Mapper.Map<ViewModels.Tasks.TaskViewModel>(x);
+
+                    if (viewModel.IsGroupingTask)
+                    {
+                        if (Data.Tasks.Task.GetTaskForWhichIAmTheSequentialPredecessor(x.Id.Value, conn, false) != null)
+                            viewModel.Type = "Sequential Group";
+                        else
+                            viewModel.Type = "Group";
+                    }
                     else
-                        viewModel.Type = "Group";
-                }
-                else
-                {
-                    if (x.SequentialPredecessor != null)
-                        viewModel.Type = "Sequential";
-                    else
-                        viewModel.Type = "Standard";
-                }
-                list.Add(viewModel);
-            });
+                    {
+                        if (x.SequentialPredecessor != null)
+                            viewModel.Type = "Sequential";
+                        else
+                            viewModel.Type = "Standard";
+                    }
+                    list.Add(viewModel);
+                });
+            }
 
             return View(list);
         }

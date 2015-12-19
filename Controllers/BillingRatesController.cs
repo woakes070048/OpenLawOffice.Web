@@ -24,6 +24,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Collections.Generic;
     using System.Web.Mvc;
     using AutoMapper;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class BillingRatesController : BaseController
@@ -33,10 +34,13 @@ namespace OpenLawOffice.Web.Controllers
         {
             List<ViewModels.Billing.BillingRateViewModel> rates = new List<ViewModels.Billing.BillingRateViewModel>();
 
-            Data.Billing.BillingRate.List().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                rates.Add(Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x));
-            });
+                Data.Billing.BillingRate.List(conn, false).ForEach(x =>
+                {
+                    rates.Add(Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x));
+                });
+            }
 
             return View(rates);
         }
@@ -55,9 +59,22 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Billing.BillingRate model;
 
             model = Mapper.Map<Common.Models.Billing.BillingRate>(viewModel);
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
 
-            Data.Billing.BillingRate.Create(model, currentUser);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
+
+                    Data.Billing.BillingRate.Create(trans, model, currentUser);
+
+                    trans.Commit();
+                }
+                catch
+                {
+                    trans.Rollback();
+                }
+            }
 
             return RedirectToAction("Index");
         }
@@ -67,7 +84,11 @@ namespace OpenLawOffice.Web.Controllers
         {
             ViewModels.Billing.BillingRateViewModel vm;
 
-            vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(Data.Billing.BillingRate.Get(id));
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(
+                    Data.Billing.BillingRate.Get(id, conn, false));
+            }
 
             return View(vm);
         }
@@ -80,9 +101,22 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Billing.BillingRate model;
 
             model = Mapper.Map<Common.Models.Billing.BillingRate>(viewModel);
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
 
-            Data.Billing.BillingRate.Edit(model, currentUser);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
+
+                    Data.Billing.BillingRate.Edit(trans, model, currentUser);
+
+                    trans.Commit();
+                }
+                catch
+                {
+                    trans.Rollback();
+                }
+            }
 
             return RedirectToAction("Index");
         }

@@ -24,6 +24,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Collections.Generic;
     using System.Web.Mvc;
     using AutoMapper;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class BillingGroupsController : BaseController
@@ -33,12 +34,16 @@ namespace OpenLawOffice.Web.Controllers
         {
             List<ViewModels.Billing.BillingGroupViewModel> groups = new List<ViewModels.Billing.BillingGroupViewModel>();
 
-            Data.Billing.BillingGroup.List().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                ViewModels.Billing.BillingGroupViewModel vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(x);
-                vm.BillTo = Mapper.Map<ViewModels.Contacts.ContactViewModel>(Data.Contacts.Contact.Get(x.BillTo.Id.Value));
-                groups.Add(vm);
-            });
+                Data.Billing.BillingGroup.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Billing.BillingGroupViewModel vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(x);
+                    vm.BillTo = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                        Data.Contacts.Contact.Get(x.BillTo.Id.Value, conn, false));
+                    groups.Add(vm);
+                });
+            }
 
             return View(groups);
         }
@@ -48,10 +53,13 @@ namespace OpenLawOffice.Web.Controllers
         {
             List<ViewModels.Billing.InvoiceViewModel> list = new List<ViewModels.Billing.InvoiceViewModel>();
 
-            Data.Billing.BillingGroup.ListInvoicesForGroup(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                list.Add(Mapper.Map<ViewModels.Billing.InvoiceViewModel>(x));
-            });
+                Data.Billing.BillingGroup.ListInvoicesForGroup(id, conn, false).ForEach(x =>
+                {
+                    list.Add(Mapper.Map<ViewModels.Billing.InvoiceViewModel>(x));
+                });
+            }
 
             return View(list);
         }
@@ -63,18 +71,21 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Billing.BillingGroup group;
             List<Common.Models.Matters.Matter> matterMembers;
 
-            group = Data.Billing.BillingGroup.Get(id);
-            group.BillTo = Data.Contacts.Contact.Get(group.BillTo.Id.Value);
-            matterMembers = Data.Billing.BillingGroup.ListMattersForGroup(id);
-
-            vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(group);
-            vm.BillTo = Mapper.Map<ViewModels.Contacts.ContactViewModel>(group.BillTo);
-            vm.MatterMembers = new List<ViewModels.Matters.MatterViewModel>();
-            matterMembers.ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                vm.MatterMembers.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
-            });
-            PopulateCoreDetails(vm);
+                group = Data.Billing.BillingGroup.Get(id, conn, false);
+                group.BillTo = Data.Contacts.Contact.Get(group.BillTo.Id.Value, conn, false);
+                matterMembers = Data.Billing.BillingGroup.ListMattersForGroup(id, conn, false);
+
+                vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(group);
+                vm.BillTo = Mapper.Map<ViewModels.Contacts.ContactViewModel>(group.BillTo);
+                vm.MatterMembers = new List<ViewModels.Matters.MatterViewModel>();
+                matterMembers.ForEach(x =>
+                {
+                    vm.MatterMembers.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
+                });
+                PopulateCoreDetails(vm, conn);
+            }
 
             return View(vm);
         }
@@ -93,9 +104,22 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Billing.BillingGroup model;
 
             model = Mapper.Map<Common.Models.Billing.BillingGroup>(viewModel);
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
 
-            Data.Billing.BillingGroup.Create(model, currentUser);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
+
+                    Data.Billing.BillingGroup.Create(trans, model, currentUser);
+
+                    trans.Commit();
+                }
+                catch
+                {
+                    trans.Rollback();
+                }
+            }
 
             return RedirectToAction("Index");
         }
@@ -105,8 +129,13 @@ namespace OpenLawOffice.Web.Controllers
         {
             ViewModels.Billing.BillingGroupViewModel vm;
 
-            vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(Data.Billing.BillingGroup.Get(id));
-            vm.BillTo = Mapper.Map<ViewModels.Contacts.ContactViewModel>(Data.Contacts.Contact.Get(vm.BillTo.Id.Value));
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(
+                    Data.Billing.BillingGroup.Get(id, conn, false));
+                vm.BillTo = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                    Data.Contacts.Contact.Get(vm.BillTo.Id.Value, conn, false));
+            }
 
             return View(vm);
         }
@@ -119,9 +148,22 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Billing.BillingGroup model;
 
             model = Mapper.Map<Common.Models.Billing.BillingGroup>(viewModel);
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
 
-            Data.Billing.BillingGroup.Edit(model, currentUser);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
+
+                    Data.Billing.BillingGroup.Edit(trans, model, currentUser);
+
+                    trans.Commit();
+                }
+                catch
+                {
+                    trans.Rollback();
+                }
+            }
 
             return RedirectToAction("Index");
         }
