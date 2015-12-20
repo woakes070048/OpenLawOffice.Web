@@ -26,6 +26,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Web.Mvc;
     using AutoMapper;
     using System.Collections.Generic;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class FormFieldsController : BaseController
@@ -34,11 +35,14 @@ namespace OpenLawOffice.Web.Controllers
         public ActionResult Index()
         {
             List<ViewModels.Forms.FormFieldViewModel> vmList = new List<ViewModels.Forms.FormFieldViewModel>();
-            
-            Data.Forms.FormField.List().ForEach(x =>
+
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                vmList.Add(Mapper.Map<ViewModels.Forms.FormFieldViewModel>(x));
-            });
+                Data.Forms.FormField.List(conn).ForEach(x =>
+                {
+                    vmList.Add(Mapper.Map<ViewModels.Forms.FormFieldViewModel>(x));
+                });
+            }
 
             return View(vmList);
         }
@@ -49,11 +53,14 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Forms.FormFieldViewModel viewModel;
             Common.Models.Forms.FormField model;
 
-            model = Data.Forms.FormField.Get(id);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Forms.FormField.Get(id, conn, false);
 
-            viewModel = Mapper.Map<ViewModels.Forms.FormFieldViewModel>(model);
+                viewModel = Mapper.Map<ViewModels.Forms.FormFieldViewModel>(model);
 
-            PopulateCoreDetails(viewModel);
+                PopulateCoreDetails(viewModel, conn);
+            }
 
             return View(viewModel);
         }
@@ -64,9 +71,12 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Forms.FormFieldViewModel viewModel;
             Common.Models.Forms.FormField model;
 
-            model = Data.Forms.FormField.Get(id);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Forms.FormField.Get(id, conn, false);
 
-            viewModel = Mapper.Map<ViewModels.Forms.FormFieldViewModel>(model);
+                viewModel = Mapper.Map<ViewModels.Forms.FormFieldViewModel>(model);
+            }
 
             return View(viewModel);
         }
@@ -78,13 +88,26 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Forms.FormField model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Forms.FormField>(viewModel);
+                    model = Mapper.Map<Common.Models.Forms.FormField>(viewModel);
 
-            model = Data.Forms.FormField.Edit(model, currentUser);
+                    model = Data.Forms.FormField.Edit(trans, model, currentUser);
 
-            return RedirectToAction("Index");
+                    trans.Commit();
+
+                    return RedirectToAction("Index");
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Edit(id);
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -100,13 +123,26 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Forms.FormField model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Forms.FormField>(viewModel);
+                    model = Mapper.Map<Common.Models.Forms.FormField>(viewModel);
 
-            model = Data.Forms.FormField.Create(model, currentUser);
+                    model = Data.Forms.FormField.Create(trans, model, currentUser);
 
-            return RedirectToAction("Index");
+                    trans.Commit();
+
+                    return RedirectToAction("Index");
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Create();
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -115,9 +151,12 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Forms.FormFieldViewModel viewModel;
             Common.Models.Forms.FormField model;
 
-            model = Data.Forms.FormField.Get(id);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Forms.FormField.Get(id, conn, false);
 
-            viewModel = Mapper.Map<ViewModels.Forms.FormFieldViewModel>(model);
+                viewModel = Mapper.Map<ViewModels.Forms.FormFieldViewModel>(model);
+            }
 
             return View(viewModel);
         }
@@ -129,11 +168,24 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Forms.FormField model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Forms.FormField>(viewModel);
+                    model = Mapper.Map<Common.Models.Forms.FormField>(viewModel);
 
-            model = Data.Forms.FormField.Disable(model, currentUser);
+                    model = Data.Forms.FormField.Disable(trans, model, currentUser);
+
+                    trans.Commit();
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Create();
+                }
+            }
 
             return RedirectToAction("Index");
         }

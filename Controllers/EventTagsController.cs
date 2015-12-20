@@ -25,6 +25,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Web.Mvc;
     using AutoMapper;
 
+    // NOT MAINTAINED
     [HandleError(View = "Errors/Index", Order = 10)]
     public class EventTagsController : BaseController
     {

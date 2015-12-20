@@ -26,6 +26,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Web.Mvc;
     using AutoMapper;
 
+    // NOT MAINTAINED
     public class EventTaskController : BaseController
     {
         [Authorize(Roles = "Login, User")]

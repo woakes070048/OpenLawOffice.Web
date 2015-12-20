@@ -28,6 +28,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Net;
     using System.Web.Profile;
     using System.Web.Security;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class HomeController : BaseController
@@ -45,71 +46,74 @@ namespace OpenLawOffice.Web.Controllers
 
             employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
 
-            try
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                Data.Account.Users.List();
-            }
-            catch (Exception)
-            {
-                return RedirectToAction("Index", "Installation");
-            }
+                try
+                {
+                    Data.Account.Users.List(conn, false);
+                }
+                catch (Exception)
+                {
+                    return RedirectToAction("Index", "Installation");
+                }
 
 
-            if (RouteData.Values["Id"] != null)
-            {
-                id = int.Parse((string)RouteData.Values["Id"]);
-            }
-            else if (currentDVM.Employee != null && currentDVM.Employee.Id.HasValue)
-            {
-                id = currentDVM.Employee.Id.Value;
-            }
-            else
-            {
-                dynamic profile = ProfileBase.Create(Membership.GetUser().UserName);
-                if (profile.ContactId != null && !string.IsNullOrEmpty(profile.ContactId))
-                    id = int.Parse(profile.ContactId);
+                if (RouteData.Values["Id"] != null)
+                {
+                    id = int.Parse((string)RouteData.Values["Id"]);
+                }
+                else if (currentDVM.Employee != null && currentDVM.Employee.Id.HasValue)
+                {
+                    id = currentDVM.Employee.Id.Value;
+                }
                 else
-                    id = -1; // Happens on initial setup
-            }
-
-            if (id <= 0)
-            {
-                employee = null;
-                viewModel = null;
-            }
-            else
-            {
-                employee = Data.Contacts.Contact.Get(id);
-                currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-                viewModel = new ViewModels.Home.DashboardViewModel();
-                viewModel.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(employee);
-
-                viewModel.MyTodoList = new List<Tuple<ViewModels.Matters.MatterViewModel, ViewModels.Tasks.TaskViewModel>>();
-
-                tagFilter = Data.Settings.UserTaskSettings.ListTagFiltersFor(currentUser);
-
-                Data.Tasks.Task.GetTodoListFor(employee, tagFilter).ForEach(x =>
                 {
-                    matter = Data.Tasks.Task.GetRelatedMatter(x.Id.Value);
-                    viewModel.MyTodoList.Add(
-                        new Tuple<ViewModels.Matters.MatterViewModel, ViewModels.Tasks.TaskViewModel>(
-                        Mapper.Map<ViewModels.Matters.MatterViewModel>(matter),
-                        Mapper.Map<ViewModels.Tasks.TaskViewModel>(x)));
-                });
+                    dynamic profile = ProfileBase.Create(Membership.GetUser().UserName);
+                    if (profile.ContactId != null && !string.IsNullOrEmpty(profile.ContactId))
+                        id = int.Parse(profile.ContactId);
+                    else
+                        id = -1; // Happens on initial setup
+                }
 
-                viewModel.NotificationList = new List<ViewModels.Notes.NoteNotificationViewModel>();
-                Data.Notes.NoteNotification.ListAllNoteNotificationsForContact(employee.Id.Value).ForEach(x =>
+                if (id <= 0)
                 {
-                    ViewModels.Notes.NoteNotificationViewModel nnvm = Mapper.Map<ViewModels.Notes.NoteNotificationViewModel>(x);
-                    nnvm.Note = Mapper.Map<ViewModels.Notes.NoteViewModel>(Data.Notes.Note.Get(x.Note.Id.Value));
-                    viewModel.NotificationList.Add(nnvm);
-                });
+                    employee = null;
+                    viewModel = null;
+                }
+                else
+                {
+                    employee = Data.Contacts.Contact.Get(id, conn, false);
+                    currentUser = Data.Account.Users.Get(User.Identity.Name, conn, false);
 
-                Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
-                {
-                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-                });
+                    viewModel = new ViewModels.Home.DashboardViewModel();
+                    viewModel.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(employee);
+
+                    viewModel.MyTodoList = new List<Tuple<ViewModels.Matters.MatterViewModel, ViewModels.Tasks.TaskViewModel>>();
+
+                    tagFilter = Data.Settings.UserTaskSettings.ListTagFiltersFor(currentUser, conn, false);
+
+                    Data.Tasks.Task.GetTodoListFor(employee, tagFilter, null, null, conn, false).ForEach(x =>
+                    {
+                        matter = Data.Tasks.Task.GetRelatedMatter(x.Id.Value, conn, false);
+                        viewModel.MyTodoList.Add(
+                            new Tuple<ViewModels.Matters.MatterViewModel, ViewModels.Tasks.TaskViewModel>(
+                            Mapper.Map<ViewModels.Matters.MatterViewModel>(matter),
+                            Mapper.Map<ViewModels.Tasks.TaskViewModel>(x)));
+                    });
+
+                    viewModel.NotificationList = new List<ViewModels.Notes.NoteNotificationViewModel>();
+                    Data.Notes.NoteNotification.ListAllNoteNotificationsForContact(employee.Id.Value, conn, false).ForEach(x =>
+                    {
+                        ViewModels.Notes.NoteNotificationViewModel nnvm = Mapper.Map<ViewModels.Notes.NoteNotificationViewModel>(x);
+                        nnvm.Note = Mapper.Map<ViewModels.Notes.NoteViewModel>(Data.Notes.Note.Get(x.Note.Id.Value, conn, false));
+                        viewModel.NotificationList.Add(nnvm);
+                    });
+
+                    Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
+                    {
+                        employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                    });
+                }
             }
 
             ViewBag.EmployeeContactList = employeeContactList;

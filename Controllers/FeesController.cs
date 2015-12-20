@@ -25,6 +25,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Web;
     using System.Web.Mvc;
     using AutoMapper;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
 
@@ -38,8 +39,11 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.Matter matter;
             ViewModels.Billing.FeeViewModel viewModel;
 
-            model = Data.Billing.Fee.Get(id);
-            matter = Data.Billing.Fee.GetMatter(id);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Billing.Fee.Get(id, conn, false);
+                matter = Data.Billing.Fee.GetMatter(id, conn, false);
+            }
 
             viewModel = Mapper.Map<ViewModels.Billing.FeeViewModel>(model);
 
@@ -56,14 +60,28 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.Matter matter;
             Common.Models.Billing.Fee model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-            matter = Data.Billing.Fee.GetMatter(id);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Billing.Fee>(viewModel);
+                    matter = Data.Billing.Fee.GetMatter(id);
 
-            model = Data.Billing.Fee.Edit(model, currentUser);
+                    model = Mapper.Map<Common.Models.Billing.Fee>(viewModel);
 
-            return RedirectToAction("Details", "Matters", new { Id = matter.Id });
+                    model = Data.Billing.Fee.Edit(model, currentUser);
+
+                    trans.Commit();
+
+                    return RedirectToAction("Details", "Matters", new { Id = matter.Id });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Edit(id);
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -71,7 +89,10 @@ namespace OpenLawOffice.Web.Controllers
         {
             Common.Models.Matters.Matter matter = null;
 
-            matter = Data.Matters.Matter.Get(Guid.Parse(Request["MatterId"]));
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                matter = Data.Matters.Matter.Get(Guid.Parse(Request["MatterId"]));
+            }
 
             ViewData["MatterId"] = matter.Id.Value;
             ViewData["Matter"] = matter.Title;
@@ -90,17 +111,30 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Billing.Fee model;
             Guid matterid;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Billing.Fee>(viewModel);
+                    model = Mapper.Map<Common.Models.Billing.Fee>(viewModel);
 
-            model = Data.Billing.Fee.Create(model, currentUser);
+                    model = Data.Billing.Fee.Create(model, currentUser);
 
-            matterid = Guid.Parse(Request["MatterId"]);
+                    matterid = Guid.Parse(Request["MatterId"]);
 
-            Data.Billing.Fee.RelateMatter(model, matterid, currentUser);
+                    Data.Billing.Fee.RelateMatter(model, matterid, currentUser);
 
-            return RedirectToAction("Details", "Matters", new { Id = matterid });
+                    trans.Commit();
+
+                    return RedirectToAction("Details", "Matters", new { Id = matterid });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Create();
+                }
+            }
         }
     }
 }

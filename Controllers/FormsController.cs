@@ -27,6 +27,7 @@ namespace OpenLawOffice.Web.Controllers
     using AutoMapper;
     using System.Collections.Generic;
     using System.IO;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class FormsController : BaseController
@@ -36,12 +37,15 @@ namespace OpenLawOffice.Web.Controllers
         {
             List<ViewModels.Forms.FormViewModel> vmList = new List<ViewModels.Forms.FormViewModel>();
 
-            Data.Forms.Form.List().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                ViewModels.Forms.FormViewModel vm = Mapper.Map<ViewModels.Forms.FormViewModel>(x);
-                vm.MatterType = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(Data.Matters.MatterType.Get(x.MatterType.Id.Value));
-                vmList.Add(vm);
-            });
+                Data.Forms.Form.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Forms.FormViewModel vm = Mapper.Map<ViewModels.Forms.FormViewModel>(x);
+                    vm.MatterType = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(Data.Matters.MatterType.Get(x.MatterType.Id.Value, conn, false));
+                    vmList.Add(vm);
+                });
+            }
 
             return View(vmList);
         }
@@ -52,13 +56,16 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Forms.FormViewModel viewModel;
             Common.Models.Forms.Form model;
 
-            model = Data.Forms.Form.Get(id);
-            model.MatterType = Data.Matters.MatterType.Get(model.MatterType.Id.Value);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Forms.Form.Get(id, conn, false);
+                model.MatterType = Data.Matters.MatterType.Get(model.MatterType.Id.Value, conn, false);
 
-            viewModel = Mapper.Map<ViewModels.Forms.FormViewModel>(model);
-            viewModel.MatterType = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(model.MatterType);
+                viewModel = Mapper.Map<ViewModels.Forms.FormViewModel>(model);
+                viewModel.MatterType = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(model.MatterType);
 
-            PopulateCoreDetails(viewModel);
+                PopulateCoreDetails(viewModel, conn);
+            }
 
             return View(viewModel);
         }
@@ -72,13 +79,16 @@ namespace OpenLawOffice.Web.Controllers
 
             matterTypeList = new List<ViewModels.Matters.MatterTypeViewModel>();
 
-            model = Data.Forms.Form.Get(id);
-
-            Data.Matters.MatterType.List().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                ViewModels.Matters.MatterTypeViewModel vm = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x);
-                matterTypeList.Add(vm);
-            });
+                model = Data.Forms.Form.Get(id, conn, false);
+
+                Data.Matters.MatterType.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Matters.MatterTypeViewModel vm = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x);
+                    matterTypeList.Add(vm);
+                });
+            }
 
             viewModel = Mapper.Map<ViewModels.Forms.FormViewModel>(model);
 
@@ -99,39 +109,52 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Forms.Form model, currentModel;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            currentModel = Data.Forms.Form.Get(viewModel.Id.Value);
-            model = Mapper.Map<Common.Models.Forms.Form>(viewModel);
-
-            // Path is based on base path + id, so, during an edit, it should NEVER change under
-            // the current model - May change in the future if versioning or something similar 
-            // is supported - EXCEPT extension
-            model.Path = currentModel.Path;
-            if (Path.HasExtension(model.Path))
-                oldExt = Path.GetExtension(model.Path);
-            if (Path.HasExtension(viewModel.FileUpload.FileName))
-                newExt = Path.GetExtension(viewModel.FileUpload.FileName);
-            if (oldExt != newExt)
-                model.Path = model.Path.Replace(oldExt, newExt);
-
-            model = Data.Forms.Form.Edit(model, currentUser);
-
-            // Only overwrite is the user gave us a file to use, otherwise, keep
-            // the existing file - user just wants to update the matter type
-            if (viewModel.FileUpload != null && viewModel.FileUpload.ContentLength > 0)
-            { // Posted file
-                if (newExt == oldExt) // overwrite
-                    viewModel.FileUpload.SaveAs(model.Path);
-                else
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
                 {
-                    // Delete old
-                    System.IO.File.Delete(currentModel.Path);
-                    viewModel.FileUpload.SaveAs(model.Path);
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
+
+                    currentModel = Data.Forms.Form.Get(trans, viewModel.Id.Value);
+                    model = Mapper.Map<Common.Models.Forms.Form>(viewModel);
+
+                    // Path is based on base path + id, so, during an edit, it should NEVER change under
+                    // the current model - May change in the future if versioning or something similar 
+                    // is supported - EXCEPT extension
+                    model.Path = currentModel.Path;
+                    if (Path.HasExtension(model.Path))
+                        oldExt = Path.GetExtension(model.Path);
+                    if (Path.HasExtension(viewModel.FileUpload.FileName))
+                        newExt = Path.GetExtension(viewModel.FileUpload.FileName);
+                    if (oldExt != newExt)
+                        model.Path = model.Path.Replace(oldExt, newExt);
+
+                    model = Data.Forms.Form.Edit(trans, model, currentUser);
+
+                    // Only overwrite is the user gave us a file to use, otherwise, keep
+                    // the existing file - user just wants to update the matter type
+                    if (viewModel.FileUpload != null && viewModel.FileUpload.ContentLength > 0)
+                    { // Posted file
+                        if (newExt == oldExt) // overwrite
+                            viewModel.FileUpload.SaveAs(model.Path);
+                        else
+                        {
+                            // Delete old
+                            System.IO.File.Delete(currentModel.Path);
+                            viewModel.FileUpload.SaveAs(model.Path);
+                        }
+                    }
+
+                    trans.Commit();
+
+                    return RedirectToAction("Index");
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Create();
                 }
             }
-
-            return RedirectToAction("Index");
         }
 
         [Authorize(Roles = "Login, User")]
@@ -141,11 +164,14 @@ namespace OpenLawOffice.Web.Controllers
 
             matterTypeList = new List<ViewModels.Matters.MatterTypeViewModel>();
 
-            Data.Matters.MatterType.List().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                ViewModels.Matters.MatterTypeViewModel vm = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x);
-                matterTypeList.Add(vm);
-            });
+                Data.Matters.MatterType.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Matters.MatterTypeViewModel vm = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x);
+                    matterTypeList.Add(vm);
+                });
+            }
 
             ViewBag.MatterTypeList = matterTypeList;
 
@@ -159,51 +185,64 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Forms.Form model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            model = Mapper.Map<Common.Models.Forms.Form>(viewModel);
-
-            // File to upload is mandatory in creation, no file -> Fail
-
-            if (viewModel.FileUpload == null || viewModel.FileUpload.ContentLength <= 0)
-            { // NO FILE - FAIL
-                ModelState.AddModelError("FileUpload", "File to upload is required");
-            }
-
-            if (ModelState.IsValid)
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                // Determine path
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-                // Create path if it does not exist - IIS may not like this if it does not have
-                // the appropriate permissions
-                // TODO : Error handling
-                if (!Directory.Exists(Common.Settings.Manager.Instance.FileStorage.FormsPath))
-                    Directory.CreateDirectory(Common.Settings.Manager.Instance.FileStorage.FormsPath);
+                    model = Mapper.Map<Common.Models.Forms.Form>(viewModel);
 
-                // Make sure the path ends with a directory separator character
-                model.Path = Common.Settings.Manager.Instance.FileStorage.FormsPath;
-                if (!model.Path.EndsWith(Path.DirectorySeparatorChar.ToString()) && !model.Path.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
-                    model.Path += Path.DirectorySeparatorChar;
+                    // File to upload is mandatory in creation, no file -> Fail
 
-                // Must create in DB so that ID is known.
+                    if (viewModel.FileUpload == null || viewModel.FileUpload.ContentLength <= 0)
+                    { // NO FILE - FAIL
+                        ModelState.AddModelError("FileUpload", "File to upload is required");
+                    }
 
-                // TODO : error checking, transaction rollback, etc.
-                model = Data.Forms.Form.Create(model, currentUser);
+                    if (ModelState.IsValid)
+                    {
+                        // Determine path
 
-                // Append ID then the extension (if present)
-                model.Path += model.Id.Value.ToString();
-                if (Path.HasExtension(viewModel.FileUpload.FileName))
-                    model.Path += Path.GetExtension(viewModel.FileUpload.FileName);
+                        // Create path if it does not exist - IIS may not like this if it does not have
+                        // the appropriate permissions
+                        // TODO : Error handling
+                        if (!Directory.Exists(Common.Settings.Manager.Instance.FileStorage.FormsPath))
+                            Directory.CreateDirectory(Common.Settings.Manager.Instance.FileStorage.FormsPath);
 
-                // Must update to update the path to pickup the file name
-                model = Data.Forms.Form.Edit(model, currentUser);
+                        // Make sure the path ends with a directory separator character
+                        model.Path = Common.Settings.Manager.Instance.FileStorage.FormsPath;
+                        if (!model.Path.EndsWith(Path.DirectorySeparatorChar.ToString()) && !model.Path.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
+                            model.Path += Path.DirectorySeparatorChar;
 
-                viewModel.FileUpload.SaveAs(model.Path);
+                        // Must create in DB so that ID is known.
 
-                return RedirectToAction("Index");
+                        // TODO : error checking, transaction rollback, etc.
+                        model = Data.Forms.Form.Create(trans, model, currentUser);
+
+                        // Append ID then the extension (if present)
+                        model.Path += model.Id.Value.ToString();
+                        if (Path.HasExtension(viewModel.FileUpload.FileName))
+                            model.Path += Path.GetExtension(viewModel.FileUpload.FileName);
+
+                        // Must update to update the path to pickup the file name
+                        model = Data.Forms.Form.Edit(trans, model, currentUser);
+
+                        viewModel.FileUpload.SaveAs(model.Path);
+
+                        trans.Commit();
+
+                        return RedirectToAction("Index");
+                    }
+
+                    return View(viewModel);
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return View(viewModel);
+                }
             }
-
-            return View(viewModel);
         }
 
         [Authorize(Roles = "Login, User")]
@@ -212,8 +251,11 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Forms.FormViewModel viewModel;
             Common.Models.Forms.Form model;
 
-            model = Data.Forms.Form.Get(id);
-            model.MatterType = Data.Matters.MatterType.Get(model.MatterType.Id.Value);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Forms.Form.Get(id, conn, false);
+                model.MatterType = Data.Matters.MatterType.Get(model.MatterType.Id.Value, conn, false);
+            }
 
             viewModel = Mapper.Map<ViewModels.Forms.FormViewModel>(model);
             viewModel.MatterType = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(model.MatterType);
@@ -228,16 +270,29 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Forms.Form model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Forms.Form>(viewModel);
+                    model = Mapper.Map<Common.Models.Forms.Form>(viewModel);
 
-            model = Data.Forms.Form.Disable(model, currentUser);
+                    model = Data.Forms.Form.Disable(model, currentUser);
 
-            // Don't delete the file - in theory a system admin could enable this again
-            // deleting file would leave a form in the DB without a corresponding file
+                    trans.Commit();
 
-            return RedirectToAction("Index");
+                    // Don't delete the file - in theory a system admin could enable this again
+                    // deleting file would leave a form in the DB without a corresponding file
+
+                    return RedirectToAction("Index");
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Delete(id);
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -246,7 +301,10 @@ namespace OpenLawOffice.Web.Controllers
             string ext = "";
             Common.Models.Forms.Form model;
 
-            model = Data.Forms.Form.Get(id);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Forms.Form.Get(id, conn, false);
+            }
 
             if (Path.HasExtension(model.Path))
                 ext = Path.GetExtension(model.Path);

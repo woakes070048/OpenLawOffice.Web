@@ -25,6 +25,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Collections.Generic;
     using System.Web.Mvc;
     using AutoMapper;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class MatterContactController : BaseController
@@ -35,12 +36,15 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.Matter matter;
             List<ViewModels.Contacts.SelectableContactViewModel> modelList = new List<ViewModels.Contacts.SelectableContactViewModel>();
 
-            Data.Contacts.Contact.List().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                modelList.Add(Mapper.Map<ViewModels.Contacts.SelectableContactViewModel>(x));
-            });
+                Data.Contacts.Contact.List(conn, false).ForEach(x =>
+                {
+                    modelList.Add(Mapper.Map<ViewModels.Contacts.SelectableContactViewModel>(x));
+                });
 
-            matter = Data.Matters.Matter.Get(id);
+                matter = Data.Matters.Matter.Get(id);
+            }
 
             ViewData["MatterId"] = matter.Id.Value;
             ViewData["Matter"] = matter.Title;
@@ -62,10 +66,14 @@ namespace OpenLawOffice.Web.Controllers
                 return View("InvalidRequest");
 
             vm = new ViewModels.Matters.MatterContactViewModel();
-            vm.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(Data.Matters.Matter.Get(matterId));
-            vm.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(Data.Contacts.Contact.Get(id));
-
-            matter = Data.Matters.Matter.Get(matterId);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                vm.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(
+                    Data.Matters.Matter.Get(matterId, conn, false));
+                vm.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                    Data.Contacts.Contact.Get(id, conn, false));
+                matter = Data.Matters.Matter.Get(matterId, conn, false);
+            }
 
             ViewData["MatterId"] = matter.Id.Value;
             ViewData["Matter"] = matter.Title;
@@ -84,26 +92,40 @@ namespace OpenLawOffice.Web.Controllers
             // which is incorrect
             model.Id = null;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            matterContact = Data.Matters.MatterContact.Get(model.Matter.Id.Value, model.Contact.Id.Value);
-
-            if (matterContact == null)
-            { // Create
-                matterContact = Mapper.Map<Common.Models.Matters.MatterContact>(model);
-                matterContact = Data.Matters.MatterContact.Create(matterContact, currentUser);
-            }
-            else
-            { // Enable
-                matterContact = Mapper.Map<Common.Models.Matters.MatterContact>(model);
-                matterContact = Data.Matters.MatterContact.Enable(matterContact, currentUser);
-            }
-
-            if (model.Role == "Lead Attorney")
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                Common.Models.Matters.Matter matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
-                matter.LeadAttorney = Mapper.Map<Common.Models.Contacts.Contact>(model.Contact);
-                Data.Matters.Matter.Edit(matter, currentUser);
+                try
+                {
+                    currentUser = Data.Account.Users.Get(User.Identity.Name);
+
+                    matterContact = Data.Matters.MatterContact.Get(model.Matter.Id.Value, model.Contact.Id.Value);
+
+                    if (matterContact == null)
+                    { // Create
+                        matterContact = Mapper.Map<Common.Models.Matters.MatterContact>(model);
+                        matterContact = Data.Matters.MatterContact.Create(matterContact, currentUser);
+                    }
+                    else
+                    { // Enable
+                        matterContact = Mapper.Map<Common.Models.Matters.MatterContact>(model);
+                        matterContact = Data.Matters.MatterContact.Enable(matterContact, currentUser);
+                    }
+
+                    if (model.Role == "Lead Attorney")
+                    {
+                        Common.Models.Matters.Matter matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
+                        matter.LeadAttorney = Mapper.Map<Common.Models.Contacts.Contact>(model.Contact);
+                        Data.Matters.Matter.Edit(matter, currentUser);
+                    }
+
+                    trans.Commit();
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return RedirectToAction("AssignContact", "MatterContact", 
+                        new { Id = model.Contact.Id, MatterId = model.Matter.Id });
+                }
             }
 
             return RedirectToAction("Contacts", "Matters",
@@ -116,9 +138,12 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Matters.MatterContactViewModel viewModel;
             Common.Models.Matters.MatterContact model;
 
-            model = Data.Matters.MatterContact.Get(id);
-            model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
-            model.Contact = Data.Contacts.Contact.Get(model.Contact.Id.Value);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Matters.MatterContact.Get(id, conn, false);
+                model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value, conn, false);
+                model.Contact = Data.Contacts.Contact.Get(model.Contact.Id.Value, conn, false);
+            }
 
             viewModel = Mapper.Map<ViewModels.Matters.MatterContactViewModel>(model);
             viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model.Matter);
@@ -137,26 +162,40 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Matters.MatterContact model, modelCurrent;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            modelCurrent = Data.Matters.MatterContact.Get(id);
-
-            model = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel);
-
-            model.Matter = modelCurrent.Matter;
-            model.Contact = modelCurrent.Contact;
-
-            model = Data.Matters.MatterContact.Edit(model, currentUser);
-
-            if (model.Role == "Lead Attorney")
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
-                model.Matter.LeadAttorney = model.Contact;
-                Data.Matters.Matter.Edit(model.Matter, currentUser);
+                try
+                {
+                    currentUser = Data.Account.Users.Get(User.Identity.Name);
+
+                    modelCurrent = Data.Matters.MatterContact.Get(id);
+
+                    model = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel);
+
+                    model.Matter = modelCurrent.Matter;
+                    model.Contact = modelCurrent.Contact;
+
+                    model = Data.Matters.MatterContact.Edit(model, currentUser);
+
+                    if (model.Role == "Lead Attorney")
+                    {
+                        model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
+                        model.Matter.LeadAttorney = model.Contact;
+                        Data.Matters.Matter.Edit(model.Matter, currentUser);
+                    }
+
+                    trans.Commit();
+
+                    return RedirectToAction("Contacts", "Matters",
+                        new { id = model.Matter.Id.Value.ToString() });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Edit(id);
+                }
             }
 
-            return RedirectToAction("Contacts", "Matters",
-                new { id = model.Matter.Id.Value.ToString() });
         }
 
         [Authorize(Roles = "Login, User")]
@@ -165,15 +204,17 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Matters.MatterContactViewModel viewModel;
             Common.Models.Matters.MatterContact model;
 
-            model = Data.Matters.MatterContact.Get(id);
-            model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
-            model.Contact = Data.Contacts.Contact.Get(model.Contact.Id.Value);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Matters.MatterContact.Get(id, conn, false);
+                model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value, conn, false);
+                model.Contact = Data.Contacts.Contact.Get(model.Contact.Id.Value, conn, false);
 
-            viewModel = Mapper.Map<ViewModels.Matters.MatterContactViewModel>(model);
-            viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model.Matter);
-            viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.Contact);
-
-            PopulateCoreDetails(viewModel);
+                viewModel = Mapper.Map<ViewModels.Matters.MatterContactViewModel>(model);
+                viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model.Matter);
+                viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.Contact);
+                PopulateCoreDetails(viewModel, conn);
+            }
 
             ViewData["MatterId"] = model.Matter.Id.Value;
             ViewData["Matter"] = model.Matter.Title;
@@ -195,22 +236,34 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.MatterContact model;
             Guid matterId;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-            
-            model = Data.Matters.MatterContact.Get(viewModel.Id.Value);
-            matterId = model.Matter.Id.Value;
-
-            model = Data.Matters.MatterContact.Disable(model, currentUser);
-
-            if (model.Role == "Lead Attorney")
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                Common.Models.Matters.Matter matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
-                matter.LeadAttorney = null;
-                Data.Matters.Matter.Edit(matter, currentUser);
-            }
+                try
+                {
+                    currentUser = Data.Account.Users.Get(User.Identity.Name);
 
-            return RedirectToAction("Contacts", "Matters",
-                new { id = matterId.ToString() });
+                    model = Data.Matters.MatterContact.Get(viewModel.Id.Value);
+                    matterId = model.Matter.Id.Value;
+
+                    model = Data.Matters.MatterContact.Disable(model, currentUser);
+
+                    if (model.Role == "Lead Attorney")
+                    {
+                        Common.Models.Matters.Matter matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
+                        matter.LeadAttorney = null;
+                        Data.Matters.Matter.Edit(matter, currentUser);
+                    }
+
+                    trans.Commit();
+                    return RedirectToAction("Contacts", "Matters",
+                        new { id = matterId.ToString() });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Edit(id);
+                }
+            }
         }
     }
 }

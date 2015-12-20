@@ -24,6 +24,7 @@ using System.Web.Mvc;
 
 namespace OpenLawOffice.Web.Controllers
 {
+    // NOT MAINTAINED
     [HandleError(View = "Errors/Index", Order = 10)]
     public class TagCategoriesController : BaseController
     {

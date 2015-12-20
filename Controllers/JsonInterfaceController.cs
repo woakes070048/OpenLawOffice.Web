@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using System.Web.Routing;
 using System.IO;
 using System.Web.Profile;
+using System.Data;
 
 namespace OpenLawOffice.Web.Controllers
 {
@@ -33,69 +34,83 @@ namespace OpenLawOffice.Web.Controllers
 
             response.RequestReceived = DateTime.Now;
 
-            Common.Models.Account.Users user = Data.Account.Users.Get(request.Package.Username);
-            profile = ProfileBase.Create(user.Username);
-
-            // decrypt password
-            Common.Encryption enc = new Common.Encryption();
-            Common.Encryption.Package package;
-            enc.IV = request.Package.IV;
-            if (profile != null && profile.ExternalAppKey != null
-                && !string.IsNullOrEmpty(profile.ExternalAppKey))
-                enc.Key = profile.ExternalAppKey;
-            else
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                response.Successful = false;
-                response.Package = Guid.Empty;
-            }
-            package = enc.Decrypt(new Common.Encryption.Package()
+                try
                 {
-                    Input = request.Package.Password
-                });
-            if (string.IsNullOrEmpty(package.Output))
-            {
-                response.Successful = false;
-                response.Package = Guid.Empty;
-            }
-            request.Package.Password = package.Output;
+                    Common.Models.Account.Users user = Data.Account.Users.Get(trans, request.Package.Username);
+                    profile = ProfileBase.Create(user.Username);
 
-            string hashFromDb = Security.ClientHashPassword(user.Password);
-            string hashFromWeb = Security.ClientHashPassword(request.Package.Password);
-            
-            if (MembershipService.ValidateUser(request.Package.Username, request.Package.Password))
-            {
-                Common.Models.External.ExternalSession session =
-                    Data.External.ExternalSession.Get(request.Package.AppName, request.Package.MachineId, request.Package.Username);
-                user = Data.Account.Users.Get(request.Package.Username);
-
-                if (session == null)
-                { // create
-                    session = Data.External.ExternalSession.Create(new Common.Models.External.ExternalSession()
+                    // decrypt password
+                    Common.Encryption enc = new Common.Encryption();
+                    Common.Encryption.Package package;
+                    enc.IV = request.Package.IV;
+                    if (profile != null && profile.ExternalAppKey != null
+                        && !string.IsNullOrEmpty(profile.ExternalAppKey))
+                        enc.Key = profile.ExternalAppKey;
+                    else
                     {
-                        MachineId = request.Package.MachineId,
-                        User = user,
-                        AppName = request.Package.AppName
-                    });
-                }
-                else
-                { // update
-                    session = Data.External.ExternalSession.Update(new Common.Models.External.ExternalSession()
+                        response.Successful = false;
+                        response.Package = Guid.Empty;
+                    }
+                    package = enc.Decrypt(new Common.Encryption.Package()
                     {
-                        Id = session.Id,
-                        MachineId = request.Package.MachineId,
-                        User = user,
-                        AppName = request.Package.AppName
+                        Input = request.Package.Password
                     });
-                }
+                    if (string.IsNullOrEmpty(package.Output))
+                    {
+                        response.Successful = false;
+                        response.Package = Guid.Empty;
+                    }
+                    request.Package.Password = package.Output;
 
-                response.Successful = true;
-                response.Package = session.Id.Value;
-            }
-            else
-            {
-                response.Successful = false;
-                response.Package = Guid.Empty;
-                response.Error = "Invalid security credentials.";
+                    string hashFromDb = Security.ClientHashPassword(user.Password);
+                    string hashFromWeb = Security.ClientHashPassword(request.Package.Password);
+
+                    if (MembershipService.ValidateUser(request.Package.Username, request.Package.Password))
+                    {
+                        Common.Models.External.ExternalSession session =
+                            Data.External.ExternalSession.Get(trans, request.Package.AppName, request.Package.MachineId, request.Package.Username);
+                        user = Data.Account.Users.Get(trans, request.Package.Username);
+
+                        if (session == null)
+                        { // create
+                            session = Data.External.ExternalSession.Create(trans, new Common.Models.External.ExternalSession()
+                            {
+                                MachineId = request.Package.MachineId,
+                                User = user,
+                                AppName = request.Package.AppName
+                            });
+                        }
+                        else
+                        { // update
+                            session = Data.External.ExternalSession.Update(trans, new Common.Models.External.ExternalSession()
+                            {
+                                Id = session.Id,
+                                MachineId = request.Package.MachineId,
+                                User = user,
+                                AppName = request.Package.AppName
+                            });
+                        }
+
+                        response.Successful = true;
+                        response.Package = session.Id.Value;
+                        trans.Commit();
+                    }
+                    else
+                    {
+                        response.Successful = false;
+                        response.Package = Guid.Empty;
+                        response.Error = "Invalid security credentials.";
+                    }
+                }
+                catch
+                {
+                    trans.Rollback();
+                    response.Successful = false;
+                    response.Package = Guid.Empty;
+                    response.Error = "Unexpected server error.";
+                }
             }
 
             response.ResponseSent = DateTime.Now;
@@ -123,21 +138,38 @@ namespace OpenLawOffice.Web.Controllers
                 return Json(response, JsonRequestBehavior.AllowGet);
             }
 
-            if (!VerifyToken(token))
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                response.Successful = false;
-                response.Error = "Invalid Token";
-                response.Package = false;
-                return Json(response, JsonRequestBehavior.AllowGet);
+                try
+                {
+                    if (!VerifyToken(trans, token))
+                    {
+                        response.Successful = false;
+                        response.Error = "Invalid Token";
+                        response.Package = false;
+                        return Json(response, JsonRequestBehavior.AllowGet);
+                    }
+
+                    // Close the session here
+                    session = Data.External.ExternalSession.Get(trans, request.Package.AppName, request.Package.MachineId, request.Package.Username);
+                    session = Data.External.ExternalSession.Delete(trans, session);
+
+                    trans.Commit();
+
+                    response.Successful = true;
+                    response.Package = true;
+                }
+                catch
+                {
+                    trans.Rollback();
+                    response.Successful = false;
+                    response.Package = false;
+                    response.Error = "Unexpected server error.";
+                }
             }
 
-            // Close the session here
-            session = Data.External.ExternalSession.Get(request.Package.AppName, request.Package.MachineId, request.Package.Username);
-            session = Data.External.ExternalSession.Delete(session);
-
-            response.Successful = true;
             response.ResponseSent = DateTime.Now;
-            response.Package = true;
+
             return Json(response, JsonRequestBehavior.AllowGet);
         }
 
@@ -157,16 +189,30 @@ namespace OpenLawOffice.Web.Controllers
                 return Json(response, JsonRequestBehavior.AllowGet);
             }
 
-            if (!VerifyToken(token))
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                response.Successful = false;
-                response.Error = "Invalid Token";
-                response.ResponseSent = DateTime.Now;
-                return Json(response, JsonRequestBehavior.AllowGet);
+                try
+                {
+                    if (!VerifyToken(trans, token))
+                    {
+                        response.Successful = false;
+                        response.Error = "Invalid Token";
+                        response.ResponseSent = DateTime.Now;
+                        return Json(response, JsonRequestBehavior.AllowGet);
+                    }
+
+                    response.Successful = true;
+                    response.Package = Data.Matters.Matter.List(trans, activeFilter, contactFilter, titleFilter, caseNumberFilter, jurisdictionFilter);
+                }
+                catch
+                {
+                    trans.Rollback();
+                    response.Successful = false;
+                    response.Package = null;
+                    response.Error = "Unexpected server error.";
+                }
             }
 
-            response.Successful = true;
-            response.Package = Data.Matters.Matter.List(activeFilter, contactFilter, titleFilter, caseNumberFilter, jurisdictionFilter);
             response.ResponseSent = DateTime.Now;
             return Json(response, JsonRequestBehavior.AllowGet);
         }
@@ -187,16 +233,30 @@ namespace OpenLawOffice.Web.Controllers
                 return Json(response, JsonRequestBehavior.AllowGet);
             }
 
-            if (!VerifyToken(token))
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                response.Successful = false;
-                response.Error = "Invalid Token";
-                response.ResponseSent = DateTime.Now;
-                return Json(response, JsonRequestBehavior.AllowGet);
+                try
+                {
+                    if (!VerifyToken(trans, token))
+                    {
+                        response.Successful = false;
+                        response.Error = "Invalid Token";
+                        response.ResponseSent = DateTime.Now;
+                        return Json(response, JsonRequestBehavior.AllowGet);
+                    }
+
+                    response.Successful = true;
+                    response.Package = Data.Forms.Form.ListForMatter(matterId);
+                }
+                catch
+                {
+                    trans.Rollback();
+                    response.Successful = false;
+                    response.Package = null;
+                    response.Error = "Unexpected server error.";
+                }
             }
 
-            response.Successful = true;
-            response.Package = Data.Forms.Form.ListForMatter(matterId);
             response.ResponseSent = DateTime.Now;
             return Json(response, JsonRequestBehavior.AllowGet);
         }
@@ -212,12 +272,23 @@ namespace OpenLawOffice.Web.Controllers
                 return null;
             }
 
-            if (!VerifyToken(token))
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                return null;
-            }
+                try
+                {
+                    if (!VerifyToken(trans, token))
+                    {
+                        return null;
+                    }
 
-            model = Data.Forms.Form.Get(id);
+                    model = Data.Forms.Form.Get(trans, id);
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return null;
+                }
+            }
 
             if (Path.HasExtension(model.Path))
                 ext = Path.GetExtension(model.Path);
@@ -225,7 +296,7 @@ namespace OpenLawOffice.Web.Controllers
             return File(model.Path, Common.Utilities.GetMimeType(ext), model.Title + ext);
         }
 
-        public ActionResult GetFormDataForMatter(Guid id)
+        public ActionResult GetFormDataForMatter(Data.Transaction trans, Guid id)
         {
             Guid token;
             Common.Net.Response<List<Common.Models.Forms.FormFieldMatter>> response
@@ -241,7 +312,7 @@ namespace OpenLawOffice.Web.Controllers
                 return Json(response, JsonRequestBehavior.AllowGet);
             }
 
-            if (!VerifyToken(token))
+            if (!VerifyToken(trans, token))
             {
                 response.Successful = false;
                 response.Error = "Invalid Token";
@@ -268,16 +339,16 @@ namespace OpenLawOffice.Web.Controllers
             return token;
         }
 
-        private bool VerifyToken(Guid token, bool renewSession = true)
+        private bool VerifyToken(Data.Transaction trans, Guid token, bool renewSession = true)
         {
-            Common.Models.External.ExternalSession session = Data.External.ExternalSession.Get(token);
+            Common.Models.External.ExternalSession session = Data.External.ExternalSession.Get(trans, token);
 
             if (session == null) return false;
 
             if (session.Expires < DateTime.Now) return false;
 
             if (renewSession)
-                session = Data.External.ExternalSession.Renew(session);
+                session = Data.External.ExternalSession.Renew(trans, session);
 
             return true;
         }

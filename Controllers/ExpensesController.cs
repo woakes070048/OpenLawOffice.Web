@@ -25,6 +25,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Web;
     using System.Web.Mvc;
     using AutoMapper;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
 
@@ -38,8 +39,11 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.Matter matter;
             ViewModels.Billing.ExpenseViewModel viewModel;
 
-            model = Data.Billing.Expense.Get(id);
-            matter = Data.Billing.Expense.GetMatter(id);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Billing.Expense.Get(id, conn, false);
+                matter = Data.Billing.Expense.GetMatter(id, conn, false);
+            }
 
             viewModel = Mapper.Map<ViewModels.Billing.ExpenseViewModel>(model);
             
@@ -53,17 +57,31 @@ namespace OpenLawOffice.Web.Controllers
         public ActionResult Edit(Guid id, ViewModels.Billing.ExpenseViewModel viewModel)
         {
             Common.Models.Account.Users currentUser;
-            Common.Models.Matters.Matter matter;
+            Common.Models.Matters.Matter matter = null;
             Common.Models.Billing.Expense model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-            matter = Data.Billing.Expense.GetMatter(id);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Billing.Expense>(viewModel);
+                    matter = Data.Billing.Expense.GetMatter(trans, id);
 
-            model = Data.Billing.Expense.Edit(model, currentUser);
+                    model = Mapper.Map<Common.Models.Billing.Expense>(viewModel);
 
-            return RedirectToAction("Details", "Matters", new { Id = matter.Id });
+                    model = Data.Billing.Expense.Edit(trans, model, currentUser);
+
+                    trans.Commit();
+
+                    return RedirectToAction("Details", "Matters", new { Id = matter.Id });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Edit(id);
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -71,7 +89,10 @@ namespace OpenLawOffice.Web.Controllers
         {
             Common.Models.Matters.Matter matter = null;
 
-            matter = Data.Matters.Matter.Get(Guid.Parse(Request["MatterId"]));
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                matter = Data.Matters.Matter.Get(Guid.Parse(Request["MatterId"]), conn, false);
+            }
 
             ViewData["MatterId"] = matter.Id.Value;
             ViewData["Matter"] = matter.Title;
@@ -91,17 +112,31 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Billing.Expense model;
             Guid matterid;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Billing.Expense>(viewModel);
+                    model = Mapper.Map<Common.Models.Billing.Expense>(viewModel);
 
-            model = Data.Billing.Expense.Create(model, currentUser);
+                    model = Data.Billing.Expense.Create(trans, model, currentUser);
 
-            matterid = Guid.Parse(Request["MatterId"]);
+                    matterid = Guid.Parse(Request["MatterId"]);
 
-            Data.Billing.Expense.RelateMatter(model, matterid, currentUser);
+                    Data.Billing.Expense.RelateMatter(trans, model, matterid, currentUser);
 
-            return RedirectToAction("Details", "Matters", new { Id = matterid });
+                    trans.Commit();
+
+                    return RedirectToAction("Details", "Matters", new { Id = matterid });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Create();
+                }
+            }
+
         }
     }
 }

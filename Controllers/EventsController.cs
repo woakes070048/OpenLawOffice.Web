@@ -28,6 +28,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Web.Profile;
     using System.Web.Security;
 
+    // NOT MAINTAINED
     public class EventsController : BaseController
     {
         [Authorize(Roles = "Login, User")]
