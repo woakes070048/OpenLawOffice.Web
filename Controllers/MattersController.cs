@@ -61,10 +61,15 @@ namespace OpenLawOffice.Web.Controllers
             caseNumberFilter = Request["caseNumberFilter"];
             jurisdictionFilter = Request["jurisdictionFilter"];
 
-            Data.Matters.Matter.List(active, contactFilter, titleFilter, caseNumberFilter, jurisdictionFilter).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                viewModelList.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
-            });
+                Data.Matters.Matter.List(active, contactFilter, 
+                    titleFilter, caseNumberFilter, jurisdictionFilter,
+                    conn, false).ForEach(x =>
+                {
+                    viewModelList.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
+                });
+            }
             
             return View(viewModelList);
         }
@@ -108,84 +113,84 @@ namespace OpenLawOffice.Web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [HttpGet]
-        [Authorize(Roles = "Login, User")]
-        public ActionResult ListChildrenJqGrid(Guid? id)
-        {
-            ViewModels.JqGridObject jqObject;
+        //[HttpGet]
+        //[Authorize(Roles = "Login, User")]
+        //public ActionResult ListChildrenJqGrid(Guid? id)
+        //{
+        //    ViewModels.JqGridObject jqObject;
 
-            jqObject = ListChildrenJqGridObject(id, x => GetChildrenList(x));
+        //    jqObject = ListChildrenJqGridObject(id, x => GetChildrenList(x));
 
-            return Json(jqObject, JsonRequestBehavior.AllowGet);
-        }
+        //    return Json(jqObject, JsonRequestBehavior.AllowGet);
+        //}
 
-        [HttpGet]
-        [Authorize(Roles = "Login, User")]
-        public ActionResult ListChildrenForContactJqGrid(Guid? id)
-        {
-            ViewModels.JqGridObject jqObject;
-            int contactId;
+        //[HttpGet]
+        //[Authorize(Roles = "Login, User")]
+        //public ActionResult ListChildrenForContactJqGrid(Guid? id)
+        //{
+        //    ViewModels.JqGridObject jqObject;
+        //    int contactId;
 
-            contactId = int.Parse(Request["ContactId"]);
+        //    contactId = int.Parse(Request["ContactId"]);
 
-            jqObject = ListChildrenJqGridObject(id, x => GetChildrenListForContact(x, contactId));
+        //    jqObject = ListChildrenJqGridObject(id, x => GetChildrenListForContact(x, contactId));
 
-            return Json(jqObject, JsonRequestBehavior.AllowGet);
-        }
+        //    return Json(jqObject, JsonRequestBehavior.AllowGet);
+        //}
 
-        private ViewModels.JqGridObject ListChildrenJqGridObject(Guid? id, Func<Guid?, List<ViewModels.Matters.MatterViewModel>> act)
-        {
-            List<ViewModels.Matters.MatterViewModel> modelList;
-            List<object> anonList;
-            int level = 0;
+        //private ViewModels.JqGridObject ListChildrenJqGridObject(Guid? id, Func<Guid?, List<ViewModels.Matters.MatterViewModel>> act)
+        //{
+        //    List<ViewModels.Matters.MatterViewModel> modelList;
+        //    List<object> anonList;
+        //    int level = 0;
 
-            if (id == null)
-            {
-                // jqGrid uses nodeid by default
-                if (!string.IsNullOrEmpty(Request["nodeid"]))
-                    id = Guid.Parse(Request["nodeid"]);
-            }
+        //    if (id == null)
+        //    {
+        //        // jqGrid uses nodeid by default
+        //        if (!string.IsNullOrEmpty(Request["nodeid"]))
+        //            id = Guid.Parse(Request["nodeid"]);
+        //    }
 
-            modelList = act(id);
-            //modelList = GetChildrenList(id);
-            anonList = new List<object>();
+        //    modelList = act(id);
+        //    //modelList = GetChildrenList(id);
+        //    anonList = new List<object>();
 
-            if (!string.IsNullOrEmpty(Request["n_level"]))
-                level = int.Parse(Request["n_level"]) + 1;
+        //    if (!string.IsNullOrEmpty(Request["n_level"]))
+        //        level = int.Parse(Request["n_level"]) + 1;
 
-            modelList.ForEach(x =>
-            {
-                if (x.Parent == null)
-                    anonList.Add(new
-                    {
-                        Id = x.Id,
-                        Title = x.Title,
-                        Synopsis = x.Synopsis,
-                        level = level,
-                        isLeaf = false,
-                        expanded = false
-                    });
-                else
-                    anonList.Add(new
-                    {
-                        Id = x.Id,
-                        parent = x.Parent.Id,
-                        Title = x.Title,
-                        Synopsis = x.Synopsis,
-                        level = level,
-                        isLeaf = false,
-                        expanded = false
-                    });
-            });
+        //    modelList.ForEach(x =>
+        //    {
+        //        if (x.Parent == null)
+        //            anonList.Add(new
+        //            {
+        //                Id = x.Id,
+        //                Title = x.Title,
+        //                Synopsis = x.Synopsis,
+        //                level = level,
+        //                isLeaf = false,
+        //                expanded = false
+        //            });
+        //        else
+        //            anonList.Add(new
+        //            {
+        //                Id = x.Id,
+        //                parent = x.Parent.Id,
+        //                Title = x.Title,
+        //                Synopsis = x.Synopsis,
+        //                level = level,
+        //                isLeaf = false,
+        //                expanded = false
+        //            });
+        //    });
 
-            return new ViewModels.JqGridObject()
-            {
-                TotalPages = 1,
-                CurrentPage = 1,
-                TotalRecords = modelList.Count,
-                Rows = anonList.ToArray()
-            };
-        }
+        //    return new ViewModels.JqGridObject()
+        //    {
+        //        TotalPages = 1,
+        //        CurrentPage = 1,
+        //        TotalRecords = modelList.Count,
+        //        Rows = anonList.ToArray()
+        //    };
+        //}
 
         private List<ViewModels.Matters.MatterViewModel> GetChildrenList(Guid? id)
         {
@@ -193,10 +198,13 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Matters.MatterViewModel>();
 
-            Data.Matters.Matter.ListChildren(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                viewModelList.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
-            });
+                Data.Matters.Matter.ListChildren(id, conn, false).ForEach(x =>
+                {
+                    viewModelList.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
+                });
+            }
 
             return viewModelList;
         }
@@ -207,10 +215,13 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Matters.MatterViewModel>();
 
-            Data.Matters.Matter.ListChildrenForContact(id, contactId).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                viewModelList.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
-            });
+                Data.Matters.Matter.ListChildrenForContact(id, contactId, conn, false).ForEach(x =>
+                {
+                    viewModelList.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
+                });
+            }
 
             return viewModelList;
         }
@@ -228,14 +239,25 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Matters.Matter model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(User.Identity.Name);
 
-            model = Data.Matters.Matter.Get(id);
-            model.Active = false;
+                    model = Data.Matters.Matter.Get(id);
+                    model.Active = false;
 
-            model = Data.Matters.Matter.Edit(model, currentUser);
-
-            return RedirectToAction("Details", new { Id = id });
+                    model = Data.Matters.Matter.Edit(model, currentUser);
+                    trans.Commit();
+                    return RedirectToAction("Details", new { Id = id });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Close(id);
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -261,8 +283,6 @@ namespace OpenLawOffice.Web.Controllers
 
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                IDbConnection conna = conn;
-
                 model = Data.Matters.Matter.Get(id, conn, false);
 
                 if (model.LeadAttorney != null)
@@ -382,9 +402,6 @@ namespace OpenLawOffice.Web.Controllers
                         viewModel.Clients.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(contactModel));
                     }
                 });
-
-                if (conna != conn)
-                    throw new Exception();
             }
 
             if (neededRoles.Contains("Lead Attorney"))
@@ -413,35 +430,38 @@ namespace OpenLawOffice.Web.Controllers
             billingGroupList = new List<ViewModels.Billing.BillingGroupViewModel>();
             matterTypeList = new List<ViewModels.Matters.MatterTypeViewModel>();
 
-            Data.Account.Users.List().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                userList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
-            });
+                Data.Account.Users.List(conn, false).ForEach(x =>
+                {
+                    userList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
+                });
 
-            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
-            {
-                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-            });
+                Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
+                {
+                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                });
 
-            Data.Billing.BillingRate.List().ForEach(x =>
-            {
-                ViewModels.Billing.BillingRateViewModel vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x);
-                vm.Title += " (" + vm.PricePerUnit.ToString("C") + ")";
-                billingRateList.Add(vm);
-            });
+                Data.Billing.BillingRate.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Billing.BillingRateViewModel vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x);
+                    vm.Title += " (" + vm.PricePerUnit.ToString("C") + ")";
+                    billingRateList.Add(vm);
+                });
 
-            Data.Billing.BillingGroup.List().ForEach(x =>
-            {
-                ViewModels.Billing.BillingGroupViewModel vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(x);
-                vm.Title += " (" + vm.Amount.ToString("C") + ")";
-                billingGroupList.Add(vm);
-            });
+                Data.Billing.BillingGroup.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Billing.BillingGroupViewModel vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(x);
+                    vm.Title += " (" + vm.Amount.ToString("C") + ")";
+                    billingGroupList.Add(vm);
+                });
 
-            Data.Matters.MatterType.List().ForEach(x =>
-            {
-                ViewModels.Matters.MatterTypeViewModel vm = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x);
-                matterTypeList.Add(vm);
-            });
+                Data.Matters.MatterType.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Matters.MatterTypeViewModel vm = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x);
+                    matterTypeList.Add(vm);
+                });
+            }
 
             ViewBag.UserList = userList;
             ViewBag.EmployeeContactList = employeeContactList;
@@ -461,201 +481,214 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.Matter model;
             List<Common.Models.Matters.Matter> possibleDuplicateList;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            model = Mapper.Map<Common.Models.Matters.Matter>(viewModel.Matter);
-            
-            if (Request["OverrideConflict"] != "True")
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                possibleDuplicateList = Data.Matters.Matter.ListPossibleDuplicates(model);
-
-                if (possibleDuplicateList.Count > 0)
+                try
                 {
-                    List<ViewModels.Account.UsersViewModel> userList;
-                    List<ViewModels.Contacts.ContactViewModel> employeeContactList;
-                    List<ViewModels.Billing.BillingRateViewModel> billingRateList;
-                    List<ViewModels.Billing.BillingGroupViewModel> billingGroupList;
-                    List<ViewModels.Matters.MatterTypeViewModel> matterTypeList;
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-                    possibleDuplicateList.ForEach(x =>
+                    model = Mapper.Map<Common.Models.Matters.Matter>(viewModel.Matter);
+
+                    if (Request["OverrideConflict"] != "True")
                     {
-                        errorListString += "<li><a href=\"/Matters/Details/" + x.Id.Value + "\">" + x.Title + "</a> [<a href=\"/Matters/Edit/" + x.Id.Value + "\">edit</a>]</li>";
-                    });
+                        possibleDuplicateList = Data.Matters.Matter.ListPossibleDuplicates(trans, model);
 
-                    userList = new List<ViewModels.Account.UsersViewModel>();
-                    employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
-                    billingRateList = new List<ViewModels.Billing.BillingRateViewModel>();
-                    billingGroupList = new List<ViewModels.Billing.BillingGroupViewModel>();
-                    matterTypeList = new List<ViewModels.Matters.MatterTypeViewModel>();
+                        if (possibleDuplicateList.Count > 0)
+                        {
+                            List<ViewModels.Account.UsersViewModel> userList;
+                            List<ViewModels.Contacts.ContactViewModel> employeeContactList;
+                            List<ViewModels.Billing.BillingRateViewModel> billingRateList;
+                            List<ViewModels.Billing.BillingGroupViewModel> billingGroupList;
+                            List<ViewModels.Matters.MatterTypeViewModel> matterTypeList;
 
-                    Data.Account.Users.List().ForEach(x =>
+                            possibleDuplicateList.ForEach(x =>
+                            {
+                                errorListString += "<li><a href=\"/Matters/Details/" + x.Id.Value + "\">" + x.Title + "</a> [<a href=\"/Matters/Edit/" + x.Id.Value + "\">edit</a>]</li>";
+                            });
+
+                            userList = new List<ViewModels.Account.UsersViewModel>();
+                            employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
+                            billingRateList = new List<ViewModels.Billing.BillingRateViewModel>();
+                            billingGroupList = new List<ViewModels.Billing.BillingGroupViewModel>();
+                            matterTypeList = new List<ViewModels.Matters.MatterTypeViewModel>();
+
+                            Data.Account.Users.List(trans).ForEach(x =>
+                            {
+                                userList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
+                            });
+
+                            Data.Contacts.Contact.ListEmployeesOnly(trans).ForEach(x =>
+                            {
+                                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                            });
+
+                            Data.Billing.BillingRate.List(trans).ForEach(x =>
+                            {
+                                ViewModels.Billing.BillingRateViewModel vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x);
+                                vm.Title += " (" + vm.PricePerUnit.ToString("C") + ")";
+                                billingRateList.Add(vm);
+                            });
+
+                            Data.Billing.BillingGroup.List(trans).ForEach(x =>
+                            {
+                                ViewModels.Billing.BillingGroupViewModel vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(x);
+                                vm.Title += " (" + vm.Amount.ToString("C") + ")";
+                                billingGroupList.Add(vm);
+                            });
+
+                            Data.Matters.MatterType.List(trans).ForEach(x =>
+                            {
+                                ViewModels.Matters.MatterTypeViewModel vm = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x);
+                                matterTypeList.Add(vm);
+                            });
+
+                            ViewBag.ErrorMessage = "Matter possibly conflicts with the following existing matters:<ul>" + errorListString + "</ul>Click Save again to create the matter anyway.";
+                            ViewBag.OverrideConflict = "True";
+
+                            ViewBag.UserList = userList;
+                            ViewBag.EmployeeContactList = employeeContactList;
+                            ViewBag.BillingRateList = billingRateList;
+                            ViewBag.BillingGroupList = billingGroupList;
+                            ViewBag.MatterTypeList = matterTypeList;
+
+                            return View(viewModel);
+                        }
+                    }
+
+
+                    if (viewModel.LeadAttorney == null || viewModel.LeadAttorney.Contact == null ||
+                        !viewModel.LeadAttorney.Contact.Id.HasValue)
                     {
-                        userList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
-                    });
+                        List<ViewModels.Account.UsersViewModel> userList;
+                        List<ViewModels.Contacts.ContactViewModel> employeeContactList;
+                        List<ViewModels.Billing.BillingRateViewModel> billingRateList;
+                        List<ViewModels.Billing.BillingGroupViewModel> billingGroupList;
 
-                    Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
+                        userList = new List<ViewModels.Account.UsersViewModel>();
+                        employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
+                        billingRateList = new List<ViewModels.Billing.BillingRateViewModel>();
+                        billingGroupList = new List<ViewModels.Billing.BillingGroupViewModel>();
+
+                        Data.Account.Users.List(trans).ForEach(x =>
+                        {
+                            userList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
+                        });
+
+                        Data.Contacts.Contact.ListEmployeesOnly(trans).ForEach(x =>
+                        {
+                            employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                        });
+
+                        Data.Billing.BillingRate.List(trans).ForEach(x =>
+                        {
+                            ViewModels.Billing.BillingRateViewModel vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x);
+                            vm.Title += " (" + vm.PricePerUnit.ToString("C") + ")";
+                            billingRateList.Add(vm);
+                        });
+
+                        Data.Billing.BillingGroup.List(trans).ForEach(x =>
+                        {
+                            ViewModels.Billing.BillingGroupViewModel vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(x);
+                            vm.Title += " (" + vm.Amount.ToString("C") + ")";
+                            billingGroupList.Add(vm);
+                        });
+
+                        ModelState.AddModelError("LeadAttorney", "Lead Attorney is required");
+
+                        ViewBag.UserList = userList;
+                        ViewBag.EmployeeContactList = employeeContactList;
+                        ViewBag.BillingRateList = billingRateList;
+                        ViewBag.BillingGroupList = billingGroupList;
+                        return View(viewModel);
+                    }
+
+                    model.LeadAttorney = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.LeadAttorney.Contact);
+
+                    // Lead Attorney is created within this method
+                    model = Data.Matters.Matter.Create(trans, model, currentUser);
+
+                    Data.Matters.ResponsibleUser.Create(trans, new Common.Models.Matters.ResponsibleUser()
                     {
-                        employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-                    });
+                        Matter = model,
+                        User = new Common.Models.Account.Users() { PId = viewModel.ResponsibleUser.User.PId },
+                        Responsibility = viewModel.ResponsibleUser.Responsibility
+                    }, currentUser);
 
-                    Data.Billing.BillingRate.List().ForEach(x =>
+                    // Assign Contacts
+
+                    if (viewModel.Contact1 != null && viewModel.Contact1.Id.HasValue &&
+                        !string.IsNullOrEmpty(viewModel.Role1))
                     {
-                        ViewModels.Billing.BillingRateViewModel vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x);
-                        vm.Title += " (" + vm.PricePerUnit.ToString("C") + ")";
-                        billingRateList.Add(vm);
-                    });
+                        Data.Matters.MatterContact.Create(trans, new Common.Models.Matters.MatterContact()
+                        {
+                            Matter = model,
+                            Role = viewModel.Role1,
+                            Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact1)
+                        }, currentUser);
+                    }
 
-                    Data.Billing.BillingGroup.List().ForEach(x =>
+                    if (viewModel.Contact2 != null && viewModel.Contact2.Id.HasValue &&
+                        !string.IsNullOrEmpty(viewModel.Role2))
                     {
-                        ViewModels.Billing.BillingGroupViewModel vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(x);
-                        vm.Title += " (" + vm.Amount.ToString("C") + ")";
-                        billingGroupList.Add(vm);
-                    });
+                        Data.Matters.MatterContact.Create(trans, new Common.Models.Matters.MatterContact()
+                        {
+                            Matter = model,
+                            Role = viewModel.Role2,
+                            Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact2)
+                        }, currentUser);
+                    }
 
-                    Data.Matters.MatterType.List().ForEach(x =>
+                    if (viewModel.Contact3 != null && viewModel.Contact3.Id.HasValue &&
+                        !string.IsNullOrEmpty(viewModel.Role3))
                     {
-                        ViewModels.Matters.MatterTypeViewModel vm = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x);
-                        matterTypeList.Add(vm);
-                    });
+                        Data.Matters.MatterContact.Create(trans, new Common.Models.Matters.MatterContact()
+                        {
+                            Matter = model,
+                            Role = viewModel.Role3,
+                            Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact3)
+                        }, currentUser);
+                    }
 
-                    ViewBag.ErrorMessage = "Matter possibly conflicts with the following existing matters:<ul>" + errorListString + "</ul>Click Save again to create the matter anyway.";
-                    ViewBag.OverrideConflict = "True";
+                    if (viewModel.Contact4 != null && viewModel.Contact4.Id.HasValue &&
+                        !string.IsNullOrEmpty(viewModel.Role4))
+                    {
+                        Data.Matters.MatterContact.Create(trans, new Common.Models.Matters.MatterContact()
+                        {
+                            Matter = model,
+                            Role = viewModel.Role4,
+                            Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact4)
+                        }, currentUser);
+                    }
 
-                    ViewBag.UserList = userList;
-                    ViewBag.EmployeeContactList = employeeContactList;
-                    ViewBag.BillingRateList = billingRateList;
-                    ViewBag.BillingGroupList = billingGroupList;
-                    ViewBag.MatterTypeList = matterTypeList;
+                    if (viewModel.Contact5 != null && viewModel.Contact5.Id.HasValue &&
+                        !string.IsNullOrEmpty(viewModel.Role5))
+                    {
+                        Data.Matters.MatterContact.Create(trans, new Common.Models.Matters.MatterContact()
+                        {
+                            Matter = model,
+                            Role = viewModel.Role5,
+                            Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact5)
+                        }, currentUser);
+                    }
 
-                    return View(viewModel);
+                    if (viewModel.Contact6 != null && viewModel.Contact6.Id.HasValue &&
+                        !string.IsNullOrEmpty(viewModel.Role6))
+                    {
+                        Data.Matters.MatterContact.Create(trans, new Common.Models.Matters.MatterContact()
+                        {
+                            Matter = model,
+                            Role = viewModel.Role6,
+                            Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact6)
+                        }, currentUser);
+                    }
+
+                    trans.Commit();
                 }
-            }
-            
-
-            if (viewModel.LeadAttorney == null || viewModel.LeadAttorney.Contact == null ||
-                !viewModel.LeadAttorney.Contact.Id.HasValue)
-            {
-                List<ViewModels.Account.UsersViewModel> userList;
-                List<ViewModels.Contacts.ContactViewModel> employeeContactList;
-                List<ViewModels.Billing.BillingRateViewModel> billingRateList;
-                List<ViewModels.Billing.BillingGroupViewModel> billingGroupList;
-
-                userList = new List<ViewModels.Account.UsersViewModel>();
-                employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
-                billingRateList = new List<ViewModels.Billing.BillingRateViewModel>();
-                billingGroupList = new List<ViewModels.Billing.BillingGroupViewModel>();
-
-                Data.Account.Users.List().ForEach(x =>
+                catch
                 {
-                    userList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
-                });
-
-                Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
-                {
-                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-                });
-
-                Data.Billing.BillingRate.List().ForEach(x =>
-                {
-                    ViewModels.Billing.BillingRateViewModel vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x);
-                    vm.Title += " (" + vm.PricePerUnit.ToString("C") + ")";
-                    billingRateList.Add(vm);
-                });
-
-                Data.Billing.BillingGroup.List().ForEach(x =>
-                {
-                    ViewModels.Billing.BillingGroupViewModel vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(x);
-                    vm.Title += " (" + vm.Amount.ToString("C") + ")";
-                    billingGroupList.Add(vm);
-                });
-
-                ModelState.AddModelError("LeadAttorney", "Lead Attorney is required");
-
-                ViewBag.UserList = userList;
-                ViewBag.EmployeeContactList = employeeContactList;
-                ViewBag.BillingRateList = billingRateList;
-                ViewBag.BillingGroupList = billingGroupList;
-                return View(viewModel);
-            }
-
-            model.LeadAttorney = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.LeadAttorney.Contact);
-
-            // Lead Attorney is created within this method
-            model = Data.Matters.Matter.Create(model, currentUser);
-
-            Data.Matters.ResponsibleUser.Create(new Common.Models.Matters.ResponsibleUser()
-            {
-                Matter = model,
-                User = new Common.Models.Account.Users() { PId = viewModel.ResponsibleUser.User.PId },
-                Responsibility = viewModel.ResponsibleUser.Responsibility
-            }, currentUser);
-
-            // Assign Contacts
-
-            if (viewModel.Contact1 != null && viewModel.Contact1.Id.HasValue &&
-                !string.IsNullOrEmpty(viewModel.Role1))
-            {
-                Data.Matters.MatterContact.Create(new Common.Models.Matters.MatterContact()
-                {
-                    Matter = model,
-                    Role = viewModel.Role1,
-                    Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact1)
-                }, currentUser);
-            }
-
-            if (viewModel.Contact2 != null && viewModel.Contact2.Id.HasValue &&
-                !string.IsNullOrEmpty(viewModel.Role2))
-            {
-                Data.Matters.MatterContact.Create(new Common.Models.Matters.MatterContact()
-                {
-                    Matter = model,
-                    Role = viewModel.Role2,
-                    Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact2)
-                }, currentUser);
-            }
-
-            if (viewModel.Contact3 != null && viewModel.Contact3.Id.HasValue &&
-                !string.IsNullOrEmpty(viewModel.Role3))
-            {
-                Data.Matters.MatterContact.Create(new Common.Models.Matters.MatterContact()
-                {
-                    Matter = model,
-                    Role = viewModel.Role3,
-                    Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact3)
-                }, currentUser);
-            }
-
-            if (viewModel.Contact4 != null && viewModel.Contact4.Id.HasValue &&
-                !string.IsNullOrEmpty(viewModel.Role4))
-            {
-                Data.Matters.MatterContact.Create(new Common.Models.Matters.MatterContact()
-                {
-                    Matter = model,
-                    Role = viewModel.Role4,
-                    Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact4)
-                }, currentUser);
-            }
-
-            if (viewModel.Contact5 != null && viewModel.Contact5.Id.HasValue &&
-                !string.IsNullOrEmpty(viewModel.Role5))
-            {
-                Data.Matters.MatterContact.Create(new Common.Models.Matters.MatterContact()
-                {
-                    Matter = model,
-                    Role = viewModel.Role5,
-                    Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact5)
-                }, currentUser);
-            }
-
-            if (viewModel.Contact6 != null && viewModel.Contact6.Id.HasValue &&
-                !string.IsNullOrEmpty(viewModel.Role6))
-            {
-                Data.Matters.MatterContact.Create(new Common.Models.Matters.MatterContact()
-                {
-                    Matter = model,
-                    Role = viewModel.Role6,
-                    Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact6)
-                }, currentUser);
+                    trans.Rollback();
+                    return Create();
+                }
             }
 
             return RedirectToAction("Details", new { Id = model.Id });
@@ -676,44 +709,47 @@ namespace OpenLawOffice.Web.Controllers
             billingGroupList = new List<ViewModels.Billing.BillingGroupViewModel>();
             matterTypeList = new List<ViewModels.Matters.MatterTypeViewModel>();
 
-            model = Data.Matters.Matter.Get(id);
-
-            if (model.LeadAttorney != null)
-                model.LeadAttorney = Data.Contacts.Contact.Get(model.LeadAttorney.Id.Value);
-
-            if (model.BillTo != null)
-                model.BillTo = Data.Contacts.Contact.Get(model.BillTo.Id.Value);
-
-            if (model.DefaultBillingRate != null)
-                model.DefaultBillingRate = Data.Billing.BillingRate.Get(model.DefaultBillingRate.Id.Value);
-
-            if (model.BillingGroup != null)
-                model.BillingGroup = Data.Billing.BillingGroup.Get(model.BillingGroup.Id.Value);
-
-            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-            });
+                model = Data.Matters.Matter.Get(id, conn, false);
 
-            Data.Billing.BillingRate.List().ForEach(x =>
-            {
-                ViewModels.Billing.BillingRateViewModel vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x);
-                vm.Title += " (" + vm.PricePerUnit.ToString("C") + ")";
-                billingRateList.Add(vm);
-            });
+                if (model.LeadAttorney != null)
+                    model.LeadAttorney = Data.Contacts.Contact.Get(model.LeadAttorney.Id.Value, conn, false);
 
-            Data.Billing.BillingGroup.List().ForEach(x =>
-            {
-                ViewModels.Billing.BillingGroupViewModel vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(x);
-                vm.Title += " (" + vm.Amount.ToString("C") + ")";
-                billingGroupList.Add(vm);
-            });
+                if (model.BillTo != null)
+                    model.BillTo = Data.Contacts.Contact.Get(model.BillTo.Id.Value, conn, false);
 
-            Data.Matters.MatterType.List().ForEach(x =>
-            {
-                ViewModels.Matters.MatterTypeViewModel vm = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x);
-                matterTypeList.Add(vm);
-            });
+                if (model.DefaultBillingRate != null)
+                    model.DefaultBillingRate = Data.Billing.BillingRate.Get(model.DefaultBillingRate.Id.Value, conn, false);
+
+                if (model.BillingGroup != null)
+                    model.BillingGroup = Data.Billing.BillingGroup.Get(model.BillingGroup.Id.Value, conn, false);
+
+                Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
+                {
+                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                });
+
+                Data.Billing.BillingRate.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Billing.BillingRateViewModel vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x);
+                    vm.Title += " (" + vm.PricePerUnit.ToString("C") + ")";
+                    billingRateList.Add(vm);
+                });
+
+                Data.Billing.BillingGroup.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Billing.BillingGroupViewModel vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(x);
+                    vm.Title += " (" + vm.Amount.ToString("C") + ")";
+                    billingGroupList.Add(vm);
+                });
+
+                Data.Matters.MatterType.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Matters.MatterTypeViewModel vm = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x);
+                    matterTypeList.Add(vm);
+                });
+            }
 
             viewModel = new ViewModels.Matters.EditMatterViewModel();
             viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model);
@@ -742,57 +778,70 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModel.Matter.Id = id;
 
-            if (viewModel.LeadAttorney == null || viewModel.LeadAttorney.Contact == null ||
-                !viewModel.LeadAttorney.Contact.Id.HasValue)
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                List<ViewModels.Contacts.ContactViewModel> employeeContactList;
-
-                model = Data.Matters.Matter.Get(id);
-
-                employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
-
-                Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
+                try
                 {
-                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-                });
+                    if (viewModel.LeadAttorney == null || viewModel.LeadAttorney.Contact == null ||
+                        !viewModel.LeadAttorney.Contact.Id.HasValue)
+                    {
+                        List<ViewModels.Contacts.ContactViewModel> employeeContactList;
 
-                ModelState.AddModelError("LeadAttorney", "Lead Attorney is required");
+                        model = Data.Matters.Matter.Get(trans, id);
 
-                ViewBag.EmployeeContactList = employeeContactList;
-                ViewBag.Matter = model.Title;
-                ViewBag.MatterId = model.Id;
-                return View(viewModel);
-            }
+                        employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
 
-            if (viewModel.Matter.BillTo == null || !viewModel.Matter.BillTo.Id.HasValue)
-            {
-                List<ViewModels.Contacts.ContactViewModel> employeeContactList;
+                        Data.Contacts.Contact.ListEmployeesOnly(trans).ForEach(x =>
+                        {
+                            employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                        });
 
-                model = Data.Matters.Matter.Get(id);
+                        ModelState.AddModelError("LeadAttorney", "Lead Attorney is required");
 
-                employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
+                        ViewBag.EmployeeContactList = employeeContactList;
+                        ViewBag.Matter = model.Title;
+                        ViewBag.MatterId = model.Id;
+                        return View(viewModel);
+                    }
 
-                Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
+                    if (viewModel.Matter.BillTo == null || !viewModel.Matter.BillTo.Id.HasValue)
+                    {
+                        List<ViewModels.Contacts.ContactViewModel> employeeContactList;
+
+                        model = Data.Matters.Matter.Get(trans, id);
+
+                        employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
+
+                        Data.Contacts.Contact.ListEmployeesOnly(trans).ForEach(x =>
+                        {
+                            employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                        });
+
+                        ModelState.AddModelError("BillTo", "Bill To is required");
+
+                        ViewBag.EmployeeContactList = employeeContactList;
+                        ViewBag.Matter = model.Title;
+                        ViewBag.MatterId = model.Id;
+                        return View(viewModel);
+                    }
+
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
+
+                    viewModel.Matter.LeadAttorney = viewModel.LeadAttorney.Contact;
+                    model = Mapper.Map<Common.Models.Matters.Matter>(viewModel.Matter);
+
+                    model = Data.Matters.Matter.Edit(trans, model, currentUser);
+
+                    trans.Commit();
+
+                    return RedirectToAction("Details", new { id = model.Id });
+                }
+                catch
                 {
-                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-                });
-
-                ModelState.AddModelError("BillTo", "Bill To is required");
-
-                ViewBag.EmployeeContactList = employeeContactList;
-                ViewBag.Matter = model.Title;
-                ViewBag.MatterId = model.Id;
-                return View(viewModel);
+                    trans.Rollback();
+                    return Edit(id);
+                }
             }
-
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            viewModel.Matter.LeadAttorney = viewModel.LeadAttorney.Contact;
-            model = Mapper.Map<Common.Models.Matters.Matter>(viewModel.Matter);
-
-            model = Data.Matters.Matter.Edit(model, currentUser);
-
-            return RedirectToAction("Details", new { id = model.Id });
         }
 
         // A note on delete - https://github.com/NodineLegal/OpenLawOffice/wiki/Design-of-Disabling-a-Matter
@@ -805,12 +854,15 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Matters.MatterTagViewModel>();
 
-            Data.Matters.MatterTag.ListForMatter(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                viewModelList.Add(Mapper.Map<ViewModels.Matters.MatterTagViewModel>(x));
-            });
+                Data.Matters.MatterTag.ListForMatter(id, conn, false).ForEach(x =>
+                {
+                    viewModelList.Add(Mapper.Map<ViewModels.Matters.MatterTagViewModel>(x));
+                });
 
-            matter = Data.Matters.Matter.Get(id);
+                matter = Data.Matters.Matter.Get(id, conn, false);
+            }
             ViewBag.Matter = matter.Title;
             ViewBag.MatterId = matter.Id;
 

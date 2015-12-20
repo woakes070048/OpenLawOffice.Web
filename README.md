@@ -4,7 +4,7 @@ Status: Development
 
 ## Installation
 ### Step 1 - Prerequisites
-The below are currently considered the prerequisites and this software is only tested within the Visual Studio (R) 2013 IDE with Postgres 9.2 all on Windows 8.
+The below are currently considered the prerequisites and this software is only tested within the Microsoft (R) Visual Studio (R) 2015 IDE with Postgres 9.2 all on Windows 10.
 
 * .NET Framework v4.6
 * MVC 5.2.3.0
