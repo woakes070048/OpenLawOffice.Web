@@ -24,6 +24,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Collections.Generic;
     using System.Web.Mvc;
     using AutoMapper;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class UserTaskSettingsController : BaseController
@@ -37,16 +38,19 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModel = new ViewModels.Settings.UserTaskSettingsViewModel();
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            taskTagFilterList = Data.Settings.UserTaskSettings.ListTagFiltersFor(currentUser);
-
-            viewModel.MyTasksFilter = new List<ViewModels.Settings.TagFilterViewModel>();
-
-            taskTagFilterList.ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                viewModel.MyTasksFilter.Add(Mapper.Map<ViewModels.Settings.TagFilterViewModel>(x));
-            });
+                currentUser = Data.Account.Users.Get(User.Identity.Name, conn, false);
+
+                taskTagFilterList = Data.Settings.UserTaskSettings.ListTagFiltersFor(currentUser, conn, false);
+
+                viewModel.MyTasksFilter = new List<ViewModels.Settings.TagFilterViewModel>();
+
+                taskTagFilterList.ForEach(x =>
+                {
+                    viewModel.MyTasksFilter.Add(Mapper.Map<ViewModels.Settings.TagFilterViewModel>(x));
+                });
+            }
 
             return View(viewModel);
         }
@@ -57,11 +61,14 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Settings.TagFilterViewModel viewModel;
             Common.Models.Settings.TagFilter model;
 
-            model = Data.Settings.UserTaskSettings.GetTagFilter(id);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Settings.UserTaskSettings.GetTagFilter(id, conn, false);
 
-            viewModel = Mapper.Map<ViewModels.Settings.TagFilterViewModel>(model);
+                viewModel = Mapper.Map<ViewModels.Settings.TagFilterViewModel>(model);
 
-            PopulateCoreDetails(viewModel);
+                PopulateCoreDetails(viewModel, conn);
+            }
 
             return View(viewModel);
         }
@@ -79,16 +86,29 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Settings.TagFilter model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            viewModel.User = new ViewModels.Account.UsersViewModel() { PId = currentUser.PId };
+                    viewModel.User = new ViewModels.Account.UsersViewModel() { PId = currentUser.PId };
 
-            model = Mapper.Map<Common.Models.Settings.TagFilter>(viewModel);
-            model.User = currentUser;
+                    model = Mapper.Map<Common.Models.Settings.TagFilter>(viewModel);
+                    model.User = currentUser;
 
-            model = Data.Settings.UserTaskSettings.CreateTagFilter(model, currentUser);
+                    model = Data.Settings.UserTaskSettings.CreateTagFilter(trans, model, currentUser);
 
-            return RedirectToAction("Index");
+                    trans.Commit();
+
+                    return RedirectToAction("Index");
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return CreateFilter();
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -97,13 +117,16 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Settings.TagFilterViewModel viewModel;
             Common.Models.Settings.TagFilter model;
 
-            model = Data.Settings.UserTaskSettings.GetTagFilter(id);
-            model.User = Data.Account.Users.Get(model.User.PId.Value);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Settings.UserTaskSettings.GetTagFilter(id, conn, false);
+                model.User = Data.Account.Users.Get(model.User.PId.Value, conn, false);
 
-            viewModel = Mapper.Map<ViewModels.Settings.TagFilterViewModel>(model);
-            viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(model.User);
+                viewModel = Mapper.Map<ViewModels.Settings.TagFilterViewModel>(model);
+                viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(model.User);
 
-            PopulateCoreDetails(viewModel);
+                PopulateCoreDetails(viewModel, conn);
+            }
 
             return View(viewModel);
         }
@@ -115,16 +138,27 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Settings.TagFilter model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            viewModel.User = new ViewModels.Account.UsersViewModel() { PId = currentUser.PId };
+                    viewModel.User = new ViewModels.Account.UsersViewModel() { PId = currentUser.PId };
 
-            model = Mapper.Map<Common.Models.Settings.TagFilter>(viewModel);
-            model.User = currentUser;
+                    model = Mapper.Map<Common.Models.Settings.TagFilter>(viewModel);
+                    model.User = currentUser;
 
-            model = Data.Settings.UserTaskSettings.EditTagFilter(model, currentUser);
+                    model = Data.Settings.UserTaskSettings.EditTagFilter(trans, model, currentUser);
 
-            return RedirectToAction("Index");
+                    return RedirectToAction("Index");
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return EditFilter(id);
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -140,15 +174,26 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Settings.TagFilter model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            viewModel.User = new ViewModels.Account.UsersViewModel() { PId = currentUser.PId };
+                    viewModel.User = new ViewModels.Account.UsersViewModel() { PId = currentUser.PId };
 
-            model = Mapper.Map<Common.Models.Settings.TagFilter>(viewModel);
+                    model = Mapper.Map<Common.Models.Settings.TagFilter>(viewModel);
 
-            Data.Settings.UserTaskSettings.DeleteTagFilter(model, currentUser);
+                    Data.Settings.UserTaskSettings.DeleteTagFilter(trans, model, currentUser);
 
-            return RedirectToAction("Index");
+                    return RedirectToAction("Index");
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return DeleteFilter(id);
+                }
+            }
         }
     }
 }

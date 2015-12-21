@@ -25,6 +25,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Collections.Generic;
     using System.Web.Mvc;
     using AutoMapper;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class ResponsibleUsersController : BaseController
@@ -35,15 +36,18 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.ResponsibleUser model;
             ViewModels.Matters.ResponsibleUserViewModel viewModel;
 
-            model = Data.Matters.ResponsibleUser.Get(id);
-            model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
-            model.User = Data.Account.Users.Get(model.User.PId.Value);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Matters.ResponsibleUser.Get(id, conn, false);
+                model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value, conn, false);
+                model.User = Data.Account.Users.Get(model.User.PId.Value, conn, false);
 
-            viewModel = Mapper.Map<ViewModels.Matters.ResponsibleUserViewModel>(model);
-            viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model.Matter);
-            viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(model.User);
+                viewModel = Mapper.Map<ViewModels.Matters.ResponsibleUserViewModel>(model);
+                viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model.Matter);
+                viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(model.User);
 
-            PopulateCoreDetails(viewModel);
+                PopulateCoreDetails(viewModel, conn);
+            }
 
             ViewBag.MatterId = model.Matter.Id.Value;
             ViewBag.Matter = model.Matter.Title;
@@ -58,16 +62,19 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.Matter matter;
             ViewModels.Matters.MatterViewModel matterViewModel;
 
-            matter = Data.Matters.Matter.Get(id);
-
-            matterViewModel = Mapper.Map<ViewModels.Matters.MatterViewModel>(matter);
-
-            userViewModelList = new List<ViewModels.Account.UsersViewModel>();
-
-            Data.Account.Users.List().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
-            });
+                matter = Data.Matters.Matter.Get(id, conn, false);
+
+                matterViewModel = Mapper.Map<ViewModels.Matters.MatterViewModel>(matter);
+
+                userViewModelList = new List<ViewModels.Account.UsersViewModel>();
+
+                Data.Account.Users.List(conn, false).ForEach(x =>
+                {
+                    userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
+                });
+            }
 
             ViewBag.UserList = userViewModelList;
 
@@ -88,52 +95,65 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.Matter matter;
             ViewModels.Matters.MatterViewModel matterViewModel;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            model = Mapper.Map<Common.Models.Matters.ResponsibleUser>(viewModel);
-            model.Matter = new Common.Models.Matters.Matter() { Id = Guid.Parse(RouteData.Values["Id"].ToString()) };
-
-            // Is there already an entry for this user?
-            currentResponsibleUser = Data.Matters.ResponsibleUser.GetIgnoringDisable(
-                Guid.Parse(RouteData.Values["Id"].ToString()), currentUser.PId.Value);
-
-            if (currentResponsibleUser != null)
-            { // Update
-                if (!currentResponsibleUser.Disabled.HasValue)
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
                 {
-                    ModelState.AddModelError("User", "This user already has a responsibility.");
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-                    matter = Data.Matters.Matter.Get(currentResponsibleUser.Matter.Id.Value);
+                    model = Mapper.Map<Common.Models.Matters.ResponsibleUser>(viewModel);
+                    model.Matter = new Common.Models.Matters.Matter() { Id = Guid.Parse(RouteData.Values["Id"].ToString()) };
 
-                    matterViewModel = Mapper.Map<ViewModels.Matters.MatterViewModel>(matter);
+                    // Is there already an entry for this user?
+                    currentResponsibleUser = Data.Matters.ResponsibleUser.GetIgnoringDisable(trans,
+                        Guid.Parse(RouteData.Values["Id"].ToString()), currentUser.PId.Value);
 
-                    userViewModelList = new List<ViewModels.Account.UsersViewModel>();
+                    if (currentResponsibleUser != null)
+                    { // Update
+                        if (!currentResponsibleUser.Disabled.HasValue)
+                        {
+                            ModelState.AddModelError("User", "This user already has a responsibility.");
 
-                    Data.Account.Users.List().ForEach(x =>
-                    {
-                        userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
-                    });
+                            matter = Data.Matters.Matter.Get(trans, currentResponsibleUser.Matter.Id.Value);
 
-                    ViewBag.UserList = userViewModelList;
+                            matterViewModel = Mapper.Map<ViewModels.Matters.MatterViewModel>(matter);
 
-                    ViewBag.MatterId = matter.Id.Value;
-                    ViewBag.Matter = matter.Title;
-                    return View(new ViewModels.Matters.ResponsibleUserViewModel() { Matter = matterViewModel });
+                            userViewModelList = new List<ViewModels.Account.UsersViewModel>();
+
+                            Data.Account.Users.List(trans).ForEach(x =>
+                            {
+                                userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
+                            });
+
+                            ViewBag.UserList = userViewModelList;
+
+                            ViewBag.MatterId = matter.Id.Value;
+                            ViewBag.Matter = matter.Title;
+                            return View(new ViewModels.Matters.ResponsibleUserViewModel() { Matter = matterViewModel });
+                        }
+
+                        // Remove disability
+                        model = Data.Matters.ResponsibleUser.Enable(trans, model, currentUser);
+
+                        // Update responsibility
+                        model.Responsibility = model.Responsibility;
+                        model = Data.Matters.ResponsibleUser.Edit(trans, model, currentUser);
+                    }
+                    else
+                    { // Insert
+                        model = Data.Matters.ResponsibleUser.Create(trans, model, currentUser);
+                    }
+
+                    trans.Commit();
+
+                    return RedirectToAction("ResponsibleUsers", "Matters", new { Id = model.Matter.Id.Value.ToString() });
                 }
-
-                // Remove disability
-                model = Data.Matters.ResponsibleUser.Enable(model, currentUser);
-
-                // Update responsibility
-                model.Responsibility = model.Responsibility;
-                model = Data.Matters.ResponsibleUser.Edit(model, currentUser);
+                catch
+                {
+                    trans.Rollback();
+                    return Create(viewModel.Matter.Id.Value);
+                }
             }
-            else
-            { // Insert
-                model = Data.Matters.ResponsibleUser.Create(model, currentUser);
-            }
-
-            return RedirectToAction("ResponsibleUsers", "Matters", new { Id = model.Matter.Id.Value.ToString() });
         }
 
         [Authorize(Roles = "Login, User")]
@@ -145,18 +165,21 @@ namespace OpenLawOffice.Web.Controllers
 
             userViewModelList = new List<ViewModels.Account.UsersViewModel>();
 
-            model = Data.Matters.ResponsibleUser.Get(id);
-            model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
-            model.User = Data.Account.Users.Get(model.User.PId.Value);
-
-            viewModel = Mapper.Map<ViewModels.Matters.ResponsibleUserViewModel>(model);
-            viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model.Matter);
-            viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(model.User);
-
-            Data.Account.Users.List().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
-            });
+                model = Data.Matters.ResponsibleUser.Get(id, conn, false);
+                model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value, conn, false);
+                model.User = Data.Account.Users.Get(model.User.PId.Value, conn, false);
+
+                viewModel = Mapper.Map<ViewModels.Matters.ResponsibleUserViewModel>(model);
+                viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model.Matter);
+                viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(model.User);
+
+                Data.Account.Users.List(conn, false).ForEach(x =>
+                {
+                    userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
+                });
+            }
 
             ViewBag.UserList = userViewModelList;
 
@@ -172,13 +195,26 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Matters.ResponsibleUser model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Matters.ResponsibleUser>(viewModel);
+                    model = Mapper.Map<Common.Models.Matters.ResponsibleUser>(viewModel);
 
-            model = Data.Matters.ResponsibleUser.Edit(model, currentUser);
+                    model = Data.Matters.ResponsibleUser.Edit(trans, model, currentUser);
 
-            return RedirectToAction("ResponsibleUsers", "Matters", new { Id = model.Matter.Id.Value });
+                    trans.Commit();
+
+                    return RedirectToAction("ResponsibleUsers", "Matters", new { Id = model.Matter.Id.Value });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Edit(id);
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -195,14 +231,27 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.ResponsibleUser model;
             Guid matterId;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Data.Matters.ResponsibleUser.Get(viewModel.Id.Value);
-            matterId = model.Matter.Id.Value;
+                    model = Data.Matters.ResponsibleUser.Get(trans, viewModel.Id.Value);
+                    matterId = model.Matter.Id.Value;
 
-            model = Data.Matters.ResponsibleUser.Disable(model, currentUser);
+                    model = Data.Matters.ResponsibleUser.Disable(trans, model, currentUser);
 
-            return RedirectToAction("ResponsibleUsers", "Matters", new { Id = matterId.ToString() });
+                    trans.Commit();
+
+                    return RedirectToAction("ResponsibleUsers", "Matters", new { Id = matterId.ToString() });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Delete(id);
+                }
+            }
         }
     }
 }

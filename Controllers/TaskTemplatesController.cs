@@ -27,6 +27,7 @@ namespace OpenLawOffice.Web.Controllers
     using AutoMapper;
     using System.Collections.Generic;
     using System.IO;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class TaskTemplatesController : BaseController
@@ -37,10 +38,13 @@ namespace OpenLawOffice.Web.Controllers
             List<ViewModels.Tasks.TaskTemplateViewModel> vmList =
                 new List<ViewModels.Tasks.TaskTemplateViewModel>();
 
-            Data.Tasks.TaskTemplate.List().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                vmList.Add(Mapper.Map<ViewModels.Tasks.TaskTemplateViewModel>(x));
-            });
+                Data.Tasks.TaskTemplate.List(conn, false).ForEach(x =>
+                {
+                    vmList.Add(Mapper.Map<ViewModels.Tasks.TaskTemplateViewModel>(x));
+                });
+            }
 
             return View(vmList);
         }
@@ -51,11 +55,14 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Tasks.TaskTemplateViewModel viewModel;
             Common.Models.Tasks.TaskTemplate model;
 
-            model = Data.Tasks.TaskTemplate.Get(id);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Tasks.TaskTemplate.Get(id, conn, false);
 
-            viewModel = Mapper.Map<ViewModels.Tasks.TaskTemplateViewModel>(model);
+                viewModel = Mapper.Map<ViewModels.Tasks.TaskTemplateViewModel>(model);
 
-            PopulateCoreDetails(viewModel);
+                PopulateCoreDetails(viewModel, conn);
+            }
 
             return View(viewModel);
         }
@@ -80,13 +87,26 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Tasks.TaskTemplate model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Tasks.TaskTemplate>(viewModel);
+                    model = Mapper.Map<Common.Models.Tasks.TaskTemplate>(viewModel);
 
-            model = Data.Tasks.TaskTemplate.Edit(model, currentUser);
+                    model = Data.Tasks.TaskTemplate.Edit(trans, model, currentUser);
 
-            return RedirectToAction("Details", new { Id = id });
+                    trans.Commit();
+
+                    return RedirectToAction("Details", new { Id = id });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Edit(id);
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -102,13 +122,26 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Tasks.TaskTemplate model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Tasks.TaskTemplate>(viewModel);
+                    model = Mapper.Map<Common.Models.Tasks.TaskTemplate>(viewModel);
 
-            model = Data.Tasks.TaskTemplate.Create(model, currentUser);
-            
-            return RedirectToAction("Details", new { Id = model.Id });
+                    model = Data.Tasks.TaskTemplate.Create(trans, model, currentUser);
+
+                    trans.Commit();
+
+                    return RedirectToAction("Details", new { Id = model.Id });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Create();
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -131,16 +164,29 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Tasks.TaskTemplate model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Tasks.TaskTemplate>(viewModel);
+                    model = Mapper.Map<Common.Models.Tasks.TaskTemplate>(viewModel);
 
-            model = Data.Tasks.TaskTemplate.Disable(model, currentUser);
+                    model = Data.Tasks.TaskTemplate.Disable(trans, model, currentUser);
 
-            // Don't delete the file - in theory a system admin could enable this again
-            // deleting file would leave a form in the DB without a corresponding file
+                    // Don't delete the file - in theory a system admin could enable this again
+                    // deleting file would leave a form in the DB without a corresponding file
 
-            return RedirectToAction("Index");
+                    trans.Commit();
+
+                    return RedirectToAction("Index");
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Delete(id);
+                }
+            }   
         }
     }
 }

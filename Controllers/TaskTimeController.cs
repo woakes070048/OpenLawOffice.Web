@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Web.Mvc;
 using AutoMapper;
 using System.Web.Security;
+using System.Data;
 
 namespace OpenLawOffice.Web.Controllers
 {
@@ -39,13 +40,17 @@ namespace OpenLawOffice.Web.Controllers
 
             modelList = new List<ViewModels.Contacts.SelectableContactViewModel>();
 
-            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                modelList.Add(Mapper.Map<ViewModels.Contacts.SelectableContactViewModel>(x));
-            });
+                Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
+                {
+                    modelList.Add(Mapper.Map<ViewModels.Contacts.SelectableContactViewModel>(x));
+                });
 
-            task = Data.Tasks.Task.Get(long.Parse(Request["TaskId"]));
-            matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
+                task = Data.Tasks.Task.Get(long.Parse(Request["TaskId"]), conn, false);
+                matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value, conn, false);
+            }
+
             ViewBag.Task = task.Title;
             ViewBag.TaskId = task.Id;
             ViewBag.Matter = matter.Title;
@@ -68,23 +73,27 @@ namespace OpenLawOffice.Web.Controllers
             taskId = long.Parse(Request["TaskId"]);
             contactId = int.Parse(Request["ContactId"]);
 
-            // Load task & contact
-            task = Data.Tasks.Task.Get(taskId);
-
-            contact = Data.Contacts.Contact.Get(contactId);
-
-            viewModel = new ViewModels.Tasks.TaskTimeViewModel()
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(task),
-                Time = new ViewModels.Timing.TimeViewModel()
-                {
-                    Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact),
-                    Start = DateTime.Now,
-                    Billable = true
-                }
-            };
+                // Load task & contact
+                task = Data.Tasks.Task.Get(taskId, conn, false);
 
-            matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
+                contact = Data.Contacts.Contact.Get(contactId, conn, false);
+
+                viewModel = new ViewModels.Tasks.TaskTimeViewModel()
+                {
+                    Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(task),
+                    Time = new ViewModels.Timing.TimeViewModel()
+                    {
+                        Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact),
+                        Start = DateTime.Now,
+                        Billable = true
+                    }
+                };
+
+                matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value, conn, false);
+            }
+
             ViewBag.Task = task.Title;
             ViewBag.TaskId = task.Id;
             ViewBag.Matter = matter.Title;
@@ -100,63 +109,76 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Tasks.TaskTime taskTime;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-            taskTime = Mapper.Map<Common.Models.Tasks.TaskTime>(viewModel);
-            taskTime.Time = Mapper.Map<Common.Models.Timing.Time>(viewModel.Time);
-
-            if (viewModel.Time.Stop.HasValue)
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                List<Common.Models.Timing.Time> conflicts = Data.Timing.Time.ListConflictingTimes(viewModel.Time.Start,
-                    viewModel.Time.Stop.Value, viewModel.Time.Worker.Id.Value);
+                try
+                {
+                    currentUser = Data.Account.Users.Get(User.Identity.Name);
+                    taskTime = Mapper.Map<Common.Models.Tasks.TaskTime>(viewModel);
+                    taskTime.Time = Mapper.Map<Common.Models.Timing.Time>(viewModel.Time);
 
-                if (conflicts.Count > 0)
-                { // conflict found
-                    long taskId;
-                    int contactId;
-                    string errorListString = "";
-                    Common.Models.Tasks.Task task;
-                    Common.Models.Contacts.Contact contact;
-                    Common.Models.Matters.Matter matter;
-
-                    taskId = long.Parse(Request["TaskId"]);
-                    contactId = int.Parse(Request["ContactId"]);
-                    task = Data.Tasks.Task.Get(taskId);
-                    contact = Data.Contacts.Contact.Get(contactId);
-                    matter = Data.Tasks.Task.GetRelatedMatter(taskId);
-                    
-                    viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(task);
-                    viewModel.Time.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
-                    
-                    ViewBag.Task = task.Title;
-                    ViewBag.TaskId = task.Id;
-                    ViewBag.Matter = matter.Title;
-                    ViewBag.MatterId = matter.Id;
-                    
-                    foreach (Common.Models.Timing.Time time in conflicts)
+                    if (viewModel.Time.Stop.HasValue)
                     {
-                        time.Worker = Data.Contacts.Contact.Get(time.Worker.Id.Value);
-                        errorListString += "<li>" + time.Worker.DisplayName + 
-                            "</a> worked from " + time.Start.ToString("M/d/yyyy h:mm tt");
-                        
-                        if (time.Stop.HasValue)
-                            errorListString += " to " + time.Stop.Value.ToString("M/d/yyyy h:mm tt") +
-                                " [<a href=\"/Timing/Edit/" + time.Id.Value.ToString() + "\">edit</a>]";
-                        else
-                            errorListString += " to an unknown time " +
-                                "[<a href=\"/Timing/Edit/" + time.Id.Value.ToString() + "\">edit</a>]";
+                        List<Common.Models.Timing.Time> conflicts = Data.Timing.Time.ListConflictingTimes(viewModel.Time.Start,
+                            viewModel.Time.Stop.Value, viewModel.Time.Worker.Id.Value);
 
-                        errorListString += "</li>";
-                    }
+                        if (conflicts.Count > 0)
+                        { // conflict found
+                            long taskId;
+                            int contactId;
+                            string errorListString = "";
+                            Common.Models.Tasks.Task task;
+                            Common.Models.Contacts.Contact contact;
+                            Common.Models.Matters.Matter matter;
+
+                            taskId = long.Parse(Request["TaskId"]);
+                            contactId = int.Parse(Request["ContactId"]);
+                            task = Data.Tasks.Task.Get(taskId);
+                            contact = Data.Contacts.Contact.Get(contactId);
+                            matter = Data.Tasks.Task.GetRelatedMatter(taskId);
                     
-                    ViewBag.ErrorMessage = "Time conflicts with the following other time entries:<ul>" + errorListString + "</ul>";
-                    return View(viewModel);
+                            viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(task);
+                            viewModel.Time.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
+                    
+                            ViewBag.Task = task.Title;
+                            ViewBag.TaskId = task.Id;
+                            ViewBag.Matter = matter.Title;
+                            ViewBag.MatterId = matter.Id;
+                    
+                            foreach (Common.Models.Timing.Time time in conflicts)
+                            {
+                                time.Worker = Data.Contacts.Contact.Get(time.Worker.Id.Value);
+                                errorListString += "<li>" + time.Worker.DisplayName + 
+                                    "</a> worked from " + time.Start.ToString("M/d/yyyy h:mm tt");
+                        
+                                if (time.Stop.HasValue)
+                                    errorListString += " to " + time.Stop.Value.ToString("M/d/yyyy h:mm tt") +
+                                        " [<a href=\"/Timing/Edit/" + time.Id.Value.ToString() + "\">edit</a>]";
+                                else
+                                    errorListString += " to an unknown time " +
+                                        "[<a href=\"/Timing/Edit/" + time.Id.Value.ToString() + "\">edit</a>]";
+
+                                errorListString += "</li>";
+                            }
+                    
+                            ViewBag.ErrorMessage = "Time conflicts with the following other time entries:<ul>" + errorListString + "</ul>";
+                            return View(viewModel);
+                        }
+                    }
+
+                    taskTime.Time = Data.Timing.Time.Create(taskTime.Time, currentUser);
+                    taskTime = Data.Tasks.TaskTime.Create(taskTime, currentUser);
+
+                    trans.Commit();
+
+                    return RedirectToAction("Time", "Tasks", new { Id = Request["TaskId"] });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return RedirectToAction("Create", "TaskTime", new { TaskId = Request["TaskId"], ContactId = Request["ContactId"] });
                 }
             }
-
-            taskTime.Time = Data.Timing.Time.Create(taskTime.Time, currentUser);
-            taskTime = Data.Tasks.TaskTime.Create(taskTime, currentUser);
-
-            return RedirectToAction("Time", "Tasks", new { Id = Request["TaskId"] });
         }
 
         [Authorize(Roles = "Login, User")]
@@ -165,56 +187,56 @@ namespace OpenLawOffice.Web.Controllers
             return View();
         }
 
-        [Authorize(Roles = "Login, User")]
-        public ActionResult AssignFastTime(Guid id)
-        {
-            // Id is TimeId
-            long taskId;
-            Common.Models.Tasks.TaskTime model;
-            ViewModels.Tasks.TaskTimeViewModel viewModel;
-            Common.Models.Account.Users currentUser;
+        //[Authorize(Roles = "Login, User")]
+        //public ActionResult AssignFastTime(Guid id)
+        //{
+        //    // Id is TimeId
+        //    long taskId;
+        //    Common.Models.Tasks.TaskTime model;
+        //    ViewModels.Tasks.TaskTimeViewModel viewModel;
+        //    Common.Models.Account.Users currentUser;
 
-            currentUser = Data.Account.Users.Get((Guid)Membership.GetUser().ProviderUserKey);
+        //    currentUser = Data.Account.Users.Get((Guid)Membership.GetUser().ProviderUserKey);
 
-            taskId = long.Parse(Request["TaskId"]);
+        //    taskId = long.Parse(Request["TaskId"]);
 
-            model = new Common.Models.Tasks.TaskTime()
-            {
-                Created = DateTime.Now,
-                Modified = DateTime.Now,
-                CreatedBy = currentUser,
-                ModifiedBy = currentUser
-            };
-            model.Task = Data.Tasks.Task.Get(taskId);
-            model.Time = Data.Timing.Time.Get(id);
-            model.Time.Worker = Data.Contacts.Contact.Get(model.Time.Worker.Id.Value);
+        //    model = new Common.Models.Tasks.TaskTime()
+        //    {
+        //        Created = DateTime.Now,
+        //        Modified = DateTime.Now,
+        //        CreatedBy = currentUser,
+        //        ModifiedBy = currentUser
+        //    };
+        //    model.Task = Data.Tasks.Task.Get(taskId);
+        //    model.Time = Data.Timing.Time.Get(id);
+        //    model.Time.Worker = Data.Contacts.Contact.Get(model.Time.Worker.Id.Value);
 
-            viewModel = Mapper.Map<ViewModels.Tasks.TaskTimeViewModel>(model);
-            viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model.Task);
-            viewModel.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(model.Time);
-            viewModel.Time.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.Time.Worker);
+        //    viewModel = Mapper.Map<ViewModels.Tasks.TaskTimeViewModel>(model);
+        //    viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model.Task);
+        //    viewModel.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(model.Time);
+        //    viewModel.Time.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.Time.Worker);
 
-            return View(viewModel);
-        }
+        //    return View(viewModel);
+        //}
 
-        [HttpPost]
-        [Authorize(Roles = "Login, User")]
-        public ActionResult AssignFastTime(Guid id, ViewModels.Tasks.TaskTimeViewModel viewModel)
-        {
-            // Id is TimeId
-            long taskId;
-            Common.Models.Timing.Time model;
-            Common.Models.Account.Users currentUser;
+        //[HttpPost]
+        //[Authorize(Roles = "Login, User")]
+        //public ActionResult AssignFastTime(Guid id, ViewModels.Tasks.TaskTimeViewModel viewModel)
+        //{
+        //    // Id is TimeId
+        //    long taskId;
+        //    Common.Models.Timing.Time model;
+        //    Common.Models.Account.Users currentUser;
 
-            currentUser = Data.Account.Users.Get((Guid)Membership.GetUser().ProviderUserKey);
+        //    currentUser = Data.Account.Users.Get((Guid)Membership.GetUser().ProviderUserKey);
 
-            taskId = long.Parse(Request["TaskId"]);
+        //    taskId = long.Parse(Request["TaskId"]);
 
-            model = Data.Timing.Time.Get(id);
+        //    model = Data.Timing.Time.Get(id);
 
-            Data.Timing.Time.RelateTask(model, taskId, currentUser);
+        //    Data.Timing.Time.RelateTask(model, taskId, currentUser);
 
-            return RedirectToAction("FastTimeList", "Timing");
-        }
+        //    return RedirectToAction("FastTimeList", "Timing");
+        //}
     }
 }

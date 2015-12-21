@@ -296,7 +296,7 @@ namespace OpenLawOffice.Web.Controllers
                     viewModel.MatterType = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(
                         Data.Matters.MatterType.Get(viewModel.MatterType.Id.Value, conn, false));
                 viewModel.Clients = new List<ViewModels.Contacts.ContactViewModel>();
-                viewModel.Tasks = TasksController.GetListForMatter(id, true);
+                viewModel.Tasks = TasksController.GetListForMatter(id, true, conn);
                 viewModel.LeadAttorney = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.LeadAttorney);
                 viewModel.BillTo = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.BillTo);
                 if (viewModel.DefaultBillingRate != null)
@@ -879,17 +879,21 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Matters.ResponsibleUserViewModel>();
 
-            Data.Matters.ResponsibleUser.ListForMatter(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                user = Data.Account.Users.Get(x.User.PId.Value);
+                Data.Matters.ResponsibleUser.ListForMatter(id, conn, false).ForEach(x =>
+                {
+                    user = Data.Account.Users.Get(x.User.PId.Value, conn, false);
 
-                viewModel = Mapper.Map<ViewModels.Matters.ResponsibleUserViewModel>(x);
-                viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(user);
+                    viewModel = Mapper.Map<ViewModels.Matters.ResponsibleUserViewModel>(x);
+                    viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(user);
 
-                viewModelList.Add(viewModel);
-            });
+                    viewModelList.Add(viewModel);
+                });
 
-            matter = Data.Matters.Matter.Get(id);
+                matter = Data.Matters.Matter.Get(id, conn, false);
+            }
+
             ViewBag.Matter = matter.Title;
             ViewBag.MatterId = matter.Id;
 
@@ -906,17 +910,21 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Matters.MatterContactViewModel>();
 
-            Data.Matters.MatterContact.ListForMatter(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                contact = OpenLawOffice.Data.Contacts.Contact.Get(x.Contact.Id.Value);
+                Data.Matters.MatterContact.ListForMatter(id, conn, false).ForEach(x =>
+                {
+                    contact = OpenLawOffice.Data.Contacts.Contact.Get(x.Contact.Id.Value, conn, false);
 
-                viewModel = Mapper.Map<ViewModels.Matters.MatterContactViewModel>(x);
-                viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
+                    viewModel = Mapper.Map<ViewModels.Matters.MatterContactViewModel>(x);
+                    viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
 
-                viewModelList.Add(viewModel);
-            });
+                    viewModelList.Add(viewModel);
+                });
 
-            matter = Data.Matters.Matter.Get(id);
+                matter = Data.Matters.Matter.Get(id, conn, false);
+            }
+
             ViewBag.Matter = matter.Title;
             ViewBag.MatterId = matter.Id;
 
@@ -943,11 +951,14 @@ namespace OpenLawOffice.Web.Controllers
                     break;
             }
 
-            matter = Data.Matters.Matter.Get(id);
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                matter = Data.Matters.Matter.Get(id, conn, false);
+                ViewBag.Matter = matter.Title;
+                ViewBag.MatterId = matter.Id;
 
-            return View(TasksController.GetListForMatter(id, active));
+                return View(TasksController.GetListForMatter(id, active, conn));
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -956,21 +967,24 @@ namespace OpenLawOffice.Web.Controllers
             List<ViewModels.Forms.FormFieldMatterViewModel> vmList = new List<ViewModels.Forms.FormFieldMatterViewModel>();
             Common.Models.Matters.Matter matter;
 
-            matter = Data.Matters.Matter.Get(id);
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
-
-            Data.Forms.FormFieldMatter.ListForMatter(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                ViewModels.Forms.FormFieldMatterViewModel vm = new ViewModels.Forms.FormFieldMatterViewModel();
-                x.FormField = Data.Forms.FormField.Get(x.FormField.Id.Value);
-                if (x.Matter != null)
-                    vm = Mapper.Map<ViewModels.Forms.FormFieldMatterViewModel>(x);
-                else
-                    vm = new ViewModels.Forms.FormFieldMatterViewModel();
-                vm.FormField = Mapper.Map<ViewModels.Forms.FormFieldViewModel>(x.FormField);
-                vmList.Add(vm);
-            });
+                matter = Data.Matters.Matter.Get(id, conn, false);
+                ViewBag.Matter = matter.Title;
+                ViewBag.MatterId = matter.Id;
+
+                Data.Forms.FormFieldMatter.ListForMatter(id, conn, false).ForEach(x =>
+                {
+                    ViewModels.Forms.FormFieldMatterViewModel vm = new ViewModels.Forms.FormFieldMatterViewModel();
+                    x.FormField = Data.Forms.FormField.Get(x.FormField.Id.Value, conn, false);
+                    if (x.Matter != null)
+                        vm = Mapper.Map<ViewModels.Forms.FormFieldMatterViewModel>(x);
+                    else
+                        vm = new ViewModels.Forms.FormFieldMatterViewModel();
+                    vm.FormField = Mapper.Map<ViewModels.Forms.FormFieldViewModel>(x.FormField);
+                    vmList.Add(vm);
+                });
+            }
 
             return View(vmList);
         }
@@ -982,37 +996,51 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.Matter matter;
             Common.Models.Account.Users currentUser;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-            matter = Data.Matters.Matter.Get(id);
-
-            viewModel.Each(x =>
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                Common.Models.Forms.FormFieldMatter model = Data.Forms.FormFieldMatter.Get(matter.Id.Value, x.FormField.Id.Value);
-
-                if (model != null)
+                try
                 {
-                    //model = Data.Forms.FormFieldMatter.Get(x.Id.Value);
-                    // Edit
-                    if (model.Value != x.Value)
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
+                    matter = Data.Matters.Matter.Get(trans, id);
+
+                    viewModel.Each(x =>
                     {
-                        model.Value = x.Value;
-                        model = Data.Forms.FormFieldMatter.Edit(model, currentUser);
-                    }
+                        Common.Models.Forms.FormFieldMatter model = 
+                            Data.Forms.FormFieldMatter.Get(trans, matter.Id.Value, x.FormField.Id.Value);
+
+                        if (model != null)
+                        {
+                            //model = Data.Forms.FormFieldMatter.Get(x.Id.Value);
+                            // Edit
+                            if (model.Value != x.Value)
+                            {
+                                model.Value = x.Value;
+                                model = Data.Forms.FormFieldMatter.Edit(trans, model, currentUser);
+                            }
+                        }
+                        else
+                        {
+                            // Create
+                            model = new Common.Models.Forms.FormFieldMatter();
+                            model.FormField = new Common.Models.Forms.FormField();
+                            model.FormField.Id = x.FormField.Id;
+                            model.Matter = matter;
+                            model.Value = x.Value;
+                            model = Data.Forms.FormFieldMatter.Create(trans, model, currentUser);
+                        }
+
+                    });
+
+                    trans.Commit();
+
+                    return RedirectToAction("Details", new { Id = id });
                 }
-                else
+                catch
                 {
-                    // Create
-                    model = new Common.Models.Forms.FormFieldMatter();
-                    model.FormField = new Common.Models.Forms.FormField();
-                    model.FormField.Id = x.FormField.Id;
-                    model.Matter = matter;
-                    model.Value = x.Value;
-                    model = Data.Forms.FormFieldMatter.Create(model, currentUser);
+                    trans.Rollback();
+                    return FormFields(id);
                 }
-
-            });
-
-            return RedirectToAction("Details", new { Id = id });
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -1021,12 +1049,16 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.Matter matter;
             List<ViewModels.Billing.InvoiceViewModel> list = new List<ViewModels.Billing.InvoiceViewModel>();
 
-            Data.Billing.Invoice.ListInvoicesForMatter(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                list.Add(Mapper.Map<ViewModels.Billing.InvoiceViewModel>(x));
-            });
+                Data.Billing.Invoice.ListInvoicesForMatter(id, conn, false).ForEach(x =>
+                {
+                    list.Add(Mapper.Map<ViewModels.Billing.InvoiceViewModel>(x));
+                });
 
-            matter = Data.Matters.Matter.Get(id);
+                matter = Data.Matters.Matter.Get(id, conn, false);
+            }
+
             ViewBag.Matter = matter.Title;
             ViewBag.MatterId = matter.Id;
 
@@ -1039,17 +1071,22 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.Matter matter;
             List<ViewModels.Notes.NoteTaskViewModel> viewModelList;
 
-            matter = Data.Matters.Matter.Get(id);
-
-            viewModelList = new List<ViewModels.Notes.NoteTaskViewModel>();
-            Data.Matters.Matter.ListAllNotes(matter).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                ViewModels.Notes.NoteTaskViewModel ntvm = Mapper.Map<ViewModels.Notes.NoteTaskViewModel>(x);
-                if (x.Task != null && x.Task.Id.HasValue)
-                    ntvm.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(Data.Tasks.Task.Get(x.Task.Id.Value));
-                ntvm.Note = Mapper.Map<ViewModels.Notes.NoteViewModel>(Data.Notes.Note.Get(x.Note.Id.Value));
-                viewModelList.Add(ntvm);
-            });
+                matter = Data.Matters.Matter.Get(id, conn, false);
+
+                viewModelList = new List<ViewModels.Notes.NoteTaskViewModel>();
+                Data.Matters.Matter.ListAllNotes(matter).ForEach(x =>
+                {
+                    ViewModels.Notes.NoteTaskViewModel ntvm = Mapper.Map<ViewModels.Notes.NoteTaskViewModel>(x);
+                    if (x.Task != null && x.Task.Id.HasValue)
+                        ntvm.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(
+                            Data.Tasks.Task.Get(x.Task.Id.Value, conn, false));
+                    ntvm.Note = Mapper.Map<ViewModels.Notes.NoteViewModel>(
+                        Data.Notes.Note.Get(x.Note.Id.Value, conn, false));
+                    viewModelList.Add(ntvm);
+                });
+            }
 
             ViewBag.Matter = matter.Title;
             ViewBag.MatterId = matter.Id;
@@ -1066,14 +1103,18 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Billing.ExpenseViewModel>();
 
-            Data.Billing.Expense.ListForMatter(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                viewModel = Mapper.Map<ViewModels.Billing.ExpenseViewModel>(x);
+                Data.Billing.Expense.ListForMatter(id, conn, false).ForEach(x =>
+                {
+                    viewModel = Mapper.Map<ViewModels.Billing.ExpenseViewModel>(x);
 
-                viewModelList.Add(viewModel);
-            });
+                    viewModelList.Add(viewModel);
+                });
 
-            matter = Data.Matters.Matter.Get(id);
+                matter = Data.Matters.Matter.Get(id, conn, false);
+            }
+
             ViewBag.Matter = matter.Title;
             ViewBag.MatterId = matter.Id;
 
@@ -1089,14 +1130,18 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Billing.FeeViewModel>();
 
-            Data.Billing.Fee.ListForMatter(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                viewModel = Mapper.Map<ViewModels.Billing.FeeViewModel>(x);
+                Data.Billing.Fee.ListForMatter(id, conn, false).ForEach(x =>
+                {
+                    viewModel = Mapper.Map<ViewModels.Billing.FeeViewModel>(x);
 
-                viewModelList.Add(viewModel);
-            });
+                    viewModelList.Add(viewModel);
+                });
 
-            matter = Data.Matters.Matter.Get(id);
+                matter = Data.Matters.Matter.Get(id, conn, false);
+            }
+
             ViewBag.Matter = matter.Title;
             ViewBag.MatterId = matter.Id;
 
@@ -1113,96 +1158,101 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Documents.SelectableDocumentViewModel>();
 
-            Data.Documents.Document.ListForMatter(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                version = Data.Documents.Document.GetCurrentVersion(x.Id.Value);
+                Data.Documents.Document.ListForMatter(id, conn, false).ForEach(x =>
+                {
+                    version = Data.Documents.Document.GetCurrentVersion(x.Id.Value, conn, false);
 
-                viewModel = Mapper.Map<ViewModels.Documents.SelectableDocumentViewModel>(x);
+                    viewModel = Mapper.Map<ViewModels.Documents.SelectableDocumentViewModel>(x);
 
-                viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(Data.Documents.Document.GetTask(x.Id.Value));
-                viewModel.Extension = version.Extension;
+                    viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(
+                        Data.Documents.Document.GetTask(x.Id.Value, conn, false));
+                    viewModel.Extension = version.Extension;
 
-                viewModelList.Add(viewModel);
-            });
+                    viewModelList.Add(viewModel);
+                });
 
-            matter = Data.Matters.Matter.Get(id);
+                matter = Data.Matters.Matter.Get(id, conn, false);
+            }
+
             ViewBag.Matter = matter.Title;
             ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
         }
 
-        [HttpPost]
-        [Authorize(Roles = "Login, User")]
-        public ActionResult Documents(Guid id, List<ViewModels.Documents.SelectableDocumentViewModel> viewModelListNull)
-        {
-            //string zipTitle;
-            //int inc = 0;
-            //string path;
-            //Guid temp;
-            //List<Common.Models.Documents.Document> documents;
-            //Common.Models.Matters.Matter matter;
-            //Common.Models.Documents.Version version;
-            //ViewModels.Documents.SelectableDocumentViewModel viewModel;
-            //List<ViewModels.Documents.SelectableDocumentViewModel> viewModelList;
+        //[HttpPost]
+        //[Authorize(Roles = "Login, User")]
+        //public ActionResult Documents(Guid id, List<ViewModels.Documents.SelectableDocumentViewModel> viewModelListNull)
+        //{
+        //    //string zipTitle;
+        //    //int inc = 0;
+        //    //string path;
+        //    //Guid temp;
+        //    //List<Common.Models.Documents.Document> documents;
+        //    //Common.Models.Matters.Matter matter;
+        //    //Common.Models.Documents.Version version;
+        //    //ViewModels.Documents.SelectableDocumentViewModel viewModel;
+        //    //List<ViewModels.Documents.SelectableDocumentViewModel> viewModelList;
 
-            //viewModelList = new List<ViewModels.Documents.SelectableDocumentViewModel>();
+        //    //viewModelList = new List<ViewModels.Documents.SelectableDocumentViewModel>();
 
-            //matter = Data.Matters.Matter.Get(id);
+        //    //matter = Data.Matters.Matter.Get(id);
 
-            //documents = Data.Documents.Document.ListForMatter(id);
+        //    //documents = Data.Documents.Document.ListForMatter(id);
 
-            //using (ZipFile zip = new ZipFile())
-            //{
-            //    //zip.CompressionLevel = Ionic.Zlib.CompressionLevel.BestCompression;
-            //    documents.ForEach(x =>
-            //    {
-            //        version = Data.Documents.Document.GetCurrentVersion(x.Id.Value);
+        //    //using (ZipFile zip = new ZipFile())
+        //    //{
+        //    //    //zip.CompressionLevel = Ionic.Zlib.CompressionLevel.BestCompression;
+        //    //    documents.ForEach(x =>
+        //    //    {
+        //    //        version = Data.Documents.Document.GetCurrentVersion(x.Id.Value);
 
-            //        viewModel = Mapper.Map<ViewModels.Documents.SelectableDocumentViewModel>(x);
+        //    //        viewModel = Mapper.Map<ViewModels.Documents.SelectableDocumentViewModel>(x);
 
-            //        viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(Data.Documents.Document.GetTask(x.Id.Value));
+        //    //        viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(Data.Documents.Document.GetTask(x.Id.Value));
 
-            //        viewModelList.Add(viewModel);
+        //    //        viewModelList.Add(viewModel);
 
-            //        if (Request["CB_" + x.Id.Value.ToString()] == "on")
-            //        {
+        //    //        if (Request["CB_" + x.Id.Value.ToString()] == "on")
+        //    //        {
 
-            //            path = Common.Settings.Manager.Instance.FileStorage.GetCurrentVersionFilepathFor(version.Id.Value + "." + version.Extension);
+        //    //            path = Common.Settings.Manager.Instance.FileStorage.GetCurrentVersionFilepathFor(version.Id.Value + "." + version.Extension);
 
-            //            zipTitle = x.Title + "." + version.Extension;
+        //    //            zipTitle = x.Title + "." + version.Extension;
 
-            //            if (zip[zipTitle] != null)
-            //            {
-            //                inc = 1;
-            //                zipTitle = x.Title + " (" + inc.ToString() + ")" + "." + version.Extension;
-            //                while (zip[zipTitle] != null)
-            //                {
-            //                    inc++;
-            //                    zipTitle = x.Title + " (" + inc.ToString() + ")" + "." + version.Extension;
-            //                }
-            //            }
+        //    //            if (zip[zipTitle] != null)
+        //    //            {
+        //    //                inc = 1;
+        //    //                zipTitle = x.Title + " (" + inc.ToString() + ")" + "." + version.Extension;
+        //    //                while (zip[zipTitle] != null)
+        //    //                {
+        //    //                    inc++;
+        //    //                    zipTitle = x.Title + " (" + inc.ToString() + ")" + "." + version.Extension;
+        //    //                }
+        //    //            }
 
-            //            ZipEntry ze = zip.AddFile(path, "");
-            //            ze.FileName = zipTitle;
-            //        }
-            //    });
+        //    //            ZipEntry ze = zip.AddFile(path, "");
+        //    //            ze.FileName = zipTitle;
+        //    //        }
+        //    //    });
 
-            //    if (!System.IO.Directory.Exists(Common.Settings.Manager.Instance.FileStorage.TempPath))
-            //        System.IO.Directory.CreateDirectory(Common.Settings.Manager.Instance.FileStorage.TempPath);
+        //    //    if (!System.IO.Directory.Exists(Common.Settings.Manager.Instance.FileStorage.TempPath))
+        //    //        System.IO.Directory.CreateDirectory(Common.Settings.Manager.Instance.FileStorage.TempPath);
 
-            //    temp = Guid.NewGuid();
+        //    //    temp = Guid.NewGuid();
 
-            //    if (zip.Count > 0)
-            //        zip.Save(Common.Settings.Manager.Instance.FileStorage.TempPath + temp.ToString() + ".zip");
-            //    else
-            //        return View(viewModelList);
-            //}
+        //    //    if (zip.Count > 0)
+        //    //        zip.Save(Common.Settings.Manager.Instance.FileStorage.TempPath + temp.ToString() + ".zip");
+        //    //    else
+        //    //        return View(viewModelList);
+        //    //}
 
 
-            //return new DeletingFileResult(Common.Settings.Manager.Instance.FileStorage.TempPath + temp.ToString() + ".zip", matter.Title + ".zip");
-            return null;
-        }
+        //    //return new DeletingFileResult(Common.Settings.Manager.Instance.FileStorage.TempPath + temp.ToString() + ".zip", matter.Title + ".zip");
+        //    return null;
+        //}
 
         [Authorize(Roles = "Login, User")]
         public ActionResult Time(Guid id)
@@ -1217,37 +1267,41 @@ namespace OpenLawOffice.Web.Controllers
             viewModel = new ViewModels.Matters.MatterTimeViewModel();
             viewModel.Tasks = new List<ViewModels.Matters.MatterTimeViewModel.Task>();
 
-            Data.Tasks.Task.ListForMatter(id, null).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                times = Data.Timing.Time.ListForTask(x.Id.Value);
-
-                if (times != null && times.Count > 0)
+                Data.Tasks.Task.ListForMatter(id, null, conn, false).ForEach(x =>
                 {
-                    task = new ViewModels.Matters.MatterTimeViewModel.Task()
+                    times = Data.Timing.Time.ListForTask(x.Id.Value, conn, false);
+
+                    if (times != null && times.Count > 0)
                     {
-                        Id = x.Id.Value,
-                        Title = x.Title
-                    };
+                        task = new ViewModels.Matters.MatterTimeViewModel.Task()
+                        {
+                            Id = x.Id.Value,
+                            Title = x.Title
+                        };
 
-                    task.Times = new List<ViewModels.Timing.TimeViewModel>();
+                        task.Times = new List<ViewModels.Timing.TimeViewModel>();
 
-                    times.ForEach(y =>
-                    {
-                        timeViewModel = Mapper.Map<ViewModels.Timing.TimeViewModel>(y);
+                        times.ForEach(y =>
+                        {
+                            timeViewModel = Mapper.Map<ViewModels.Timing.TimeViewModel>(y);
 
-                        contact = Data.Contacts.Contact.Get(timeViewModel.Worker.Id.Value);
+                            contact = Data.Contacts.Contact.Get(timeViewModel.Worker.Id.Value, conn, false);
 
-                        timeViewModel.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
-                        timeViewModel.WorkerDisplayName = timeViewModel.Worker.DisplayName;
+                            timeViewModel.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
+                            timeViewModel.WorkerDisplayName = timeViewModel.Worker.DisplayName;
 
-                        task.Times.Add(timeViewModel);
-                    });
+                            task.Times.Add(timeViewModel);
+                        });
 
-                    viewModel.Tasks.Add(task);
-                }
-            });
+                        viewModel.Tasks.Add(task);
+                    }
+                });
 
-            matter = Data.Matters.Matter.Get(id);
+                matter = Data.Matters.Matter.Get(id, conn, false);
+            }
+
             ViewBag.Matter = matter.Title;
             ViewBag.MatterId = matter.Id;
 
@@ -1270,29 +1324,36 @@ namespace OpenLawOffice.Web.Controllers
             else
                 throw new ArgumentNullException("Must have a ContactId set in profile.");
 
-            viewModel.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(Data.Contacts.Contact.Get(contactId));
-
-            Data.Timing.Time.ListForMatterWithinRange(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                ViewModels.Timing.DayViewModel.Item dayVMItem;
+                viewModel.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                Data.Contacts.Contact.Get(contactId, conn, false));
 
-                dayVMItem = new ViewModels.Timing.DayViewModel.Item();
+                Data.Timing.Time.ListForMatterWithinRange(id, null, null, conn, false).ForEach(x =>
+                {
+                    ViewModels.Timing.DayViewModel.Item dayVMItem;
 
-                dayVMItem.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
+                    dayVMItem = new ViewModels.Timing.DayViewModel.Item();
 
-                dayVMItem.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(Data.Timing.Time.GetRelatedTask(dayVMItem.Time.Id.Value));
+                    dayVMItem.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
 
-                dayVMItem.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(Data.Tasks.Task.GetRelatedMatter(dayVMItem.Task.Id.Value));
+                    dayVMItem.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(
+                        Data.Timing.Time.GetRelatedTask(dayVMItem.Time.Id.Value, conn, false));
 
-                viewModel.Items.Add(dayVMItem);
-            });
+                    dayVMItem.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(
+                        Data.Tasks.Task.GetRelatedMatter(dayVMItem.Task.Id.Value, conn, false));
 
-            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
-            {
-                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-            });
+                    viewModel.Items.Add(dayVMItem);
+                });
 
-            matter = Data.Matters.Matter.Get(id);
+                Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
+                {
+                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                });
+
+                matter = Data.Matters.Matter.Get(id, conn, false);
+            }
+
             ViewBag.Matter = matter.Title;
             ViewBag.MatterId = matter.Id;
             ViewBag.EmployeeContactList = employeeContactList;
@@ -1318,42 +1379,55 @@ namespace OpenLawOffice.Web.Controllers
             if (!string.IsNullOrEmpty(Request["To"]))
                 to = DateTime.Parse(Request["To"]);
 
-            matter = Data.Matters.Matter.Get(id);
-
-            if (currentDVM.Employee != null && currentDVM.Employee.Id.HasValue)
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                contactId = currentDVM.Employee.Id.Value;
+                try
+                {
+                    matter = Data.Matters.Matter.Get(trans, id);
+
+                    if (currentDVM.Employee != null && currentDVM.Employee.Id.HasValue)
+                    {
+                        contactId = currentDVM.Employee.Id.Value;
+                    }
+                    else
+                    {
+                        dynamic profile = ProfileBase.Create(Membership.GetUser().UserName);
+                        if (profile.ContactId != null && !string.IsNullOrEmpty(profile.ContactId))
+                            contactId = int.Parse(profile.ContactId);
+                        else
+                            throw new ArgumentNullException("Must supply an Id or have a ContactId set in profile.");
+                    }
+                    viewModel.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                        Data.Contacts.Contact.Get(trans, contactId));
+
+                    Data.Timing.Time.ListForMatterWithinRange(trans, matter.Id.Value, from, to).ForEach(x =>
+                    {
+                        ViewModels.Timing.DayViewModel.Item dayVMItem;
+
+                        dayVMItem = new ViewModels.Timing.DayViewModel.Item();
+
+                        dayVMItem.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
+
+                        dayVMItem.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(
+                            Data.Timing.Time.GetRelatedTask(trans, dayVMItem.Time.Id.Value));
+
+                        dayVMItem.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(
+                            Data.Tasks.Task.GetRelatedMatter(trans, dayVMItem.Task.Id.Value));
+
+                        viewModel.Items.Add(dayVMItem);
+                    });
+
+                    Data.Contacts.Contact.ListEmployeesOnly(trans).ForEach(x =>
+                    {
+                        employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                    });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Timesheet(id);
+                }
             }
-            else
-            {
-                dynamic profile = ProfileBase.Create(Membership.GetUser().UserName);
-                if (profile.ContactId != null && !string.IsNullOrEmpty(profile.ContactId))
-                    contactId = int.Parse(profile.ContactId);
-                else
-                    throw new ArgumentNullException("Must supply an Id or have a ContactId set in profile.");
-            }
-            viewModel.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(Data.Contacts.Contact.Get(contactId));
-
-            Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, from, to).ForEach(x =>
-            {
-                ViewModels.Timing.DayViewModel.Item dayVMItem;
-
-                dayVMItem = new ViewModels.Timing.DayViewModel.Item();
-
-                dayVMItem.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
-
-                dayVMItem.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(Data.Timing.Time.GetRelatedTask(dayVMItem.Time.Id.Value));
-
-                dayVMItem.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(Data.Tasks.Task.GetRelatedMatter(dayVMItem.Task.Id.Value));
-
-                viewModel.Items.Add(dayVMItem);
-            });
-
-            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
-            {
-                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-            });
-
 
             if (from.HasValue)
                 ViewBag.From = from.Value;
@@ -1385,48 +1459,54 @@ namespace OpenLawOffice.Web.Controllers
             if (!string.IsNullOrEmpty(Request["To"]))
                 to = DateTime.Parse(Request["To"]);
 
-            matter = Data.Matters.Matter.Get(id);
-
-            if (currentDVM.Employee != null && currentDVM.Employee.Id.HasValue)
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                contactId = currentDVM.Employee.Id.Value;
+                matter = Data.Matters.Matter.Get(id, conn, false);
+
+                if (currentDVM.Employee != null && currentDVM.Employee.Id.HasValue)
+                {
+                    contactId = currentDVM.Employee.Id.Value;
+                }
+                else if (!string.IsNullOrEmpty(Request["empid"]))
+                {
+                    contactId = int.Parse(Request["empid"]);
+                }
+
+
+                if (contactId > 0)
+                {
+                    viewModel.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                        Data.Contacts.Contact.Get(contactId, conn, false));
+                    timeList = Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, contactId, from, to, conn, false);
+                }
+                else
+                {
+                    timeList = Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, from, to, conn, false);
+                }
+
+
+                timeList.ForEach(x =>
+                {
+                    ViewModels.Timing.DayViewModel.Item dayVMItem;
+
+                    dayVMItem = new ViewModels.Timing.DayViewModel.Item();
+
+                    dayVMItem.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
+
+                    dayVMItem.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(
+                        Data.Timing.Time.GetRelatedTask(dayVMItem.Time.Id.Value, conn, false));
+
+                    dayVMItem.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(
+                        Data.Tasks.Task.GetRelatedMatter(dayVMItem.Task.Id.Value, conn, false));
+
+                    viewModel.Items.Add(dayVMItem);
+                });
+
+                Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
+                {
+                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                });
             }
-            else if (!string.IsNullOrEmpty(Request["empid"]))
-            {
-                contactId = int.Parse(Request["empid"]);
-            }
-
-
-            if (contactId > 0)
-            {
-                viewModel.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(Data.Contacts.Contact.Get(contactId));
-                timeList = Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, contactId, from, to);
-            }
-            else
-            {
-                timeList = Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, from, to);
-            }
-
-
-            timeList.ForEach(x =>
-            {
-                ViewModels.Timing.DayViewModel.Item dayVMItem;
-
-                dayVMItem = new ViewModels.Timing.DayViewModel.Item();
-
-                dayVMItem.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
-
-                dayVMItem.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(Data.Timing.Time.GetRelatedTask(dayVMItem.Time.Id.Value));
-
-                dayVMItem.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(Data.Tasks.Task.GetRelatedMatter(dayVMItem.Task.Id.Value));
-
-                viewModel.Items.Add(dayVMItem);
-            });
-
-            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
-            {
-                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-            });
 
 
             if (from.HasValue)
@@ -1461,48 +1541,54 @@ namespace OpenLawOffice.Web.Controllers
             if (!string.IsNullOrEmpty(Request["To"]))
                 to = DateTime.Parse(Request["To"]);
 
-            matter = Data.Matters.Matter.Get(id);
-
-            if (currentDVM.Employee != null && currentDVM.Employee.Id.HasValue)
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                contactId = currentDVM.Employee.Id.Value;
+                matter = Data.Matters.Matter.Get(id, conn, false);
+
+                if (currentDVM.Employee != null && currentDVM.Employee.Id.HasValue)
+                {
+                    contactId = currentDVM.Employee.Id.Value;
+                }
+                else if (!string.IsNullOrEmpty(Request["empid"]))
+                {
+                    contactId = int.Parse(Request["empid"]);
+                }
+
+
+                if (contactId > 0)
+                {
+                    viewModel.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                        Data.Contacts.Contact.Get(contactId, conn, false));
+                    timeList = Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, contactId, from, to, conn, false);
+                }
+                else
+                {
+                    timeList = Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, from, to, conn, false);
+                }
+
+
+                timeList.ForEach(x =>
+                {
+                    ViewModels.Timing.DayViewModel.Item dayVMItem;
+
+                    dayVMItem = new ViewModels.Timing.DayViewModel.Item();
+
+                    dayVMItem.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
+
+                    dayVMItem.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(
+                        Data.Timing.Time.GetRelatedTask(dayVMItem.Time.Id.Value, conn, false));
+
+                    dayVMItem.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(
+                        Data.Tasks.Task.GetRelatedMatter(dayVMItem.Task.Id.Value, conn, false));
+
+                    viewModel.Items.Add(dayVMItem);
+                });
+
+                Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
+                {
+                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                });
             }
-            else if (!string.IsNullOrEmpty(Request["empid"]))
-            {
-                contactId = int.Parse(Request["empid"]);
-            }
-
-
-            if (contactId > 0)
-            {
-                viewModel.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(Data.Contacts.Contact.Get(contactId));
-                timeList = Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, contactId, from, to);
-            }
-            else
-            {
-                timeList = Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, from, to);
-            }
-
-
-            timeList.ForEach(x =>
-            {
-                ViewModels.Timing.DayViewModel.Item dayVMItem;
-
-                dayVMItem = new ViewModels.Timing.DayViewModel.Item();
-
-                dayVMItem.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
-
-                dayVMItem.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(Data.Timing.Time.GetRelatedTask(dayVMItem.Time.Id.Value));
-
-                dayVMItem.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(Data.Tasks.Task.GetRelatedMatter(dayVMItem.Task.Id.Value));
-
-                viewModel.Items.Add(dayVMItem);
-            });
-
-            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
-            {
-                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-            });
 
 
             if (from.HasValue)
@@ -1537,48 +1623,52 @@ namespace OpenLawOffice.Web.Controllers
             if (!string.IsNullOrEmpty(Request["To"]))
                 to = DateTime.Parse(Request["To"]);
 
-            matter = Data.Matters.Matter.Get(id);
-
-            if (currentDVM.Employee != null && currentDVM.Employee.Id.HasValue)
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                contactId = currentDVM.Employee.Id.Value;
+                matter = Data.Matters.Matter.Get(id, conn, false);
+
+                if (currentDVM.Employee != null && currentDVM.Employee.Id.HasValue)
+                {
+                    contactId = currentDVM.Employee.Id.Value;
+                }
+                else if (!string.IsNullOrEmpty(Request["empid"]))
+                {
+                    contactId = int.Parse(Request["empid"]);
+                }
+
+                if (contactId > 0)
+                {
+                    viewModel.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                        Data.Contacts.Contact.Get(contactId, conn, false));
+                    timeList = Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, contactId, from, to, conn, false);
+                }
+                else
+                {
+                    timeList = Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, from, to, conn, false);
+                }
+
+                timeList.ForEach(x =>
+                {
+                    ViewModels.Timing.DayViewModel.Item dayVMItem;
+
+                    dayVMItem = new ViewModels.Timing.DayViewModel.Item();
+
+                    dayVMItem.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
+
+                    dayVMItem.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(
+                        Data.Timing.Time.GetRelatedTask(dayVMItem.Time.Id.Value, conn, false));
+
+                    dayVMItem.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(
+                        Data.Tasks.Task.GetRelatedMatter(dayVMItem.Task.Id.Value, conn, false));
+
+                    viewModel.Items.Add(dayVMItem);
+                });
+
+                Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
+                {
+                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                });
             }
-            else if (!string.IsNullOrEmpty(Request["empid"]))
-            {
-                contactId = int.Parse(Request["empid"]);
-            }
-
-
-            if (contactId > 0)
-            {
-                viewModel.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(Data.Contacts.Contact.Get(contactId));
-                timeList = Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, contactId, from, to);
-            }
-            else
-            {
-                timeList = Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, from, to);
-            }
-
-
-            timeList.ForEach(x =>
-            {
-                ViewModels.Timing.DayViewModel.Item dayVMItem;
-
-                dayVMItem = new ViewModels.Timing.DayViewModel.Item();
-
-                dayVMItem.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
-
-                dayVMItem.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(Data.Timing.Time.GetRelatedTask(dayVMItem.Time.Id.Value));
-
-                dayVMItem.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(Data.Tasks.Task.GetRelatedMatter(dayVMItem.Task.Id.Value));
-
-                viewModel.Items.Add(dayVMItem);
-            });
-
-            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
-            {
-                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-            });
 
 
             if (from.HasValue)
@@ -1603,14 +1693,18 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Events.EventViewModel>();
 
-            Data.Events.Event.ListForMatter(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                viewModel = Mapper.Map<ViewModels.Events.EventViewModel>(x);
+                Data.Events.Event.ListForMatter(id, conn, false).ForEach(x =>
+                {
+                    viewModel = Mapper.Map<ViewModels.Events.EventViewModel>(x);
 
-                viewModelList.Add(viewModel);
-            });
-            
-            matter = Data.Matters.Matter.Get(id);
+                    viewModelList.Add(viewModel);
+                });
+
+                matter = Data.Matters.Matter.Get(id, conn, false);
+            }
+
             ViewBag.Matter = matter.Title;
             ViewBag.MatterId = matter.Id;
 

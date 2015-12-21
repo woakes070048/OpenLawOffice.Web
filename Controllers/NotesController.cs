@@ -27,6 +27,7 @@ namespace OpenLawOffice.Web.Controllers
     using AutoMapper;
     using System.Collections.Generic;
     using AutoMapper.Internal;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class NotesController : BaseController
@@ -39,31 +40,34 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.Matter noteMatter;
             Common.Models.Tasks.Task noteTask;
 
-            model = Data.Notes.Note.Get(id);
-
-            viewModel = Mapper.Map<ViewModels.Notes.NoteViewModel>(model);
-
-            noteMatter = Data.Notes.NoteMatter.GetRelatedMatter(id);
-
-            noteTask = Data.Notes.NoteTask.GetRelatedTask(id);
-
-            if (noteTask != null)
-            { // Note belongs to a task
-                noteMatter = Data.Tasks.Task.GetRelatedMatter(noteTask.Id.Value);
-                ViewBag.TaskId = noteTask.Id.Value;
-                ViewBag.Task = noteTask.Title;
-            }
-            
-            viewModel.NoteNotifications = new List<ViewModels.Notes.NoteNotificationViewModel>();
-            Data.Notes.NoteNotification.ListForNote(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                x.Contact = Data.Contacts.Contact.Get(x.Contact.Id.Value);
-                ViewModels.Notes.NoteNotificationViewModel vm = Mapper.Map<ViewModels.Notes.NoteNotificationViewModel>(x);
-                vm.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(x.Contact);
-                viewModel.NoteNotifications.Add(vm);
-            });
+                model = Data.Notes.Note.Get(id, conn, false);
 
-            PopulateCoreDetails(viewModel);
+                viewModel = Mapper.Map<ViewModels.Notes.NoteViewModel>(model);
+
+                noteMatter = Data.Notes.NoteMatter.GetRelatedMatter(id, conn, false);
+
+                noteTask = Data.Notes.NoteTask.GetRelatedTask(id, conn, false);
+
+                if (noteTask != null)
+                { // Note belongs to a task
+                    noteMatter = Data.Tasks.Task.GetRelatedMatter(noteTask.Id.Value, conn, false);
+                    ViewBag.TaskId = noteTask.Id.Value;
+                    ViewBag.Task = noteTask.Title;
+                }
+
+                viewModel.NoteNotifications = new List<ViewModels.Notes.NoteNotificationViewModel>();
+                Data.Notes.NoteNotification.ListForNote(id, conn, false).ForEach(x =>
+                {
+                    x.Contact = Data.Contacts.Contact.Get(x.Contact.Id.Value, conn, false);
+                    ViewModels.Notes.NoteNotificationViewModel vm = Mapper.Map<ViewModels.Notes.NoteNotificationViewModel>(x);
+                    vm.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(x.Contact);
+                    viewModel.NoteNotifications.Add(vm);
+                });
+
+                PopulateCoreDetails(viewModel, conn);
+            }
 
             ViewBag.MatterId = noteMatter.Id.Value;
             ViewBag.Matter = noteMatter.Title;
@@ -76,11 +80,14 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Notes.NoteNotification model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                currentUser = Data.Account.Users.Get(User.Identity.Name, conn, false);
 
-            model = Data.Notes.NoteNotification.Get(id);
+                model = Data.Notes.NoteNotification.Get(id, conn, false);
 
-            model = Data.Notes.NoteNotification.Clear(model, currentUser);
+                model = Data.Notes.NoteNotification.Clear(model, currentUser, conn, false);
+            }
 
             return RedirectToAction("Index", "Home", new { Id = employeeId });
         }
@@ -96,29 +103,33 @@ namespace OpenLawOffice.Web.Controllers
 
             employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
 
-            model = Data.Notes.Note.Get(id);
-            matter = Data.Notes.Note.GetMatter(id);
-            task = Data.Notes.Note.GetTask(id);
-
-            viewModel = Mapper.Map<ViewModels.Notes.NoteViewModel>(model);
-
-            if (task != null)
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
-                ViewBag.TaskId = task.Id.Value;
-                ViewBag.Task = task.Title;
-            }
+                model = Data.Notes.Note.Get(id, conn, false);
+                matter = Data.Notes.Note.GetMatter(id, conn, false);
+                task = Data.Notes.Note.GetTask(id, conn, false);
 
-            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
-            {
-                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-            });
+                viewModel = Mapper.Map<ViewModels.Notes.NoteViewModel>(model);
 
-            List<Common.Models.Notes.NoteNotification> notesNotifications = Data.Notes.NoteNotification.ListForNote(id);
-            viewModel.NotifyContactIds = new string[notesNotifications.Count];
-            for (int i = 0; i < notesNotifications.Count; i++)
-            {
-                viewModel.NotifyContactIds[i] = notesNotifications[i].Contact.Id.Value.ToString();
+                if (task != null)
+                {
+                    matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value, conn, false);
+                    ViewBag.TaskId = task.Id.Value;
+                    ViewBag.Task = task.Title;
+                }
+
+                Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
+                {
+                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                });
+
+                List<Common.Models.Notes.NoteNotification> notesNotifications = 
+                    Data.Notes.NoteNotification.ListForNote(id, conn, false);
+                viewModel.NotifyContactIds = new string[notesNotifications.Count];
+                for (int i = 0; i < notesNotifications.Count; i++)
+                {
+                    viewModel.NotifyContactIds[i] = notesNotifications[i].Contact.Id.Value.ToString();
+                }
             }
 
             ViewBag.MatterId = matter.Id.Value;
@@ -136,26 +147,37 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Notes.Note model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            model = Mapper.Map<Common.Models.Notes.Note>(viewModel);
-            model.Body = new Ganss.XSS.HtmlSanitizer().Sanitize(model.Body);
-            model = Data.Notes.Note.Edit(model, currentUser);
-
-            if (viewModel.NotifyContactIds != null)
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                viewModel.NotifyContactIds.Each(x =>
+                try
                 {
-                    Data.Notes.NoteNotification.Create(new Common.Models.Notes.NoteNotification()
-                    {
-                        Contact = new Common.Models.Contacts.Contact() { Id = int.Parse(x) },
-                        Note = model,
-                        Cleared = null
-                    }, currentUser);
-                });
-            }
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            return RedirectToAction("Details", new { Id = id });
+                    model = Mapper.Map<Common.Models.Notes.Note>(viewModel);
+                    model.Body = new Ganss.XSS.HtmlSanitizer().Sanitize(model.Body);
+                    model = Data.Notes.Note.Edit(trans, model, currentUser);
+
+                    if (viewModel.NotifyContactIds != null)
+                    {
+                        viewModel.NotifyContactIds.Each(x =>
+                        {
+                            Data.Notes.NoteNotification.Create(trans, new Common.Models.Notes.NoteNotification()
+                            {
+                                Contact = new Common.Models.Contacts.Contact() { Id = int.Parse(x) },
+                                Note = model,
+                                Cleared = null
+                            }, currentUser);
+                        });
+                    }
+
+                    return RedirectToAction("Details", new { Id = id });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Edit(id);
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -167,22 +189,25 @@ namespace OpenLawOffice.Web.Controllers
 
             employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
 
-            if (Request["MatterId"] != null)
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                matter = Data.Matters.Matter.Get(Guid.Parse(Request["MatterId"]));
-            }
-            else if (Request["TaskId"] != null)
-            {
-                task = Data.Tasks.Task.Get(long.Parse(Request["TaskId"]));
-                matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
-                ViewBag.TaskId = task.Id.Value;
-                ViewBag.Task = task.Title;
-            }
+                if (Request["MatterId"] != null)
+                {
+                    matter = Data.Matters.Matter.Get(Guid.Parse(Request["MatterId"]), conn, false);
+                }
+                else if (Request["TaskId"] != null)
+                {
+                    task = Data.Tasks.Task.Get(long.Parse(Request["TaskId"]), conn, false);
+                    matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value, conn, false);
+                    ViewBag.TaskId = task.Id.Value;
+                    ViewBag.Task = task.Title;
+                }
 
-            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
-            {
-                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-            });
+                Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
+                {
+                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                });
+            }
 
             ViewBag.MatterId = matter.Id.Value;
             ViewBag.Matter = matter.Title;
@@ -201,53 +226,81 @@ namespace OpenLawOffice.Web.Controllers
             Guid matterid, eventid;
             long taskid;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            model = Mapper.Map<Common.Models.Notes.Note>(viewModel);
-
-            model.Body = new Ganss.XSS.HtmlSanitizer().Sanitize(model.Body);
-
-            model = Data.Notes.Note.Create(model, currentUser);
-
-            if (viewModel.NotifyContactIds != null)
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                viewModel.NotifyContactIds.Each(x =>
+                try
                 {
-                    Data.Notes.NoteNotification.Create(new Common.Models.Notes.NoteNotification()
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
+
+                    model = Mapper.Map<Common.Models.Notes.Note>(viewModel);
+
+                    model.Body = new Ganss.XSS.HtmlSanitizer().Sanitize(model.Body);
+
+                    model = Data.Notes.Note.Create(trans, model, currentUser);
+
+                    if (viewModel.NotifyContactIds != null)
                     {
-                        Contact = new Common.Models.Contacts.Contact() { Id = int.Parse(x) },
-                        Note = model,
-                        Cleared = null
-                    }, currentUser);
-                });
+                        viewModel.NotifyContactIds.Each(x =>
+                        {
+                            Data.Notes.NoteNotification.Create(trans, new Common.Models.Notes.NoteNotification()
+                            {
+                                Contact = new Common.Models.Contacts.Contact() { Id = int.Parse(x) },
+                                Note = model,
+                                Cleared = null
+                            }, currentUser);
+                        });
+                    }
+
+                    if (Request["MatterId"] != null)
+                    {
+                        matterid = Guid.Parse(Request["MatterId"]);
+
+                        Data.Notes.Note.RelateMatter(trans, model, matterid, currentUser);
+
+                        return RedirectToAction("Details", "Matters", new { Id = matterid });
+                    }
+                    else if (Request["TaskId"] != null)
+                    {
+                        taskid = long.Parse(Request["TaskId"]);
+
+                        Data.Notes.Note.RelateTask(trans, model, taskid, currentUser);
+
+                        return RedirectToAction("Details", "Tasks", new { Id = taskid });
+                    }
+                    else if (Request["EventId"] != null)
+                    {
+                        eventid = Guid.Parse(Request["EventId"]);
+
+                        Data.Notes.Note.RelateEvent(trans, model, eventid, currentUser);
+
+                        return RedirectToAction("Details", "Events", new { Id = eventid });
+                    }
+                    else
+                        throw new HttpRequestValidationException("Must specify a MatterId, TaskId or EventId");
+                }
+                catch
+                {
+                    trans.Rollback();
+
+                    if (Request["MatterId"] != null)
+                    {
+                        matterid = Guid.Parse(Request["MatterId"]);
+                        return RedirectToAction("Create", "Notes", new { MatterId = matterid });
+                    }
+                    else if (Request["TaskId"] != null)
+                    {
+                        taskid = long.Parse(Request["TaskId"]);
+                        return RedirectToAction("Create", "Notes", new { TaskId = taskid });
+                    }
+                    else if (Request["EventId"] != null)
+                    {
+                        eventid = Guid.Parse(Request["EventId"]);
+                        return RedirectToAction("Create", "Notes", new { EventId = eventid });
+                    }
+                    else
+                        throw new HttpRequestValidationException("Must specify a MatterId, TaskId or EventId");
+                }
             }
-
-            if (Request["MatterId"] != null)
-            {
-                matterid = Guid.Parse(Request["MatterId"]);
-
-                Data.Notes.Note.RelateMatter(model, matterid, currentUser);
-
-                return RedirectToAction("Details", "Matters", new { Id = matterid });
-            }
-            else if (Request["TaskId"] != null)
-            {
-                taskid = long.Parse(Request["TaskId"]);
-
-                Data.Notes.Note.RelateTask(model, taskid, currentUser);
-
-                return RedirectToAction("Details", "Tasks", new { Id = taskid });
-            }
-            else if (Request["EventId"] != null)
-            {
-                eventid = Guid.Parse(Request["EventId"]);
-
-                Data.Notes.Note.RelateEvent(model, eventid, currentUser);
-
-                return RedirectToAction("Details", "Events", new { Id = eventid });
-            }
-            else
-                throw new HttpRequestValidationException("Must specify a MatterId, TaskId or EventId");
         }
     }
 }

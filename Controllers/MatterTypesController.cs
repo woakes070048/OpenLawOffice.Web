@@ -26,6 +26,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Web.Mvc;
     using AutoMapper;
     using System.Collections.Generic;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class MatterTypesController : BaseController
@@ -35,10 +36,13 @@ namespace OpenLawOffice.Web.Controllers
         {
             List<ViewModels.Matters.MatterTypeViewModel> vmList = new List<ViewModels.Matters.MatterTypeViewModel>();
 
-            Data.Matters.MatterType.List().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                vmList.Add(Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x));
-            });
+                Data.Matters.MatterType.List(conn, false).ForEach(x =>
+                {
+                    vmList.Add(Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x));
+                });
+            }
 
             return View(vmList);
         }
@@ -49,11 +53,14 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Matters.MatterTypeViewModel viewModel;
             Common.Models.Matters.MatterType model;
 
-            model = Data.Matters.MatterType.Get(id);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Matters.MatterType.Get(id, conn, false);
 
-            viewModel = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(model);
+                viewModel = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(model);
 
-            PopulateCoreDetails(viewModel);
+                PopulateCoreDetails(viewModel, conn);
+            }
 
             return View(viewModel);
         }
@@ -78,13 +85,26 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Matters.MatterType model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Matters.MatterType>(viewModel);
+                    model = Mapper.Map<Common.Models.Matters.MatterType>(viewModel);
 
-            model = Data.Matters.MatterType.Edit(model, currentUser);
+                    model = Data.Matters.MatterType.Edit(trans, model, currentUser);
 
-            return RedirectToAction("Index");
+                    trans.Commit();
+
+                    return RedirectToAction("Index");
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Edit(id);
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -100,13 +120,26 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Matters.MatterType model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Matters.MatterType>(viewModel);
+                    model = Mapper.Map<Common.Models.Matters.MatterType>(viewModel);
 
-            model = Data.Matters.MatterType.Create(model, currentUser);
+                    model = Data.Matters.MatterType.Create(trans, model, currentUser);
 
-            return RedirectToAction("Index");
+                    trans.Commit();
+
+                    return RedirectToAction("Index");
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Create();
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -129,14 +162,26 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Matters.MatterType model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Matters.MatterType>(viewModel);
+                    model = Mapper.Map<Common.Models.Matters.MatterType>(viewModel);
 
-            model = Data.Matters.MatterType.Disable(model, currentUser);
+                    model = Data.Matters.MatterType.Disable(trans, model, currentUser);
 
-            return RedirectToAction("Index");
+                    trans.Commit();
+
+                    return RedirectToAction("Index");
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Delete(id);
+                }
+            }
         }
-
     }
 }

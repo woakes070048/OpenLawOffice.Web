@@ -25,6 +25,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Collections.Generic;
     using System.Web.Mvc;
     using AutoMapper;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class TaskResponsibleUsersController : BaseController
@@ -36,17 +37,21 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Tasks.TaskResponsibleUserViewModel viewModel;
             Common.Models.Tasks.TaskResponsibleUser model;
 
-            model = Data.Tasks.TaskResponsibleUser.Get(id);
-            model.Task = Data.Tasks.Task.Get(model.Task.Id.Value);
-            model.User = Data.Account.Users.Get(model.User.PId.Value);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Tasks.TaskResponsibleUser.Get(id, conn, false);
+                model.Task = Data.Tasks.Task.Get(model.Task.Id.Value, conn, false);
+                model.User = Data.Account.Users.Get(model.User.PId.Value, conn, false);
 
-            viewModel = Mapper.Map<ViewModels.Tasks.TaskResponsibleUserViewModel>(model);
-            viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model.Task);
-            viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(model.User);
+                viewModel = Mapper.Map<ViewModels.Tasks.TaskResponsibleUserViewModel>(model);
+                viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model.Task);
+                viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(model.User);
 
-            PopulateCoreDetails(viewModel);
+                PopulateCoreDetails(viewModel, conn);
 
-            matter = Data.Tasks.Task.GetRelatedMatter(model.Task.Id.Value);
+                matter = Data.Tasks.Task.GetRelatedMatter(model.Task.Id.Value, conn, false);
+            }
+
             ViewBag.Task = model.Task.Title;
             ViewBag.TaskId = model.Task.Id;
             ViewBag.Matter = matter.Title;
@@ -65,18 +70,22 @@ namespace OpenLawOffice.Web.Controllers
 
             userViewModelList = new List<ViewModels.Account.UsersViewModel>();
 
-            task = OpenLawOffice.Data.Tasks.Task.Get(id);
-
-            taskViewModel = Mapper.Map<ViewModels.Tasks.TaskViewModel>(task);
-
-            Data.Account.Users.List().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
-            });
+                task = Data.Tasks.Task.Get(id, conn, false);
 
-            ViewBag.UserList = userViewModelList;
+                taskViewModel = Mapper.Map<ViewModels.Tasks.TaskViewModel>(task);
 
-            matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
+                Data.Account.Users.List(conn, false).ForEach(x =>
+                {
+                    userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
+                });
+
+                ViewBag.UserList = userViewModelList;
+
+                matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value, conn, false);
+            }
+
             ViewBag.Task = task.Title;
             ViewBag.TaskId = task.Id;
             ViewBag.Matter = matter.Title;
@@ -97,49 +106,64 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Tasks.TaskViewModel taskViewModel;
 
             model = Mapper.Map<Common.Models.Tasks.TaskResponsibleUser>(viewModel);
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
 
-            // Is there already an entry for this user?
-            currentResponsibleUser = Data.Tasks.TaskResponsibleUser.GetIgnoringDisable(
-                long.Parse(RouteData.Values["Id"].ToString()), currentUser.PId.Value);
 
-            if (currentResponsibleUser != null)
-            { // Update
-                if (!currentResponsibleUser.Disabled.HasValue)
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
                 {
-                    ModelState.AddModelError("User", "This user already has a responsibility.");
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-                    userViewModelList = new List<ViewModels.Account.UsersViewModel>();
+                    // Is there already an entry for this user?
+                    currentResponsibleUser = Data.Tasks.TaskResponsibleUser.GetIgnoringDisable(trans,
+                        long.Parse(RouteData.Values["Id"].ToString()), currentUser.PId.Value);
 
-                    task = Data.Tasks.Task.Get(currentResponsibleUser.Task.Id.Value);
+                    if (currentResponsibleUser != null)
+                    { // Update
+                        if (!currentResponsibleUser.Disabled.HasValue)
+                        {
+                            ModelState.AddModelError("User", "This user already has a responsibility.");
 
-                    taskViewModel = Mapper.Map<ViewModels.Tasks.TaskViewModel>(task);
+                            userViewModelList = new List<ViewModels.Account.UsersViewModel>();
 
-                    Data.Account.Users.List().ForEach(x =>
-                    {
-                        userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
-                    });
+                            task = Data.Tasks.Task.Get(trans, currentResponsibleUser.Task.Id.Value);
 
-                    ViewBag.UserList = userViewModelList;
+                            taskViewModel = Mapper.Map<ViewModels.Tasks.TaskViewModel>(task);
 
-                    return View(new ViewModels.Tasks.TaskResponsibleUserViewModel() { Task = taskViewModel });
+                            Data.Account.Users.List(trans).ForEach(x =>
+                            {
+                                userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
+                            });
+
+                            ViewBag.UserList = userViewModelList;
+
+                            return View(new ViewModels.Tasks.TaskResponsibleUserViewModel() { Task = taskViewModel });
+                        }
+
+                        model.Id = currentResponsibleUser.Id;
+                        model.Responsibility = model.Responsibility;
+
+                        // Remove disability
+                        model = Data.Tasks.TaskResponsibleUser.Enable(trans, model, currentUser);
+
+                        // Update responsibility
+                        model = Data.Tasks.TaskResponsibleUser.Edit(trans, model, currentUser);
+                    }
+                    else
+                    { // Insert
+                        model = Data.Tasks.TaskResponsibleUser.Create(trans, model, currentUser);
+                    }
+
+                    trans.Commit();
+
+                    return RedirectToAction("ResponsibleUsers", "Tasks", new { Id = model.Task.Id.Value.ToString() });
                 }
-
-                model.Id = currentResponsibleUser.Id;
-                model.Responsibility = model.Responsibility;
-
-                // Remove disability
-                model = Data.Tasks.TaskResponsibleUser.Enable(model, currentUser);
-
-                // Update responsibility
-                model = Data.Tasks.TaskResponsibleUser.Edit(model, currentUser);
+                catch
+                {
+                    trans.Rollback();
+                    return Create(viewModel.Task.Id.Value);
+                }
             }
-            else
-            { // Insert
-                model = Data.Tasks.TaskResponsibleUser.Create(model, currentUser);
-            }
-
-            return RedirectToAction("ResponsibleUsers", "Tasks", new { Id = model.Task.Id.Value.ToString() });
         }
 
         [Authorize(Roles = "Login, User")]
@@ -152,22 +176,26 @@ namespace OpenLawOffice.Web.Controllers
 
             userViewModelList = new List<ViewModels.Account.UsersViewModel>();
 
-            model = Data.Tasks.TaskResponsibleUser.Get(id);
-            model.Task = Data.Tasks.Task.Get(model.Task.Id.Value);
-            model.User = Data.Account.Users.Get(model.User.PId.Value);
-
-            viewModel = Mapper.Map<ViewModels.Tasks.TaskResponsibleUserViewModel>(model);
-            viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model.Task);
-            viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(model.User);
-
-            Data.Account.Users.List().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
-            });
+                model = Data.Tasks.TaskResponsibleUser.Get(id, conn, false);
+                model.Task = Data.Tasks.Task.Get(model.Task.Id.Value, conn, false);
+                model.User = Data.Account.Users.Get(model.User.PId.Value, conn, false);
 
-            ViewBag.UserList = userViewModelList;
+                viewModel = Mapper.Map<ViewModels.Tasks.TaskResponsibleUserViewModel>(model);
+                viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model.Task);
+                viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(model.User);
 
-            matter = Data.Tasks.Task.GetRelatedMatter(model.Task.Id.Value);
+                Data.Account.Users.List(conn, false).ForEach(x =>
+                {
+                    userViewModelList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
+                });
+
+                ViewBag.UserList = userViewModelList;
+
+                matter = Data.Tasks.Task.GetRelatedMatter(model.Task.Id.Value, conn, false);
+            }
+
             ViewBag.Task = model.Task.Title;
             ViewBag.TaskId = model.Task.Id;
             ViewBag.Matter = matter.Title;
@@ -183,13 +211,26 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Tasks.TaskResponsibleUser model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Tasks.TaskResponsibleUser>(viewModel);
+                    model = Mapper.Map<Common.Models.Tasks.TaskResponsibleUser>(viewModel);
 
-            model = Data.Tasks.TaskResponsibleUser.Edit(model, currentUser);
+                    model = Data.Tasks.TaskResponsibleUser.Edit(trans, model, currentUser);
 
-            return RedirectToAction("ResponsibleUsers", "Tasks", new { Id = model.Task.Id.Value });
+                    trans.Commit();
+
+                    return RedirectToAction("ResponsibleUsers", "Tasks", new { Id = model.Task.Id.Value });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Edit(id);
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -205,13 +246,26 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Tasks.TaskResponsibleUser model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Data.Tasks.TaskResponsibleUser.Get(id);
+                    model = Data.Tasks.TaskResponsibleUser.Get(trans, id);
 
-            model = Data.Tasks.TaskResponsibleUser.Disable(model, currentUser);
+                    model = Data.Tasks.TaskResponsibleUser.Disable(trans, model, currentUser);
 
-            return RedirectToAction("ResponsibleUsers", "Tasks", new { Id = model.Task.Id.Value });
+                    trans.Commit();
+
+                    return RedirectToAction("ResponsibleUsers", "Tasks", new { Id = model.Task.Id.Value });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Delete(id);
+                }
+            }
         }
     }
 }

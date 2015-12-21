@@ -24,6 +24,7 @@ namespace OpenLawOffice.Web.Controllers
     using System;
     using System.Web.Mvc;
     using AutoMapper;
+    using System.Data;
 
     // NOT MAINTAINED
     [HandleError(View = "Errors/Index", Order = 10)]
@@ -35,13 +36,16 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Matters.MatterTagViewModel viewModel;
             Common.Models.Matters.MatterTag model;
 
-            model = Data.Matters.MatterTag.Get(id);
-            model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Matters.MatterTag.Get(id, conn, false);
+                model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value, conn, false);
 
-            viewModel = Mapper.Map<ViewModels.Matters.MatterTagViewModel>(model);
-            viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model.Matter);
+                viewModel = Mapper.Map<ViewModels.Matters.MatterTagViewModel>(model);
+                viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model.Matter);
 
-            PopulateCoreDetails(viewModel);
+                PopulateCoreDetails(viewModel, conn);
+            }
 
             ViewData["MatterId"] = model.Matter.Id.Value;
             ViewData["Matter"] = model.Matter.Title;
@@ -72,22 +76,35 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Matters.MatterTag model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            // Need to overwrite the ID received as it pertains to the MatterId
-            viewModel.Id = Guid.NewGuid();
-            model = Mapper.Map<Common.Models.Matters.MatterTag>(viewModel);
-
-            model.Matter = new Common.Models.Matters.Matter()
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                Id = Guid.Parse(RouteData.Values["Id"].ToString())
-            };
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model.TagCategory = Mapper.Map<Common.Models.Tagging.TagCategory>(viewModel.TagCategory);
+                    // Need to overwrite the ID received as it pertains to the MatterId
+                    viewModel.Id = Guid.NewGuid();
+                    model = Mapper.Map<Common.Models.Matters.MatterTag>(viewModel);
 
-            model = Data.Matters.MatterTag.Create(model, currentUser);
+                    model.Matter = new Common.Models.Matters.Matter()
+                    {
+                        Id = Guid.Parse(RouteData.Values["Id"].ToString())
+                    };
 
-            return RedirectToAction("Tags", "Matters", new { Id = model.Matter.Id.Value.ToString() });
+                    model.TagCategory = Mapper.Map<Common.Models.Tagging.TagCategory>(viewModel.TagCategory);
+
+                    model = Data.Matters.MatterTag.Create(trans, model, currentUser);
+
+                    trans.Commit();
+
+                    return RedirectToAction("Tags", "Matters", new { Id = model.Matter.Id.Value.ToString() });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Create(viewModel.Matter.Id.Value);
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -96,13 +113,16 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Matters.MatterTagViewModel viewModel;
             Common.Models.Matters.MatterTag model;
 
-            model = OpenLawOffice.Data.Matters.MatterTag.Get(id);
-            model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Matters.MatterTag.Get(id, conn, false);
+                model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value, conn, false);
 
-            viewModel = Mapper.Map<ViewModels.Matters.MatterTagViewModel>(model);
-            viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model.Matter);
+                viewModel = Mapper.Map<ViewModels.Matters.MatterTagViewModel>(model);
+                viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model.Matter);
 
-            PopulateCoreDetails(viewModel);
+                PopulateCoreDetails(viewModel, conn);
+            }
 
             ViewData["MatterId"] = model.Matter.Id.Value;
             ViewData["Matter"] = model.Matter.Title;
@@ -117,15 +137,28 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Matters.MatterTag model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Matters.MatterTag>(viewModel);
-            model.TagCategory = Mapper.Map<Common.Models.Tagging.TagCategory>(viewModel.TagCategory);
-            model.Matter = Data.Matters.MatterTag.Get(id).Matter;
+                    model = Mapper.Map<Common.Models.Matters.MatterTag>(viewModel);
+                    model.TagCategory = Mapper.Map<Common.Models.Tagging.TagCategory>(viewModel.TagCategory);
+                    model.Matter = Data.Matters.MatterTag.Get(trans, id).Matter;
 
-            model = Data.Matters.MatterTag.Edit(model, currentUser);
+                    model = Data.Matters.MatterTag.Edit(trans, model, currentUser);
 
-            return RedirectToAction("Tags", "Matters", new { Id = model.Matter.Id.Value.ToString() });
+                    trans.Commit();
+
+                    return RedirectToAction("Tags", "Matters", new { Id = model.Matter.Id.Value.ToString() });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Edit(id);
+                }
+            }
         }
 
         [Authorize(Roles = "Login, User")]
@@ -141,13 +174,26 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Matters.MatterTag model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Matters.MatterTag>(viewModel);
+                    model = Mapper.Map<Common.Models.Matters.MatterTag>(viewModel);
 
-            model = Data.Matters.MatterTag.Disable(model, currentUser);
+                    model = Data.Matters.MatterTag.Disable(trans, model, currentUser);
 
-            return RedirectToAction("Tags", "Matters", new { Id = model.Matter.Id.Value.ToString() });
+                    trans.Commit();
+
+                    return RedirectToAction("Tags", "Matters", new { Id = model.Matter.Id.Value.ToString() });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Edit(id);
+                }
+            }
         }
     }
 }

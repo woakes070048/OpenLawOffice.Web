@@ -28,6 +28,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Configuration;
     using System.Web.Profile;
     using System.Web.Security;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class TasksController : BaseController
@@ -111,14 +112,14 @@ namespace OpenLawOffice.Web.Controllers
         //    return Json(jqObject, JsonRequestBehavior.AllowGet);
         //}
 
-        public static List<ViewModels.Tasks.TaskViewModel> GetChildrenList(long id)
+        public static List<ViewModels.Tasks.TaskViewModel> GetChildrenList(long id, IDbConnection conn)
         {
             List<ViewModels.Tasks.TaskViewModel> viewModelList;
 
             viewModelList = new List<ViewModels.Tasks.TaskViewModel>();
             ViewModels.Tasks.TaskViewModel viewModel;
 
-            Data.Tasks.Task.ListChildren(id).ForEach(x =>
+            Data.Tasks.Task.ListChildren(id, null, conn, false).ForEach(x =>
             {
                 viewModel = Mapper.Map<ViewModels.Tasks.TaskViewModel>(x);
 
@@ -143,20 +144,20 @@ namespace OpenLawOffice.Web.Controllers
             return viewModelList;
         }
 
-        public static List<ViewModels.Tasks.TaskViewModel> GetListForMatter(Guid matterid, bool? active)
+        public static List<ViewModels.Tasks.TaskViewModel> GetListForMatter(Guid matterid, bool? active, IDbConnection conn)
         {
             List<ViewModels.Tasks.TaskViewModel> viewModelList;
             ViewModels.Tasks.TaskViewModel viewModel;
 
             viewModelList = new List<ViewModels.Tasks.TaskViewModel>();
 
-            Data.Tasks.Task.ListForMatter(matterid, active).ForEach(x =>
+            Data.Tasks.Task.ListForMatter(matterid, active, conn, false).ForEach(x =>
             {
                 viewModel = Mapper.Map<ViewModels.Tasks.TaskViewModel>(x);
 
                 if (viewModel.IsGroupingTask)
                 {
-                    if (Data.Tasks.Task.GetTaskForWhichIAmTheSequentialPredecessor(x.Id.Value)
+                    if (Data.Tasks.Task.GetTaskForWhichIAmTheSequentialPredecessor(x.Id.Value, conn, false)
                         != null)
                         viewModel.Type = "Sequential Group";
                     else
@@ -176,20 +177,20 @@ namespace OpenLawOffice.Web.Controllers
             return viewModelList;
         }
 
-        public static List<ViewModels.Tasks.TaskViewModel> GetList()
+        public static List<ViewModels.Tasks.TaskViewModel> GetList(IDbConnection conn)
         {
             List<ViewModels.Tasks.TaskViewModel> viewModelList;
             ViewModels.Tasks.TaskViewModel viewModel;
 
             viewModelList = new List<ViewModels.Tasks.TaskViewModel>();
 
-            Data.Tasks.Task.List().ForEach(x =>
+            Data.Tasks.Task.List(conn, false).ForEach(x =>
             {
                 viewModel = Mapper.Map<ViewModels.Tasks.TaskViewModel>(x);
 
                 if (viewModel.IsGroupingTask)
                 {
-                    if (Data.Tasks.Task.GetTaskForWhichIAmTheSequentialPredecessor(x.Id.Value)
+                    if (Data.Tasks.Task.GetTaskForWhichIAmTheSequentialPredecessor(x.Id.Value, conn, false)
                         != null)
                         viewModel.Type = "Sequential Group";
                     else
@@ -216,31 +217,34 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Tasks.Task model;
             Common.Models.Matters.Matter matter;
 
-            model = Data.Tasks.Task.Get(id);
-
-            viewModel = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model);
-            
-            viewModel.Notes = new List<ViewModels.Notes.NoteViewModel>();
-            Data.Notes.NoteTask.ListForTask(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                viewModel.Notes.Add(Mapper.Map<ViewModels.Notes.NoteViewModel>(x));
-            });
+                model = Data.Tasks.Task.Get(id, conn, false);
 
-            PopulateCoreDetails(viewModel);
+                viewModel = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model);
 
-            if (model.Parent != null && model.Parent.Id.HasValue)
-            {
-                model.Parent = Data.Tasks.Task.Get(model.Parent.Id.Value);
-                viewModel.Parent = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model.Parent);
+                viewModel.Notes = new List<ViewModels.Notes.NoteViewModel>();
+                Data.Notes.NoteTask.ListForTask(id, conn, false).ForEach(x =>
+                {
+                    viewModel.Notes.Add(Mapper.Map<ViewModels.Notes.NoteViewModel>(x));
+                });
+
+                PopulateCoreDetails(viewModel, conn);
+
+                if (model.Parent != null && model.Parent.Id.HasValue)
+                {
+                    model.Parent = Data.Tasks.Task.Get(model.Parent.Id.Value, conn, false);
+                    viewModel.Parent = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model.Parent);
+                }
+
+                if (model.SequentialPredecessor != null && model.SequentialPredecessor.Id.HasValue)
+                {
+                    model.SequentialPredecessor = Data.Tasks.Task.Get(model.SequentialPredecessor.Id.Value, conn, false);
+                    viewModel.SequentialPredecessor = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model.SequentialPredecessor);
+                }
+
+                matter = Data.Tasks.Task.GetRelatedMatter(model.Id.Value, conn, false);
             }
-
-            if (model.SequentialPredecessor != null && model.SequentialPredecessor.Id.HasValue)
-            {
-                model.SequentialPredecessor = Data.Tasks.Task.Get(model.SequentialPredecessor.Id.Value);
-                viewModel.SequentialPredecessor = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model.SequentialPredecessor);
-            }
-
-            matter = Data.Tasks.Task.GetRelatedMatter(model.Id.Value);
 
             ViewBag.MatterId = matter.Id.Value;
             ViewBag.Matter = matter.Title;
@@ -255,22 +259,25 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Tasks.Task model;
             Common.Models.Matters.Matter matter;
 
-            model = Data.Tasks.Task.Get(id);
-            viewModel = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model);
-
-            if (model.Parent != null && model.Parent.Id.HasValue)
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                model.Parent = Data.Tasks.Task.Get(model.Parent.Id.Value);
-                viewModel.Parent = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model.Parent);
-            }
+                model = Data.Tasks.Task.Get(id, conn, false);
+                viewModel = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model);
 
-            if (model.SequentialPredecessor != null && model.SequentialPredecessor.Id.HasValue)
-            {
-                model.SequentialPredecessor = Data.Tasks.Task.Get(model.SequentialPredecessor.Id.Value);
-                viewModel.SequentialPredecessor = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model.SequentialPredecessor);
-            }
+                if (model.Parent != null && model.Parent.Id.HasValue)
+                {
+                    model.Parent = Data.Tasks.Task.Get(model.Parent.Id.Value, conn, false);
+                    viewModel.Parent = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model.Parent);
+                }
 
-            matter = Data.Tasks.Task.GetRelatedMatter(model.Id.Value);
+                if (model.SequentialPredecessor != null && model.SequentialPredecessor.Id.HasValue)
+                {
+                    model.SequentialPredecessor = Data.Tasks.Task.Get(model.SequentialPredecessor.Id.Value, conn, false);
+                    viewModel.SequentialPredecessor = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model.SequentialPredecessor);
+                }
+
+                matter = Data.Tasks.Task.GetRelatedMatter(model.Id.Value, conn, false);
+            }
 
             ViewBag.MatterId = matter.Id.Value;
             ViewBag.Matter = matter.Title;
@@ -288,32 +295,45 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Matters.Matter matterModel;
             Common.Models.Tasks.Task currentModel;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            model = Mapper.Map<Common.Models.Tasks.Task>(viewModel);
-
-            matterModel = Data.Tasks.Task.GetRelatedMatter(id);
-
-            currentModel = Data.Tasks.Task.Get(id);
-
-            if (model.Parent != null && model.Parent.Id.HasValue)
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                if (model.Parent.Id.Value == model.Id.Value)
+                try
                 {
-                    //  Task is trying to set itself as its parent
-                    ModelState.AddModelError("Parent.Id", "Parent cannot be the task itself.");
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-                    ViewBag.MatterId = matterModel.Id.Value;
-                    ViewBag.Matter = matterModel.Title;
+                    model = Mapper.Map<Common.Models.Tasks.Task>(viewModel);
 
-                    return View(viewModel);
+                    matterModel = Data.Tasks.Task.GetRelatedMatter(trans, id);
+
+                    currentModel = Data.Tasks.Task.Get(trans, id);
+
+                    if (model.Parent != null && model.Parent.Id.HasValue)
+                    {
+                        if (model.Parent.Id.Value == model.Id.Value)
+                        {
+                            //  Task is trying to set itself as its parent
+                            ModelState.AddModelError("Parent.Id", "Parent cannot be the task itself.");
+
+                            ViewBag.MatterId = matterModel.Id.Value;
+                            ViewBag.Matter = matterModel.Title;
+
+                            return View(viewModel);
+                        }
+                    }
+
+                    model.Description = new Ganss.XSS.HtmlSanitizer().Sanitize(model.Description);
+                    model = Data.Tasks.Task.Edit(trans, model, currentUser);
+
+                    trans.Commit();
+
+                    return RedirectToAction("Details", new { Id = id });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Edit(id);
                 }
             }
-
-            model.Description = new Ganss.XSS.HtmlSanitizer().Sanitize(model.Description);
-            model = Data.Tasks.Task.Edit(model, currentUser);
-
-            return RedirectToAction("Details", new { Id = id });
         }
 
         [Authorize(Roles = "Login, User")]
@@ -329,21 +349,34 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Tasks.Task model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-            model = Data.Tasks.Task.Get(id);
-            model.Active = false;
-            model.ActualEnd = DateTime.Now;
+                    model = Data.Tasks.Task.Get(trans, id);
+                    model.Active = false;
+                    model.ActualEnd = DateTime.Now;
 
-            model = Data.Tasks.Task.Edit(model, currentUser);
+                    model = Data.Tasks.Task.Edit(trans, model, currentUser);
 
-            if (!string.IsNullOrEmpty(Request["NewTask"]) && Request["NewTask"] == "on")
-            { // not empty & "on"
-                Common.Models.Matters.Matter matter = Data.Tasks.Task.GetRelatedMatter(id);
-                return RedirectToAction("Create", "Tasks", new { MatterId = matter.Id });
+                    if (!string.IsNullOrEmpty(Request["NewTask"]) && Request["NewTask"] == "on")
+                    { // not empty & "on"
+                        Common.Models.Matters.Matter matter = Data.Tasks.Task.GetRelatedMatter(trans, id);
+                        return RedirectToAction("Create", "Tasks", new { MatterId = matter.Id });
+                    }
+
+                    trans.Commit();
+
+                    return RedirectToAction("Details", new { Id = id });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Close(id);
+                }
             }
-
-            return RedirectToAction("Details", new { Id = id });
         }
 
         [Authorize(Roles = "Login, User")]
@@ -363,52 +396,58 @@ namespace OpenLawOffice.Web.Controllers
             if (profile.ContactId != null && !string.IsNullOrEmpty(profile.ContactId))
                 contactId = int.Parse(profile.ContactId);
 
-            Data.Account.Users.List().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                userList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
-            });
-
-            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
-            {
-                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-            });
-
-            viewModel = new ViewModels.Tasks.CreateTaskViewModel();
-            viewModel.TaskTemplates = new List<ViewModels.Tasks.TaskTemplateViewModel>();
-            taskTemplates = new Newtonsoft.Json.Linq.JArray();
-            Data.Tasks.TaskTemplate.List().ForEach(x =>
-            {
-                viewModel.TaskTemplates.Add(Mapper.Map<ViewModels.Tasks.TaskTemplateViewModel>(x));
-                Newtonsoft.Json.Linq.JObject template = new Newtonsoft.Json.Linq.JObject();
-                template.Add(new Newtonsoft.Json.Linq.JProperty("Id", x.Id.Value));
-                template.Add(new Newtonsoft.Json.Linq.JProperty("TaskTemplateTitle", x.TaskTemplateTitle));
-                template.Add(new Newtonsoft.Json.Linq.JProperty("Title", x.Title));
-                template.Add(new Newtonsoft.Json.Linq.JProperty("Description", x.Description));
-                template.Add(new Newtonsoft.Json.Linq.JProperty("ProjectedStart", DTProp(x.ProjectedStart)));
-                template.Add(new Newtonsoft.Json.Linq.JProperty("DueDate", DTProp(x.DueDate)));
-                template.Add(new Newtonsoft.Json.Linq.JProperty("ProjectedEnd", DTProp(x.ProjectedEnd)));
-                template.Add(new Newtonsoft.Json.Linq.JProperty("ActualEnd", DTProp(x.ActualEnd)));
-                template.Add(new Newtonsoft.Json.Linq.JProperty("Active", x.Active));
-                taskTemplates.Add(template);
-            });
-            
-            viewModel.ResponsibleUser = new ViewModels.Tasks.TaskResponsibleUserViewModel()
-            {
-                User = new ViewModels.Account.UsersViewModel() { PId =  Data.Account.Users.Get(Membership.GetUser().UserName).PId },
-            };
-            if (contactId > 0)
-            {
-                viewModel.TaskContact = new ViewModels.Tasks.TaskAssignedContactViewModel()
+                Data.Account.Users.List(conn, false).ForEach(x =>
                 {
-                    Contact = new ViewModels.Contacts.ContactViewModel()
+                    userList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
+                });
+
+                Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
+                {
+                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                });
+
+                viewModel = new ViewModels.Tasks.CreateTaskViewModel();
+                viewModel.TaskTemplates = new List<ViewModels.Tasks.TaskTemplateViewModel>();
+                taskTemplates = new Newtonsoft.Json.Linq.JArray();
+                Data.Tasks.TaskTemplate.List(conn, false).ForEach(x =>
+                {
+                    viewModel.TaskTemplates.Add(Mapper.Map<ViewModels.Tasks.TaskTemplateViewModel>(x));
+                    Newtonsoft.Json.Linq.JObject template = new Newtonsoft.Json.Linq.JObject();
+                    template.Add(new Newtonsoft.Json.Linq.JProperty("Id", x.Id.Value));
+                    template.Add(new Newtonsoft.Json.Linq.JProperty("TaskTemplateTitle", x.TaskTemplateTitle));
+                    template.Add(new Newtonsoft.Json.Linq.JProperty("Title", x.Title));
+                    template.Add(new Newtonsoft.Json.Linq.JProperty("Description", x.Description));
+                    template.Add(new Newtonsoft.Json.Linq.JProperty("ProjectedStart", DTProp(x.ProjectedStart)));
+                    template.Add(new Newtonsoft.Json.Linq.JProperty("DueDate", DTProp(x.DueDate)));
+                    template.Add(new Newtonsoft.Json.Linq.JProperty("ProjectedEnd", DTProp(x.ProjectedEnd)));
+                    template.Add(new Newtonsoft.Json.Linq.JProperty("ActualEnd", DTProp(x.ActualEnd)));
+                    template.Add(new Newtonsoft.Json.Linq.JProperty("Active", x.Active));
+                    taskTemplates.Add(template);
+                });
+
+                viewModel.ResponsibleUser = new ViewModels.Tasks.TaskResponsibleUserViewModel()
+                {
+                    User = new ViewModels.Account.UsersViewModel()
                     {
-                        Id = contactId
-                    }
+                        PId = Data.Account.Users.Get(Membership.GetUser().UserName, conn, false).PId
+                    },
                 };
+                if (contactId > 0)
+                {
+                    viewModel.TaskContact = new ViewModels.Tasks.TaskAssignedContactViewModel()
+                    {
+                        Contact = new ViewModels.Contacts.ContactViewModel()
+                        {
+                            Id = contactId
+                        }
+                    };
+                }
+
+                matter = Data.Matters.Matter.Get(Guid.Parse(Request["MatterId"]), conn, false);
             }
 
-
-            matter = Data.Matters.Matter.Get(Guid.Parse(Request["MatterId"]));
             ViewBag.MatterId = matter.Id.Value;
             ViewBag.Matter = matter.Title;
             ViewBag.UserList = userList;
@@ -471,39 +510,39 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Tasks.Task model;
             Guid matterid = Guid.Empty;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            model = Mapper.Map<Common.Models.Tasks.Task>(viewModel.Task);
-            model.Description = new Ganss.XSS.HtmlSanitizer().Sanitize(model.Description);
-
-            matterid = Guid.Parse(Request["MatterId"]);
-
-            using (Data.Transaction t = Data.Transaction.Create(true))
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
                 try
                 {
-                    model = Data.Tasks.Task.Create(t, model, currentUser);
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-                    Data.Tasks.Task.RelateMatter(t, model, matterid, currentUser);
-                    Data.Tasks.TaskResponsibleUser.Create(t, new Common.Models.Tasks.TaskResponsibleUser()
+                    model = Mapper.Map<Common.Models.Tasks.Task>(viewModel.Task);
+                    model.Description = new Ganss.XSS.HtmlSanitizer().Sanitize(model.Description);
+
+                    matterid = Guid.Parse(Request["MatterId"]);
+                    
+                    model = Data.Tasks.Task.Create(trans, model, currentUser);
+
+                    Data.Tasks.Task.RelateMatter(trans, model, matterid, currentUser);
+                    Data.Tasks.TaskResponsibleUser.Create(trans, new Common.Models.Tasks.TaskResponsibleUser()
                     {
                         Task = model,
                         User = new Common.Models.Account.Users() { PId = viewModel.ResponsibleUser.User.PId },
                         Responsibility = viewModel.ResponsibleUser.Responsibility
                     }, currentUser);
-                    Data.Tasks.TaskAssignedContact.Create(t, new Common.Models.Tasks.TaskAssignedContact()
+                    Data.Tasks.TaskAssignedContact.Create(trans, new Common.Models.Tasks.TaskAssignedContact()
                     {
                         Task = model,
                         Contact = new Common.Models.Contacts.Contact() { Id = viewModel.TaskContact.Contact.Id },
                         AssignmentType = (Common.Models.Tasks.AssignmentType)(int)viewModel.TaskContact.AssignmentType
                     }, currentUser);
 
-                    t.Commit();
+                    trans.Commit();
                 }
                 catch
                 {
-                    t.Rollback();
-                    throw;
+                    trans.Rollback();
+                    return Create();
                 }
             }
 
@@ -511,7 +550,7 @@ namespace OpenLawOffice.Web.Controllers
         }
 
         [Authorize(Roles = "Login, User")]
-        public ActionResult PhoneCall()
+        public ActionResult PhoneCall(Guid id)
         {
             string phoneCallWith = null;
             string title;
@@ -521,13 +560,16 @@ namespace OpenLawOffice.Web.Controllers
 
             employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-            matter = Data.Matters.Matter.Get(Guid.Parse(RouteData.Values["Id"].ToString()));
-
-            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-            });
+                currentUser = Data.Account.Users.Get(User.Identity.Name, conn, false);
+                matter = Data.Matters.Matter.Get(id, conn, false);
+
+                Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
+                {
+                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                });
+            }
 
             if (Request["func"] == "client")
                 phoneCallWith = "client";
@@ -563,7 +605,7 @@ namespace OpenLawOffice.Web.Controllers
         [ValidateInput(false)]
         [Authorize(Roles = "Login, User")]
         [HttpPost]
-        public ActionResult PhoneCall(ViewModels.Tasks.PhoneCallViewModel viewModel)
+        public ActionResult PhoneCall(Guid id, ViewModels.Tasks.PhoneCallViewModel viewModel)
         {
             int contactId;
             Common.Models.Account.Users currentUser;
@@ -573,85 +615,98 @@ namespace OpenLawOffice.Web.Controllers
             if (profile.ContactId == null && string.IsNullOrEmpty(profile.ContactId))
                 throw new Exception("Profile.ContactId not configured.");
 
-            contactId = int.Parse(profile.ContactId);
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-            matter = Data.Matters.Matter.Get(Guid.Parse(RouteData.Values["Id"].ToString()));
-
-            // Task
-            Common.Models.Tasks.Task task = new Common.Models.Tasks.Task()
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                Active = true,
-                DueDate = DateTime.Now,
-                Title = viewModel.Title,
-                Description = new Ganss.XSS.HtmlSanitizer().Sanitize(viewModel.TaskAndNoteDetails)
-            };
-
-            // TaskResponsibleUser
-            Common.Models.Tasks.TaskResponsibleUser taskResponsibleUser = new Common.Models.Tasks.TaskResponsibleUser()
-            {
-                User = currentUser,
-                Task = task,
-                Responsibility = "Lead"
-            };
-
-            // TaskAssignedContact
-            Common.Models.Tasks.TaskAssignedContact taskAssignedContact = new Common.Models.Tasks.TaskAssignedContact()
-            {
-                Contact = new Common.Models.Contacts.Contact() { Id = contactId },
-                Task = task,
-                AssignmentType = Common.Models.Tasks.AssignmentType.Direct
-            };
-
-            // Time
-            Common.Models.Timing.Time time = new Common.Models.Timing.Time()
-            {
-                Billable = viewModel.Billable,
-                Details = viewModel.TimeDetails,
-                Start = viewModel.Start,
-                Stop = viewModel.Stop,
-                Worker = new Common.Models.Contacts.Contact() { Id = contactId }
-            };
-
-            // Note
-            Common.Models.Notes.Note note = new Common.Models.Notes.Note()
-            {
-                Body = viewModel.TaskAndNoteDetails,
-                Timestamp = DateTime.Now,
-                Title = viewModel.Title
-            };
-
-
-            task = Data.Tasks.Task.Create(task, currentUser);
-            Data.Tasks.Task.RelateMatter(task, matter.Id.Value, currentUser);
-            Data.Tasks.TaskResponsibleUser.Create(taskResponsibleUser, currentUser);
-            Data.Tasks.TaskAssignedContact.Create(taskAssignedContact, currentUser);
-
-            if (viewModel.MakeTime)
-            {
-                time = Data.Timing.Time.Create(time, currentUser);
-                Data.Timing.Time.RelateTask(time, task.Id.Value, currentUser);
-            }
-
-            if (viewModel.MakeNote)
-            {
-                note = Data.Notes.Note.Create(note, currentUser);
-                Data.Notes.Note.RelateTask(note, task.Id.Value, currentUser);
-
-                if (viewModel.NotifyContactIds != null)
+                try
                 {
-                    foreach (string x in viewModel.NotifyContactIds)
+                    contactId = int.Parse(profile.ContactId);
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
+                    matter = Data.Matters.Matter.Get(trans, id);
+
+                    // Task
+                    Common.Models.Tasks.Task task = new Common.Models.Tasks.Task()
                     {
-                        Data.Notes.NoteNotification.Create(new Common.Models.Notes.NoteNotification()
-                        {
-                            Contact = new Common.Models.Contacts.Contact() { Id = int.Parse(x) },
-                            Note = note,
-                            Cleared = null
-                        }, currentUser);
+                        Active = true,
+                        DueDate = DateTime.Now,
+                        Title = viewModel.Title,
+                        Description = new Ganss.XSS.HtmlSanitizer().Sanitize(viewModel.TaskAndNoteDetails)
                     };
+
+                    // TaskResponsibleUser
+                    Common.Models.Tasks.TaskResponsibleUser taskResponsibleUser = new Common.Models.Tasks.TaskResponsibleUser()
+                    {
+                        User = currentUser,
+                        Task = task,
+                        Responsibility = "Lead"
+                    };
+
+                    // TaskAssignedContact
+                    Common.Models.Tasks.TaskAssignedContact taskAssignedContact = new Common.Models.Tasks.TaskAssignedContact()
+                    {
+                        Contact = new Common.Models.Contacts.Contact() { Id = contactId },
+                        Task = task,
+                        AssignmentType = Common.Models.Tasks.AssignmentType.Direct
+                    };
+
+                    // Time
+                    Common.Models.Timing.Time time = new Common.Models.Timing.Time()
+                    {
+                        Billable = viewModel.Billable,
+                        Details = viewModel.TimeDetails,
+                        Start = viewModel.Start,
+                        Stop = viewModel.Stop,
+                        Worker = new Common.Models.Contacts.Contact() { Id = contactId }
+                    };
+
+                    // Note
+                    Common.Models.Notes.Note note = new Common.Models.Notes.Note()
+                    {
+                        Body = viewModel.TaskAndNoteDetails,
+                        Timestamp = DateTime.Now,
+                        Title = viewModel.Title
+                    };
+
+
+                    task = Data.Tasks.Task.Create(trans, task, currentUser);
+                    Data.Tasks.Task.RelateMatter(trans, task, matter.Id.Value, currentUser);
+                    Data.Tasks.TaskResponsibleUser.Create(trans, taskResponsibleUser, currentUser);
+                    Data.Tasks.TaskAssignedContact.Create(trans, taskAssignedContact, currentUser);
+
+                    if (viewModel.MakeTime)
+                    {
+                        time = Data.Timing.Time.Create(trans, time, currentUser);
+                        Data.Timing.Time.RelateTask(trans, time, task.Id.Value, currentUser);
+                    }
+
+                    if (viewModel.MakeNote)
+                    {
+                        note = Data.Notes.Note.Create(trans, note, currentUser);
+                        Data.Notes.Note.RelateTask(trans, note, task.Id.Value, currentUser);
+
+                        if (viewModel.NotifyContactIds != null)
+                        {
+                            foreach (string x in viewModel.NotifyContactIds)
+                            {
+                                Data.Notes.NoteNotification.Create(trans, new Common.Models.Notes.NoteNotification()
+                                {
+                                    Contact = new Common.Models.Contacts.Contact() { Id = int.Parse(x) },
+                                    Note = note,
+                                    Cleared = null
+                                }, currentUser);
+                            };
+                        }
+                    }
+
+                    trans.Commit();
+
+                    return RedirectToAction("Details", "Tasks", new { Id = task.Id });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return PhoneCall(id);
                 }
             }
-
-            return RedirectToAction("Details", "Tasks", new { Id = task.Id });
         }
 
         [Authorize(Roles = "Login, User")]
@@ -670,20 +725,23 @@ namespace OpenLawOffice.Web.Controllers
 
             jsonList = new List<dynamic>();
 
-            Data.Tasks.Task.GetTodoListForAll(tagFilters, start, stop).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                if (x.DueDate.HasValue)
+                Data.Tasks.Task.GetTodoListForAll(tagFilters, start, stop, conn, false).ForEach(x =>
                 {
-                    jsonList.Add(new
+                    if (x.DueDate.HasValue)
                     {
-                        id = x.Id.Value,
-                        title = x.Title,
-                        allDay = true,
-                        start = Common.Utilities.DateTimeToUnixTimestamp(x.DueDate.Value.ToLocalTime()),
-                        description = x.Description
-                    });
-                }
-            });
+                        jsonList.Add(new
+                        {
+                            id = x.Id.Value,
+                            title = x.Title,
+                            allDay = true,
+                            start = Common.Utilities.DateTimeToUnixTimestamp(x.DueDate.Value.ToLocalTime()),
+                            description = x.Description
+                        });
+                    }
+                });
+            }
 
             return Json(jsonList, JsonRequestBehavior.AllowGet);
         }
@@ -710,35 +768,39 @@ namespace OpenLawOffice.Web.Controllers
                     id = Guid.Parse(Request["UserPId"]);
             }
 
-            user = Data.Account.Users.Get(id.Value);
-
-            tagFilter = Data.Settings.UserTaskSettings.ListTagFiltersFor(user);
-
-            jsonList = new List<dynamic>();
-
-            if (Request["ContactId"] == null || string.IsNullOrEmpty(Request["ContactId"]))
-                taskList = Data.Tasks.Task.GetTodoListFor(user, tagFilter, start, stop);
-            else
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                int contactId = int.Parse(Request["ContactId"]);
-                taskList = Data.Tasks.Task.GetTodoListFor(user, 
-                    new Common.Models.Contacts.Contact() { Id = contactId }, tagFilter, start, stop);
-            }
+                user = Data.Account.Users.Get(id.Value, conn, false);
 
-            taskList.ForEach(x =>
-            {
-                if (x.DueDate.HasValue)
+                tagFilter = Data.Settings.UserTaskSettings.ListTagFiltersFor(user, conn, false);
+
+                jsonList = new List<dynamic>();
+
+                if (Request["ContactId"] == null || string.IsNullOrEmpty(Request["ContactId"]))
+                    taskList = Data.Tasks.Task.GetTodoListFor(user, tagFilter, start, stop, conn, false);
+                else
                 {
-                    jsonList.Add(new
-                    {
-                        id = x.Id.Value,
-                        title = x.Title,
-                        allDay = true,
-                        start = Common.Utilities.DateTimeToUnixTimestamp(x.DueDate.Value.ToLocalTime()),
-                        description = x.Description
-                    });
+                    int contactId = int.Parse(Request["ContactId"]);
+                    taskList = Data.Tasks.Task.GetTodoListFor(user,
+                        new Common.Models.Contacts.Contact() { Id = contactId }, tagFilter, 
+                        start, stop, conn, false);
                 }
-            });
+
+                taskList.ForEach(x =>
+                {
+                    if (x.DueDate.HasValue)
+                    {
+                        jsonList.Add(new
+                        {
+                            id = x.Id.Value,
+                            title = x.Title,
+                            allDay = true,
+                            start = Common.Utilities.DateTimeToUnixTimestamp(x.DueDate.Value.ToLocalTime()),
+                            description = x.Description
+                        });
+                    }
+                });
+            }
 
             return Json(jsonList, JsonRequestBehavior.AllowGet);
         }
@@ -764,26 +826,29 @@ namespace OpenLawOffice.Web.Controllers
                     id = int.Parse(Request["ContactId"]);
             }
 
-            contact = Data.Contacts.Contact.Get(id.Value);
-
-            tagFilters = Common.Settings.Manager.Instance.System.GlobalTaskTagFilters.ToUserSettingsModel();
-
-            jsonList = new List<dynamic>();
-
-            Data.Tasks.Task.GetTodoListFor(contact, tagFilters, start, stop).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                if (x.DueDate.HasValue)
+                contact = Data.Contacts.Contact.Get(id.Value, conn, false);
+
+                tagFilters = Common.Settings.Manager.Instance.System.GlobalTaskTagFilters.ToUserSettingsModel();
+
+                jsonList = new List<dynamic>();
+
+                Data.Tasks.Task.GetTodoListFor(contact, tagFilters, start, stop, conn, false).ForEach(x =>
                 {
-                    jsonList.Add(new
+                    if (x.DueDate.HasValue)
                     {
-                        id = x.Id.Value,
-                        title = x.Title,
-                        allDay = true,
-                        start = Common.Utilities.DateTimeToUnixTimestamp(x.DueDate.Value.ToLocalTime()),
-                        description = x.Description
-                    });
-                }
-            });
+                        jsonList.Add(new
+                        {
+                            id = x.Id.Value,
+                            title = x.Title,
+                            allDay = true,
+                            start = Common.Utilities.DateTimeToUnixTimestamp(x.DueDate.Value.ToLocalTime()),
+                            description = x.Description
+                        });
+                    }
+                });
+            }
 
             return Json(jsonList, JsonRequestBehavior.AllowGet);
         }
@@ -799,20 +864,24 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Timing.TimeViewModel>();
 
-            Data.Timing.Time.ListForTask(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                viewModel = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
+                Data.Timing.Time.ListForTask(id, conn, false).ForEach(x =>
+                {
+                    viewModel = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
 
-                contact = Data.Contacts.Contact.Get(viewModel.Worker.Id.Value);
+                    contact = Data.Contacts.Contact.Get(viewModel.Worker.Id.Value, conn, false);
 
-                viewModel.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
-                viewModel.WorkerDisplayName = viewModel.Worker.DisplayName;
+                    viewModel.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
+                    viewModel.WorkerDisplayName = viewModel.Worker.DisplayName;
 
-                viewModelList.Add(viewModel);
-            });
+                    viewModelList.Add(viewModel);
+                });
 
-            task = Data.Tasks.Task.Get(id);
-            matter = Data.Tasks.Task.GetRelatedMatter(id);
+                task = Data.Tasks.Task.Get(id, conn, false);
+                matter = Data.Tasks.Task.GetRelatedMatter(id, conn, false);
+            }
+
             ViewBag.Task = task.Title;
             ViewBag.TaskId = task.Id;
             ViewBag.Matter = matter.Title;
@@ -832,19 +901,23 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Tasks.TaskAssignedContactViewModel>();
 
-            Data.Tasks.TaskAssignedContact.ListForTask(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                viewModel = Mapper.Map<ViewModels.Tasks.TaskAssignedContactViewModel>(x);
+                Data.Tasks.TaskAssignedContact.ListForTask(id, conn, false).ForEach(x =>
+                {
+                    viewModel = Mapper.Map<ViewModels.Tasks.TaskAssignedContactViewModel>(x);
 
-                contact = Data.Contacts.Contact.Get(x.Contact.Id.Value);
+                    contact = Data.Contacts.Contact.Get(x.Contact.Id.Value, conn, false);
 
-                viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
+                    viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
 
-                viewModelList.Add(viewModel);
-            });
+                    viewModelList.Add(viewModel);
+                });
 
-            task = Data.Tasks.Task.Get(id);
-            matter = Data.Tasks.Task.GetRelatedMatter(id);
+                task = Data.Tasks.Task.Get(id, conn, false);
+                matter = Data.Tasks.Task.GetRelatedMatter(id, conn, false);
+            }
+
             ViewBag.Task = task.Title;
             ViewBag.TaskId = task.Id;
             ViewBag.Matter = matter.Title;
@@ -862,13 +935,17 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Tasks.TaskTagViewModel>();
 
-            Data.Tasks.TaskTag.ListForTask(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                viewModelList.Add(Mapper.Map<ViewModels.Tasks.TaskTagViewModel>(x));
-            });
+                Data.Tasks.TaskTag.ListForTask(id, conn, false).ForEach(x =>
+                {
+                    viewModelList.Add(Mapper.Map<ViewModels.Tasks.TaskTagViewModel>(x));
+                });
 
-            task = Data.Tasks.Task.Get(id);
-            matter = Data.Tasks.Task.GetRelatedMatter(id);
+                task = Data.Tasks.Task.Get(id, conn, false);
+                matter = Data.Tasks.Task.GetRelatedMatter(id, conn, false);
+            }
+
             ViewBag.Task = task.Title;
             ViewBag.TaskId = task.Id;
             ViewBag.Matter = matter.Title;
@@ -888,19 +965,23 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Tasks.TaskResponsibleUserViewModel>();
 
-            Data.Tasks.TaskResponsibleUser.ListForTask(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                user = Data.Account.Users.Get(x.User.PId.Value);
+                Data.Tasks.TaskResponsibleUser.ListForTask(id, conn, false).ForEach(x =>
+                {
+                    user = Data.Account.Users.Get(x.User.PId.Value, conn, false);
 
-                viewModel = Mapper.Map<ViewModels.Tasks.TaskResponsibleUserViewModel>(x);
+                    viewModel = Mapper.Map<ViewModels.Tasks.TaskResponsibleUserViewModel>(x);
 
-                viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(user);
+                    viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(user);
 
-                viewModelList.Add(viewModel);
-            });
+                    viewModelList.Add(viewModel);
+                });
 
-            task = Data.Tasks.Task.Get(id);
-            matter = Data.Tasks.Task.GetRelatedMatter(id);
+                task = Data.Tasks.Task.Get(id, conn, false);
+                matter = Data.Tasks.Task.GetRelatedMatter(id, conn, false);
+            }
+
             ViewBag.Task = task.Title;
             ViewBag.TaskId = task.Id;
             ViewBag.Matter = matter.Title;
@@ -919,15 +1000,19 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Notes.NoteViewModel>();
 
-            Data.Notes.Note.ListForTask(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                viewModel = Mapper.Map<ViewModels.Notes.NoteViewModel>(x);
+                Data.Notes.Note.ListForTask(id, conn, false).ForEach(x =>
+                {
+                    viewModel = Mapper.Map<ViewModels.Notes.NoteViewModel>(x);
 
-                viewModelList.Add(viewModel);
-            });
+                    viewModelList.Add(viewModel);
+                });
 
-            task = Data.Tasks.Task.Get(id);
-            matter = Data.Tasks.Task.GetRelatedMatter(id);
+                task = Data.Tasks.Task.Get(id, conn, false);
+                matter = Data.Tasks.Task.GetRelatedMatter(id, conn, false);
+            }
+
             ViewBag.Task = task.Title;
             ViewBag.TaskId = task.Id;
             ViewBag.Matter = matter.Title;
@@ -947,17 +1032,21 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Documents.DocumentViewModel>();
 
-            Data.Documents.Document.ListForTask(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                version = Data.Documents.Document.GetCurrentVersion(x.Id.Value);
-                viewModel = Mapper.Map<ViewModels.Documents.DocumentViewModel>(x);
-                viewModel.Extension = version.Extension;
+                Data.Documents.Document.ListForTask(id, conn, false).ForEach(x =>
+                {
+                    version = Data.Documents.Document.GetCurrentVersion(x.Id.Value, conn, false);
+                    viewModel = Mapper.Map<ViewModels.Documents.DocumentViewModel>(x);
+                    viewModel.Extension = version.Extension;
 
-                viewModelList.Add(viewModel);
-            });
+                    viewModelList.Add(viewModel);
+                });
 
-            task = Data.Tasks.Task.Get(id);
-            matter = Data.Tasks.Task.GetRelatedMatter(id);
+                task = Data.Tasks.Task.Get(id, conn, false);
+                matter = Data.Tasks.Task.GetRelatedMatter(id, conn, false);
+            }
+
             ViewBag.Task = task.Title;
             ViewBag.TaskId = task.Id;
             ViewBag.Matter = matter.Title;
@@ -976,15 +1065,19 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModelList = new List<ViewModels.Events.EventViewModel>();
 
-            Data.Events.Event.ListForTask(id).ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                viewModel = Mapper.Map<ViewModels.Events.EventViewModel>(x);
+                Data.Events.Event.ListForTask(id, conn, false).ForEach(x =>
+                {
+                    viewModel = Mapper.Map<ViewModels.Events.EventViewModel>(x);
 
-                viewModelList.Add(viewModel);
-            });
+                    viewModelList.Add(viewModel);
+                });
 
-            task = Data.Tasks.Task.Get(id);
-            matter = Data.Tasks.Task.GetRelatedMatter(id);
+                task = Data.Tasks.Task.Get(id, conn, false);
+                matter = Data.Tasks.Task.GetRelatedMatter(id, conn, false);
+            }
+
             ViewBag.Task = task.Title;
             ViewBag.TaskId = task.Id;
             ViewBag.Matter = matter.Title;

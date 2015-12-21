@@ -27,6 +27,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Collections.Generic;
     using System.Web.Profile;
     using System.Web.Security;
+    using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class TimingController : BaseController
@@ -40,21 +41,25 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Tasks.Task task;
             Common.Models.Matters.Matter matter;
 
-            model = Data.Timing.Time.Get(id);
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                model = Data.Timing.Time.Get(id, conn, false);
 
-            viewModel = Mapper.Map<ViewModels.Timing.TimeViewModel>(model);
+                viewModel = Mapper.Map<ViewModels.Timing.TimeViewModel>(model);
 
-            contact = Data.Contacts.Contact.Get(viewModel.Worker.Id.Value);
+                contact = Data.Contacts.Contact.Get(viewModel.Worker.Id.Value, conn, false);
 
-            viewModel.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
+                viewModel.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
 
-            task = OpenLawOffice.Data.Timing.Time.GetRelatedTask(model.Id.Value);
+                task = Data.Timing.Time.GetRelatedTask(model.Id.Value, conn, false);
 
-            PopulateCoreDetails(viewModel);
+                PopulateCoreDetails(viewModel, conn);
 
-            ViewBag.IsFastTime = Data.Timing.Time.IsFastTime(id);
+                ViewBag.IsFastTime = Data.Timing.Time.IsFastTime(id);
 
-            matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
+                matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value, conn, false);
+            }
+
             ViewBag.Task = task.Title;
             ViewBag.TaskId = task.Id;
             ViewBag.Matter = matter.Title;
@@ -74,24 +79,28 @@ namespace OpenLawOffice.Web.Controllers
 
             employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
 
-            model = Data.Timing.Time.Get(id);
-
-            viewModel = Mapper.Map<ViewModels.Timing.TimeViewModel>(model);
-
-            contact = Data.Contacts.Contact.Get(viewModel.Worker.Id.Value);
-
-            viewModel.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
-
-            task = Data.Timing.Time.GetRelatedTask(model.Id.Value);
-
-            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-            });
+                model = Data.Timing.Time.Get(id, conn, false);
 
-            ViewBag.TaskId = task.Id.Value;
+                viewModel = Mapper.Map<ViewModels.Timing.TimeViewModel>(model);
 
-            matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
+                contact = Data.Contacts.Contact.Get(viewModel.Worker.Id.Value, conn, false);
+
+                viewModel.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
+
+                task = Data.Timing.Time.GetRelatedTask(model.Id.Value, conn, false);
+
+                Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
+                {
+                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                });
+
+                ViewBag.TaskId = task.Id.Value;
+
+                matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value, conn, false);
+            }
+
             ViewBag.Task = task.Title;
             ViewBag.TaskId = task.Id;
             ViewBag.Matter = matter.Title;
@@ -108,87 +117,100 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Account.Users currentUser;
             Common.Models.Timing.Time model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
-
-            model = Mapper.Map<Common.Models.Timing.Time>(viewModel);
-
-            if (model.Stop.HasValue)
+            using (Data.Transaction trans = Data.Transaction.Create(true))
             {
-                List<Common.Models.Timing.Time> conflicts = 
-                    Data.Timing.Time.ListConflictingTimes(model.Start, model.Stop.Value, model.Worker.Id.Value);
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
+
+                    model = Mapper.Map<Common.Models.Timing.Time>(viewModel);
+
+                    if (model.Stop.HasValue)
+                    {
+                        List<Common.Models.Timing.Time> conflicts = 
+                            Data.Timing.Time.ListConflictingTimes(trans, model.Start, model.Stop.Value, model.Worker.Id.Value);
                 
-                if (conflicts.Count > 1 || 
-                    (conflicts.Count == 1 && conflicts[0].Id != id))
-                { // conflict found
-                    Common.Models.Contacts.Contact contact;
-                    Common.Models.Tasks.Task task;
-                    Common.Models.Matters.Matter matter;
+                        if (conflicts.Count > 1 || 
+                            (conflicts.Count == 1 && conflicts[0].Id != id))
+                        { // conflict found
+                            Common.Models.Contacts.Contact contact;
+                            Common.Models.Tasks.Task task;
+                            Common.Models.Matters.Matter matter;
 
-                    contact = Data.Contacts.Contact.Get(viewModel.Worker.Id.Value);
-                    viewModel.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
+                            contact = Data.Contacts.Contact.Get(trans, viewModel.Worker.Id.Value);
+                            viewModel.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
 
-                    task = Data.Timing.Time.GetRelatedTask(model.Id.Value);
+                            task = Data.Timing.Time.GetRelatedTask(trans, model.Id.Value);
 
-                    ModelState.AddModelError(String.Empty, "Time conflicts with other time entries.");
+                            ModelState.AddModelError(String.Empty, "Time conflicts with other time entries.");
 
-                    matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value);
-                    ViewBag.Task = task.Title;
-                    ViewBag.TaskId = task.Id;
-                    ViewBag.Matter = matter.Title;
-                    ViewBag.MatterId = matter.Id;
-                    return View(viewModel);
+                            matter = Data.Tasks.Task.GetRelatedMatter(trans, task.Id.Value);
+                            ViewBag.Task = task.Title;
+                            ViewBag.TaskId = task.Id;
+                            ViewBag.Matter = matter.Title;
+                            ViewBag.MatterId = matter.Id;
+                            return View(viewModel);
+                        }
+                    }
+
+                    model = Data.Timing.Time.Edit(trans, model, currentUser);
+
+                    trans.Commit();
+
+                    return RedirectToAction("Details", new { Id = id });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Edit(id);
                 }
             }
-
-            model = Data.Timing.Time.Edit(model, currentUser);
-
-            return RedirectToAction("Details", new { Id = id });
         }
 
-        [Authorize(Roles = "Login, User")]
-        public ActionResult FastTime()
-        {
-            return View(new ViewModels.Timing.TimeViewModel() { Start = DateTime.Now });
-        }
+        //[Authorize(Roles = "Login, User")]
+        //public ActionResult FastTime()
+        //{
+        //    return View(new ViewModels.Timing.TimeViewModel() { Start = DateTime.Now });
+        //}
         
-        [HttpPost]
-        [Authorize(Roles = "Login, User")]
-        public ActionResult FastTime(ViewModels.Timing.TimeViewModel viewModel)
-        {
-            Common.Models.Account.Users currentUser;
-            Common.Models.Timing.Time model;
+        //[HttpPost]
+        //[Authorize(Roles = "Login, User")]
+        //public ActionResult FastTime(ViewModels.Timing.TimeViewModel viewModel)
+        //{
+        //    Common.Models.Account.Users currentUser;
+        //    Common.Models.Timing.Time model;
 
-            currentUser = Data.Account.Users.Get(User.Identity.Name);
+        //    currentUser = Data.Account.Users.Get(User.Identity.Name);
 
-            model = Mapper.Map<Common.Models.Timing.Time>(viewModel);
+        //    model = Mapper.Map<Common.Models.Timing.Time>(viewModel);
 
-            model = Data.Timing.Time.Create(model, currentUser);
+        //    model = Data.Timing.Time.Create(model, currentUser);
 
-            return RedirectToAction("Details", new { Id = model.Id });
-        }
+        //    return RedirectToAction("Details", new { Id = model.Id });
+        //}
 
-        [Authorize(Roles = "Login, User")]
-        public ActionResult FastTimeList()
-        {
-            List<ViewModels.Timing.TimeViewModel> list;
+        //[Authorize(Roles = "Login, User")]
+        //public ActionResult FastTimeList()
+        //{
+        //    List<ViewModels.Timing.TimeViewModel> list;
 
-            list = new List<ViewModels.Timing.TimeViewModel>();
+        //    list = new List<ViewModels.Timing.TimeViewModel>();
 
-            Data.Timing.Time.FastTimeList().ForEach(x =>
-            {
-                ViewModels.Timing.TimeViewModel viewModel;
-                Common.Models.Contacts.Contact worker;
+        //    Data.Timing.Time.FastTimeList().ForEach(x =>
+        //    {
+        //        ViewModels.Timing.TimeViewModel viewModel;
+        //        Common.Models.Contacts.Contact worker;
 
-                worker = Data.Contacts.Contact.Get(x.Worker.Id.Value);
+        //        worker = Data.Contacts.Contact.Get(x.Worker.Id.Value);
 
-                viewModel = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
-                viewModel.WorkerDisplayName = worker.DisplayName;
+        //        viewModel = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
+        //        viewModel.WorkerDisplayName = worker.DisplayName;
 
-                list.Add(viewModel);
-            });
+        //        list.Add(viewModel);
+        //    });
 
-            return View(list);
-        }
+        //    return View(list);
+        //}
 
         [Authorize(Roles = "Login, User")]
         public ActionResult DayView(ViewModels.Timing.DayViewModel currentDVM)
@@ -216,32 +238,39 @@ namespace OpenLawOffice.Web.Controllers
                 else
                     throw new ArgumentNullException("Must supply an Id or have a ContactId set in profile.");
             }
-            dayViewVM.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(Data.Contacts.Contact.Get(id));
-            
-            if (Request["Date"] != null)
-                date = DateTime.Parse(Request["Date"]);
-            else
-                date = DateTime.Today;
-            
-            Data.Timing.Time.ListForDay(id, date).ForEach(x =>
+
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                ViewModels.Timing.DayViewModel.Item dayVMItem;
+                dayViewVM.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                    Data.Contacts.Contact.Get(id, conn, false));
 
-                dayVMItem = new ViewModels.Timing.DayViewModel.Item();
+                if (Request["Date"] != null)
+                    date = DateTime.Parse(Request["Date"]);
+                else
+                    date = DateTime.Today;
 
-                dayVMItem.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
+                Data.Timing.Time.ListForDay(id, date, conn, false).ForEach(x =>
+                {
+                    ViewModels.Timing.DayViewModel.Item dayVMItem;
 
-                dayVMItem.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(Data.Timing.Time.GetRelatedTask(dayVMItem.Time.Id.Value));
+                    dayVMItem = new ViewModels.Timing.DayViewModel.Item();
 
-                dayVMItem.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(Data.Tasks.Task.GetRelatedMatter(dayVMItem.Task.Id.Value));
+                    dayVMItem.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
 
-                dayViewVM.Items.Add(dayVMItem);
-            });
+                    dayVMItem.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(
+                        Data.Timing.Time.GetRelatedTask(dayVMItem.Time.Id.Value, conn, false));
 
-            Data.Contacts.Contact.ListEmployeesOnly().ForEach(x =>
-            {
-                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-            });
+                    dayVMItem.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(
+                        Data.Tasks.Task.GetRelatedMatter(dayVMItem.Task.Id.Value, conn, false));
+
+                    dayViewVM.Items.Add(dayVMItem);
+                });
+
+                Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
+                {
+                    employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                });
+            }
 
             ViewBag.Date = date;
             ViewBag.EmployeeContactList = employeeContactList;
