@@ -257,6 +257,8 @@ namespace OpenLawOffice.Web.Controllers
 
                         Data.Notes.Note.RelateMatter(trans, model, matterid, currentUser);
 
+                        trans.Commit();
+
                         return RedirectToAction("Details", "Matters", new { Id = matterid });
                     }
                     else if (Request["TaskId"] != null)
@@ -265,6 +267,8 @@ namespace OpenLawOffice.Web.Controllers
 
                         Data.Notes.Note.RelateTask(trans, model, taskid, currentUser);
 
+                        trans.Commit();
+
                         return RedirectToAction("Details", "Tasks", new { Id = taskid });
                     }
                     else if (Request["EventId"] != null)
@@ -272,6 +276,8 @@ namespace OpenLawOffice.Web.Controllers
                         eventid = Guid.Parse(Request["EventId"]);
 
                         Data.Notes.Note.RelateEvent(trans, model, eventid, currentUser);
+
+                        trans.Commit();
 
                         return RedirectToAction("Details", "Events", new { Id = eventid });
                     }

@@ -56,8 +56,7 @@ namespace OpenLawOffice.Web.Controllers
                 {
                     return RedirectToAction("Index", "Installation");
                 }
-
-
+                
                 if (RouteData.Values["Id"] != null)
                 {
                     id = int.Parse((string)RouteData.Values["Id"]);
