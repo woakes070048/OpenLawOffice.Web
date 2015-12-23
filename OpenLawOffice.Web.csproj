@@ -287,6 +287,24 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\alarm-clock-pencil.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\alarm-clock-plus.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\alarm-clock-select.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\calendar-arrow.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\cross.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\download-cloud.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\exclamation-red-frame.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\exclamation-shield.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\gear-arrow.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\hourglass-select.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\money-arrow.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\pencil.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\plus.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\printer.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\question.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\task-arrow.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\telephone-handset.png" />
+    <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\user-arrow.png" />
     <Content Include="Content\jquery-ui-1.10.4.custom.css" />
     <Content Include="Content\jquery-ui-1.10.4.custom.min.css" />
     <Content Include="Content\Site.css" />
@@ -476,9 +494,7 @@
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Content\fugue-icons-3.5.6\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
@@ -704,6 +720,7 @@
     <Content Include="Views\Shared\_LayoutWithContextMenu.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Properties\PublishProfiles\Default Settings.pubxml" />
     <None Include="README.md" />
     <Content Include="Views\Tasks\PhoneCall.cshtml" />
     <Content Include="Scripts\jui_dropdown-1.0.4\MIT_LICENSE" />
