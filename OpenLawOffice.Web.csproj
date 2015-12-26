@@ -734,6 +734,10 @@
     <Content Include="Scripts\tinymce\skins\lightgray\fonts\tinymce.json" />
     <Content Include="Scripts\tinymce\skins\lightgray\fonts\tinymce.ttf" />
     <Content Include="Scripts\tinymce\skins\lightgray\fonts\tinymce.woff" />
+    <Content Include="Views\Invoices\MatterEdit.cshtml" />
+    <Content Include="Views\MatterHotdocs\Details.cshtml" />
+    <Content Include="Views\MatterHotdocs\Edit.cshtml" />
+    <Content Include="Views\Invoices\MatterDelete.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
