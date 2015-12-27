@@ -23,7 +23,7 @@
             @(Html.ActionLink(Model.Matter.Title, "Details", "Matters", new { id = Model.Matter.Id }, null))
         </td>
     </tr>
-    <tr>
+    <tr class="tr_alternate">
         <td class="display-label">
             Contact
         </td>
@@ -34,7 +34,7 @@
     </tr>
     <tr>
         <td class="display-label">
-            Role<span class="required-field" title="Required Field">*</span>
+            User Defined Role<span class="required-field" title="Required Field">*</span>
         </td>
         <td class="display-field">
             @(Html.TextBoxFor(model => model.Role))
@@ -47,6 +47,7 @@
                             <a href="#" id="AppointedClient">Appointed Client</a>, 
                             <a href="#" id="OpposingParty">Opposing Party</a>
             <script language="javascript">
+            $(document).ready(function () {
                 $("#LeadAttorney").click(function () {
                     $("#Role").val("Lead Attorney");
                     return false;
@@ -75,7 +76,185 @@
                     $("#Role").val("Opposing Party");
                     return false;
                 });
+                $('#AttorneyFor_DisplayName').focus(function () {
+                    $("#AttorneyFor_Id").val('');
+                    $('#AttorneyFor_DisplayName').val('');
+                });
+                $('#AttorneyFor_DisplayName').autocomplete({
+                    source: "/Contacts/ListDisplayNameOnly",
+                    minLength: 2,
+                    focus: function (event, ui) {
+                        $("#AttorneyFor_Id").val(ui.item.Id);
+                        $("#AttorneyFor_DisplayName").val(ui.item.DisplayName);
+                        return false;
+                    },
+                    select: function (event, ui) {
+                        $("#AttorneyFor_Id").val(ui.item.Id);
+                        $("#AttorneyFor_DisplayName").val(ui.item.DisplayName);
+                        return false;
+                    }
+                }).data("ui-autocomplete")._renderItem = function (ul, item) {
+                    return $("<li>")
+                    .append("<a>" + item.DisplayName + "</a>")
+                    .appendTo(ul);
+                };
+                $('#SupportStaffFor_DisplayName').focus(function () {
+                    $("#SupportStaffFor_Id").val('');
+                    $('#SupportStaffFor_DisplayName').val('');
+                });
+                $('#SupportStaffFor_DisplayName').autocomplete({
+                    source: "/Contacts/ListDisplayNameOnly",
+                    minLength: 2,
+                    focus: function (event, ui) {
+                        $("#SupportStaffFor_Id").val(ui.item.Id);
+                        $("#SupportStaffFor_DisplayName").val(ui.item.DisplayName);
+                        return false;
+                    },
+                    select: function (event, ui) {
+                        $("#SupportStaffFor_Id").val(ui.item.Id);
+                        $("#SupportStaffFor_DisplayName").val(ui.item.DisplayName);
+                        return false;
+                    }
+                }).data("ui-autocomplete")._renderItem = function (ul, item) {
+                    return $("<li>")
+                    .append("<a>" + item.DisplayName + "</a>")
+                    .appendTo(ul);
+                };
+                $('#ThirdPartyPayorFor_DisplayName').focus(function () {
+                    $("#ThirdPartyPayorFor_Id").val('');
+                    $('#ThirdPartyPayorFor_DisplayName').val('');
+                });
+                $('#ThirdPartyPayorFor_DisplayName').autocomplete({
+                    source: "/Contacts/ListDisplayNameOnly",
+                    minLength: 2,
+                    focus: function (event, ui) {
+                        $("#ThirdPartyPayorFor_Id").val(ui.item.Id);
+                        $("#ThirdPartyPayorFor_DisplayName").val(ui.item.DisplayName);
+                        return false;
+                    },
+                    select: function (event, ui) {
+                        $("#ThirdPartyPayorFor_Id").val(ui.item.Id);
+                        $("#ThirdPartyPayorFor_DisplayName").val(ui.item.DisplayName);
+                        return false;
+                    }
+                }).data("ui-autocomplete")._renderItem = function (ul, item) {
+                    return $("<li>")
+                    .append("<a>" + item.DisplayName + "</a>")
+                    .appendTo(ul);
+                };
+            });
             </script>
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            Contact is <span style="text-decoration: underline;">Client</span>
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.IsClient))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Contact is the <span style="text-decoration: underline;">point of contact</span> for Client
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.IsClientContact))
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            Contact is <span style="text-decoration: underline;">appointed</span>
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.IsAppointed))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Contact is a <span style="text-decoration: underline;">party</span> to the matter
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.IsParty))
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            <span style="text-decoration: underline;">Title</span> for party (e.g., Defendant, Petitioner, etc.)
+        </td>
+        <td class="display-field">
+            @(Html.TextBoxFor(model => model.PartyTitle))
+            @(Html.ValidationMessageFor(model => model.PartyTitle))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Contact is a <span style="text-decoration: underline;">witness</span>
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.IsWitness))
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            Contact is an <span style="text-decoration: underline;">attorney</span> for another contact
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.IsAttorney))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Contact that <span style="text-decoration: underline;">attorney is representing</span>
+        </td>
+        <td class="display-field">
+            @(Html.HiddenFor(model => model.AttorneyFor.Id))
+            @(Html.TextBoxFor(model => model.AttorneyFor.DisplayName))
+            @(Html.ValidationMessageFor(model => model.AttorneyFor))
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            Contact is the <span style="text-decoration: underline;">lead attorney</span>
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.IsLeadAttorney))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Contact is <span style="text-decoration: underline;">support staff</span> for contact
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.IsSupportStaff))
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            <span style="text-decoration: underline;">Support staff</span> for contact
+        </td>
+        <td class="display-field">
+            @(Html.HiddenFor(model => model.SupportStaffFor.Id))
+            @(Html.TextBoxFor(model => model.SupportStaffFor.DisplayName))
+            @(Html.ValidationMessageFor(model => model.SupportStaffFor))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Contact is a <span style="text-decoration: underline;">third party payor</span>
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.IsThirdPartyPayor))
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            <span style="text-decoration: underline;">Third party payor</span> for contact
+        </td>
+        <td class="display-field">
+            @(Html.HiddenFor(model => model.ThirdPartyPayorFor.Id))
+            @(Html.TextBoxFor(model => model.ThirdPartyPayorFor.DisplayName))
+            @(Html.ValidationMessageFor(model => model.ThirdPartyPayorFor))
         </td>
     </tr>
 </table>

@@ -43,7 +43,7 @@ namespace OpenLawOffice.Web.Controllers
                     modelList.Add(Mapper.Map<ViewModels.Contacts.SelectableContactViewModel>(x));
                 });
 
-                matter = Data.Matters.Matter.Get(id);
+                matter = Data.Matters.Matter.Get(id, conn, false);
             }
 
             ViewData["MatterId"] = matter.Id.Value;
@@ -143,11 +143,23 @@ namespace OpenLawOffice.Web.Controllers
                 model = Data.Matters.MatterContact.Get(id, conn, false);
                 model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value, conn, false);
                 model.Contact = Data.Contacts.Contact.Get(model.Contact.Id.Value, conn, false);
-            }
 
-            viewModel = Mapper.Map<ViewModels.Matters.MatterContactViewModel>(model);
-            viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model.Matter);
-            viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.Contact);
+                viewModel = Mapper.Map<ViewModels.Matters.MatterContactViewModel>(model);
+                viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model.Matter);
+                viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.Contact);
+
+                if (model.AttorneyFor != null && model.AttorneyFor.Id.HasValue)
+                    viewModel.AttorneyFor = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                        Data.Contacts.Contact.Get(model.AttorneyFor.Id.Value, conn, false));
+
+                if (model.SupportStaffFor != null && model.SupportStaffFor.Id.HasValue)
+                    viewModel.SupportStaffFor = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                        Data.Contacts.Contact.Get(model.SupportStaffFor.Id.Value, conn, false));
+
+                if (model.ThirdPartyPayorFor != null && model.ThirdPartyPayorFor.Id.HasValue)
+                    viewModel.ThirdPartyPayorFor = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                        Data.Contacts.Contact.Get(model.ThirdPartyPayorFor.Id.Value, conn, false));
+            }
 
             ViewData["MatterId"] = model.Matter.Id.Value;
             ViewData["Matter"] = model.Matter.Title;
@@ -192,7 +204,7 @@ namespace OpenLawOffice.Web.Controllers
                 catch
                 {
                     trans.Rollback();
-                    return Edit(id);
+                    throw;
                 }
             }
 
@@ -213,6 +225,19 @@ namespace OpenLawOffice.Web.Controllers
                 viewModel = Mapper.Map<ViewModels.Matters.MatterContactViewModel>(model);
                 viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model.Matter);
                 viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.Contact);
+
+                if (model.AttorneyFor != null && model.AttorneyFor.Id.HasValue)
+                    viewModel.AttorneyFor = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                        Data.Contacts.Contact.Get(model.AttorneyFor.Id.Value, conn, false));
+
+                if (model.SupportStaffFor != null && model.SupportStaffFor.Id.HasValue)
+                    viewModel.SupportStaffFor = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                        Data.Contacts.Contact.Get(model.SupportStaffFor.Id.Value, conn, false));
+
+                if (model.ThirdPartyPayorFor != null && model.ThirdPartyPayorFor.Id.HasValue)
+                    viewModel.ThirdPartyPayorFor = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
+                        Data.Contacts.Contact.Get(model.ThirdPartyPayorFor.Id.Value, conn, false));
+
                 PopulateCoreDetails(viewModel, conn);
             }
 

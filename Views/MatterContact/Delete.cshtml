@@ -1,4 +1,5 @@
 @model OpenLawOffice.Web.ViewModels.Matters.MatterContactViewModel
+@using OpenLawOffice.Web.Helpers
 
 @{ 
     ViewBag.Title = "Unassign Contact from Matter";
@@ -24,9 +25,9 @@
             @(Model.Matter.Title)
         </td>
     </tr>
-    <tr>
+    <tr class="tr_alternate">
         <td class="display-label">
-            User
+            Contact
         </td>
         <td class="display-field">
             @(Model.Contact.DisplayName)
@@ -34,10 +35,126 @@
     </tr>
     <tr>
         <td class="display-label">
-            Role
+            User Defined Role
         </td>
         <td class="display-field">
             @(Model.Role)
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            Contact is <span style="text-decoration: underline;">Client</span>
+        </td>
+        <td class="display-field">
+            @(BooleanHelper.YesNo(Model.IsClient))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Contact is the <span style="text-decoration: underline;">point of contact</span> for Client
+        </td>
+        <td class="display-field">
+            @(BooleanHelper.YesNo(Model.IsClientContact))
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            Contact is <span style="text-decoration: underline;">appointed</span>
+        </td>
+        <td class="display-field">
+            @(BooleanHelper.YesNo(Model.IsAppointed))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Contact is a <span style="text-decoration: underline;">party</span> to the matter
+        </td>
+        <td class="display-field">
+            @(BooleanHelper.YesNo(Model.IsParty))
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            <span style="text-decoration: underline;">Title</span> for party (e.g., Defendant, Petitioner, etc.)
+        </td>
+        <td class="display-field">
+            @(Model.PartyTitle)
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Contact is a <span style="text-decoration: underline;">witness</span>
+        </td>
+        <td class="display-field">
+            @(BooleanHelper.YesNo(Model.IsWitness))
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            Contact is an <span style="text-decoration: underline;">attorney</span> for another contact
+        </td>
+        <td class="display-field">
+            @(BooleanHelper.YesNo(Model.IsAttorney))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Contact that <span style="text-decoration: underline;">attorney is representing</span>
+        </td>
+        <td class="display-field">
+            @(Html.HiddenFor(model => model.AttorneyFor.Id))
+            @if (Model.AttorneyFor != null && Model.AttorneyFor.Id.HasValue && Model.AttorneyFor.Id > 0)
+            {
+                @(Html.ActionLink(Model.AttorneyFor.DisplayName, "Details", "Contacts", new { id = Model.AttorneyFor.Id }, null))
+            }
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            Contact is the <span style="text-decoration: underline;">lead attorney</span>
+        </td>
+        <td class="display-field">
+            @(BooleanHelper.YesNo(Model.IsLeadAttorney))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Contact is <span style="text-decoration: underline;">support staff</span> for contact
+        </td>
+        <td class="display-field">
+            @(BooleanHelper.YesNo(Model.IsSupportStaff))
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            <span style="text-decoration: underline;">Support staff</span> for contact
+        </td>
+        <td class="display-field">
+            @(Html.HiddenFor(model => model.SupportStaffFor.Id))
+            @if (Model.SupportStaffFor != null && Model.SupportStaffFor.Id.HasValue && Model.SupportStaffFor.Id > 0)
+            {
+                @(Html.ActionLink(Model.SupportStaffFor.DisplayName, "Details", "Contacts", new { id = Model.SupportStaffFor.Id }, null))
+            }
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Contact is a <span style="text-decoration: underline;">third party payor</span>
+        </td>
+        <td class="display-field">
+            @(BooleanHelper.YesNo(Model.IsThirdPartyPayor))
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            <span style="text-decoration: underline;">Third party payor</span> for contact
+        </td>
+        <td class="display-field">
+            @(Html.HiddenFor(model => model.ThirdPartyPayorFor.Id))
+            @if (Model.ThirdPartyPayorFor != null && Model.ThirdPartyPayorFor.Id.HasValue && Model.ThirdPartyPayorFor.Id > 0)
+            {
+                @(Html.ActionLink(Model.ThirdPartyPayorFor.DisplayName, "Details", "Contacts", new { id = Model.ThirdPartyPayorFor.Id }, null))
+            }
         </td>
     </tr>
 </table>

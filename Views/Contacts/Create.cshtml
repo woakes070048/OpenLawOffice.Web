@@ -306,6 +306,15 @@ if (ViewBag.OverrideConflict != null)
     </tr>
     <tr>
         <td class="display-label">
+            Address 1 Line 2
+        </td>
+        <td class="display-field">
+            @(Html.TextBoxFor(model => model.Address1AddressLine2, new { @style = "width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Address1AddressLine2))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
             Address 1 City
         </td>
         <td class="display-field">
@@ -378,6 +387,15 @@ if (ViewBag.OverrideConflict != null)
     </tr>
     <tr>
         <td class="display-label">
+            Address 2 Line 2
+        </td>
+        <td class="display-field">
+            @(Html.TextBoxFor(model => model.Address2AddressLine2, new { @style = "width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Address2AddressLine2))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
             Address 2 City
         </td>
         <td class="display-field">
@@ -446,6 +464,15 @@ if (ViewBag.OverrideConflict != null)
         <td class="display-field">
             @(Html.TextBoxFor(model => model.Address3AddressStreet, new { @style = "width: 100%;" }))
             @(Html.ValidationMessageFor(model => model.Address3AddressStreet))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Address 3 Line 2
+        </td>
+        <td class="display-field">
+            @(Html.TextBoxFor(model => model.Address3AddressLine2, new { @style = "width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Address3AddressLine2))
         </td>
     </tr>
     <tr>
@@ -734,6 +761,15 @@ if (ViewBag.OverrideConflict != null)
         <td class="display-field">
             @(Html.TextBoxFor(model => model.Title, new { @style = "width: 100%;" }))
             @(Html.ValidationMessageFor(model => model.Title))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label" style="width: 250px;">
+            Bar Number
+        </td>
+        <td class="display-field">
+            @(Html.TextBoxFor(model => model.BarNumber, new { @style = "width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.BarNumber))
         </td>
     </tr>
     <tr>

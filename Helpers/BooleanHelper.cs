@@ -24,27 +24,22 @@ namespace OpenLawOffice.Web.Helpers
     using System;
     using System.Web;
 
-    public class TimeSpanHelper
+    public class BooleanHelper
     {
-        public static IHtmlString TimeSpan(TimeSpan ts, bool showDays)
+        public static IHtmlString YesNo(bool var)
         {
-            if (showDays)
-            {
-                return new HtmlString(ts.Days + " d " + string.Format("{0:00}", ts.Hours) + ":" + string.Format("{0:00}", ts.Minutes));
-            }
+            if (var)
+                return new HtmlString("Yes");
             else
-            {
-                int hours = (int)Math.Floor(ts.TotalHours);
-                return new HtmlString(string.Format("{0:00}", hours) + ":" + string.Format("{0:00}", ts.Minutes));
-            }
+                return new HtmlString("No");
         }
 
-        public static IHtmlString TimeSpan(object obj, bool showDays)
+        public static IHtmlString YesNo(object obj)
         {
-            if (obj.GetType() != typeof(TimeSpan))
-                throw new InvalidCastException("Cannot cast " + obj.GetType().FullName + " to " + typeof(TimeSpan).FullName);
+            if (obj.GetType() != typeof(bool))
+                throw new InvalidCastException("Cannot cast " + obj.GetType().FullName + " to " + typeof(bool).FullName);
 
-            return TimeSpan((TimeSpan)obj, showDays);
+            return YesNo((bool)obj);
         }
     }
 }

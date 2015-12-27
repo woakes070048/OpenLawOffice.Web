@@ -213,23 +213,6 @@ namespace OpenLawOffice.Web.Controllers
         }
 
         [Authorize(Roles = "Login, User")]
-        public ActionResult ResponsibleUsers(Guid id)
-        {
-            List<ViewModels.Events.EventResponsibleUserViewModel> list;
-
-            list = new List<ViewModels.Events.EventResponsibleUserViewModel>();
-
-            Data.Events.EventResponsibleUser.ListForEvent(id).ForEach(x =>
-            {
-                ViewModels.Events.EventResponsibleUserViewModel vm = Mapper.Map<ViewModels.Events.EventResponsibleUserViewModel>(x);
-                vm.User = Mapper.Map<ViewModels.Account.UsersViewModel>(Data.Account.Users.Get(x.User.PId.Value));
-                list.Add(vm);
-            });
-
-            return View(list);
-        }
-
-        [Authorize(Roles = "Login, User")]
         public ActionResult Matters(Guid id)
         {
             List<ViewModels.Matters.MatterViewModel> list;

@@ -1,4 +1,58 @@
-﻿5/25/2015
+﻿12/26/2015
+
+DROP TABLE event_responsible_user;
+DROP TABLE task_responsible_user;
+DROP TABLE responsible_user;
+
+ALTER TABLE contact
+  ADD COLUMN address1_address_line2 text;
+ALTER TABLE contact
+  ADD COLUMN address2_address_line2 text;
+ALTER TABLE contact
+  ADD COLUMN address3_address_line2 text;
+ALTER TABLE contact
+  ADD COLUMN bar_number text;
+
+ALTER TABLE matter_contact
+  ADD COLUMN is_client boolean;
+ALTER TABLE matter_contact
+  ADD COLUMN is_client_contact boolean;
+ALTER TABLE matter_contact
+  ADD COLUMN is_appointed boolean;
+ALTER TABLE matter_contact
+  ADD COLUMN is_party boolean;
+ALTER TABLE matter_contact
+  ADD COLUMN party_title text;
+ALTER TABLE matter_contact
+  ADD COLUMN is_judge boolean;
+ALTER TABLE matter_contact
+  ADD COLUMN is_witness boolean;
+ALTER TABLE matter_contact
+  ADD COLUMN is_attorney boolean;
+ALTER TABLE matter_contact
+  ADD COLUMN attorney_for_contact_id integer;
+ALTER TABLE matter_contact
+  ADD COLUMN is_lead_attorney boolean;
+ALTER TABLE matter_contact
+  ADD COLUMN is_support_staff boolean;
+ALTER TABLE matter_contact
+  ADD COLUMN support_staff_for_contact_id integer;
+ALTER TABLE matter_contact
+  ADD COLUMN is_third_party_payor boolean;
+ALTER TABLE matter_contact
+  ADD COLUMN third_party_payor_for_contact_id integer;
+
+  
+ALTER TABLE matter_contact
+  ADD CONSTRAINT "FK_matter_contact_contact_AttorneyForContactId" FOREIGN KEY (attorney_for_contact_id) REFERENCES contact (id) ON UPDATE NO ACTION ON DELETE NO ACTION;
+ALTER TABLE matter_contact
+  ADD CONSTRAINT "FK_matter_contact_contact_SupportStaffForContactId" FOREIGN KEY (support_staff_for_contact_id) REFERENCES contact (id) ON UPDATE NO ACTION ON DELETE NO ACTION;
+ALTER TABLE matter_contact
+  ADD CONSTRAINT "FK_matter_contact_contact_ThirdPartyPayorForContactId" FOREIGN KEY (third_party_payor_for_contact_id) REFERENCES contact (id) ON UPDATE NO ACTION ON DELETE NO ACTION;
+
+
+
+5/25/2015
 -- Table: task_template
 
 -- DROP TABLE task_template;

@@ -9,9 +9,7 @@ namespace OpenLawOffice.Web.ViewModels.Matters
     {
         public MatterViewModel Matter { get; set; }
 
-        public Matters.ResponsibleUserViewModel ResponsibleUser { get; set; }
-
-        public Matters.MatterContactViewModel LeadAttorney { get; set; }
+        public MatterContactViewModel LeadAttorney { get; set; }
 
         public Contacts.ContactViewModel Contact1 { get; set; }
         public string Role1 { get; set; }

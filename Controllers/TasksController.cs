@@ -427,13 +427,6 @@ namespace OpenLawOffice.Web.Controllers
                     taskTemplates.Add(template);
                 });
 
-                viewModel.ResponsibleUser = new ViewModels.Tasks.TaskResponsibleUserViewModel()
-                {
-                    User = new ViewModels.Account.UsersViewModel()
-                    {
-                        PId = Data.Account.Users.Get(Membership.GetUser().UserName, conn, false).PId
-                    },
-                };
                 if (contactId > 0)
                 {
                     viewModel.TaskContact = new ViewModels.Tasks.TaskAssignedContactViewModel()
@@ -456,8 +449,7 @@ namespace OpenLawOffice.Web.Controllers
 
             return View(new ViewModels.Tasks.CreateTaskViewModel()
             {
-                TaskTemplates = viewModel.TaskTemplates,
-                ResponsibleUser = viewModel.ResponsibleUser,                
+                TaskTemplates = viewModel.TaskTemplates,               
                 TaskContact = new ViewModels.Tasks.TaskAssignedContactViewModel()
                 {
                     AssignmentType = ViewModels.AssignmentTypeViewModel.Direct,
@@ -524,12 +516,6 @@ namespace OpenLawOffice.Web.Controllers
                     model = Data.Tasks.Task.Create(trans, model, currentUser);
 
                     Data.Tasks.Task.RelateMatter(trans, model, matterid, currentUser);
-                    Data.Tasks.TaskResponsibleUser.Create(trans, new Common.Models.Tasks.TaskResponsibleUser()
-                    {
-                        Task = model,
-                        User = new Common.Models.Account.Users() { PId = viewModel.ResponsibleUser.User.PId },
-                        Responsibility = viewModel.ResponsibleUser.Responsibility
-                    }, currentUser);
                     Data.Tasks.TaskAssignedContact.Create(trans, new Common.Models.Tasks.TaskAssignedContact()
                     {
                         Task = model,
@@ -632,14 +618,6 @@ namespace OpenLawOffice.Web.Controllers
                         Description = new Ganss.XSS.HtmlSanitizer().Sanitize(viewModel.TaskAndNoteDetails)
                     };
 
-                    // TaskResponsibleUser
-                    Common.Models.Tasks.TaskResponsibleUser taskResponsibleUser = new Common.Models.Tasks.TaskResponsibleUser()
-                    {
-                        User = currentUser,
-                        Task = task,
-                        Responsibility = "Lead"
-                    };
-
                     // TaskAssignedContact
                     Common.Models.Tasks.TaskAssignedContact taskAssignedContact = new Common.Models.Tasks.TaskAssignedContact()
                     {
@@ -669,7 +647,6 @@ namespace OpenLawOffice.Web.Controllers
 
                     task = Data.Tasks.Task.Create(trans, task, currentUser);
                     Data.Tasks.Task.RelateMatter(trans, task, matter.Id.Value, currentUser);
-                    Data.Tasks.TaskResponsibleUser.Create(trans, taskResponsibleUser, currentUser);
                     Data.Tasks.TaskAssignedContact.Create(trans, taskAssignedContact, currentUser);
 
                     if (viewModel.MakeTime)
@@ -940,42 +917,6 @@ namespace OpenLawOffice.Web.Controllers
                 Data.Tasks.TaskTag.ListForTask(id, conn, false).ForEach(x =>
                 {
                     viewModelList.Add(Mapper.Map<ViewModels.Tasks.TaskTagViewModel>(x));
-                });
-
-                task = Data.Tasks.Task.Get(id, conn, false);
-                matter = Data.Tasks.Task.GetRelatedMatter(id, conn, false);
-            }
-
-            ViewBag.Task = task.Title;
-            ViewBag.TaskId = task.Id;
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
-
-            return View(viewModelList);
-        }
-
-        [Authorize(Roles = "Login, User")]
-        public ActionResult ResponsibleUsers(long id)
-        {
-            Common.Models.Tasks.Task task;
-            Common.Models.Matters.Matter matter;
-            List<ViewModels.Tasks.TaskResponsibleUserViewModel> viewModelList;
-            Common.Models.Account.Users user;
-            ViewModels.Tasks.TaskResponsibleUserViewModel viewModel;
-
-            viewModelList = new List<ViewModels.Tasks.TaskResponsibleUserViewModel>();
-
-            using (IDbConnection conn = Data.Database.Instance.GetConnection())
-            {
-                Data.Tasks.TaskResponsibleUser.ListForTask(id, conn, false).ForEach(x =>
-                {
-                    user = Data.Account.Users.Get(x.User.PId.Value, conn, false);
-
-                    viewModel = Mapper.Map<ViewModels.Tasks.TaskResponsibleUserViewModel>(x);
-
-                    viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(user);
-
-                    viewModelList.Add(viewModel);
                 });
 
                 task = Data.Tasks.Task.Get(id, conn, false);

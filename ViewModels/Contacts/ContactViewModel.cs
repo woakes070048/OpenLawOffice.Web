@@ -261,6 +261,15 @@ namespace OpenLawOffice.Web.ViewModels.Contacts
         public string Address1AddressStreet { get; set; }
 
         /// <summary>
+        /// Gets or sets the second line of the street portion of the address.
+        /// </summary>
+        /// <value>
+        /// The street.
+        /// </value>
+        /// <author>Lucas Nodine</author>
+        public string Address1AddressLine2 { get; set; }
+
+        /// <summary>
         /// Gets or sets the city portion of the address.
         /// </summary>
         /// <value>
@@ -333,6 +342,15 @@ namespace OpenLawOffice.Web.ViewModels.Contacts
         public string Address2AddressStreet { get; set; }
 
         /// <summary>
+        /// Gets or sets the second line of the street portion of the address.
+        /// </summary>
+        /// <value>
+        /// The street.
+        /// </value>
+        /// <author>Lucas Nodine</author>
+        public string Address2AddressLine2 { get; set; }
+
+        /// <summary>
         /// Gets or sets the city portion of the address.
         /// </summary>
         /// <value>
@@ -403,6 +421,15 @@ namespace OpenLawOffice.Web.ViewModels.Contacts
         /// </value>
         /// <author>Lucas Nodine</author>
         public string Address3AddressStreet { get; set; }
+
+        /// <summary>
+        /// Gets or sets the second line of the street portion of the address.
+        /// </summary>
+        /// <value>
+        /// The street.
+        /// </value>
+        /// <author>Lucas Nodine</author>
+        public string Address3AddressLine2 { get; set; }
 
         /// <summary>
         /// Gets or sets the city portion of the address.
@@ -680,6 +707,15 @@ namespace OpenLawOffice.Web.ViewModels.Contacts
         public string Title { get; set; }
 
         /// <summary>
+        /// Gets or sets the attorney's bar registration number
+        /// </summary>
+        /// <value>
+        /// The bar number.
+        /// </value>
+        /// <author>Lucas Nodine</author>
+        public string BarNumber { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the company that employs the contact.
         /// </summary>
         /// <value>
@@ -867,6 +903,7 @@ namespace OpenLawOffice.Web.ViewModels.Contacts
                 .ForMember(dst => dst.Fax3FaxNumber, opt => opt.MapFrom(src => src.Fax3FaxNumber))
                 .ForMember(dst => dst.Address1DisplayName, opt => opt.MapFrom(src => src.Address1DisplayName))
                 .ForMember(dst => dst.Address1AddressStreet, opt => opt.MapFrom(src => src.Address1AddressStreet))
+                .ForMember(dst => dst.Address1AddressLine2, opt => opt.MapFrom(src => src.Address1AddressLine2))
                 .ForMember(dst => dst.Address1AddressCity, opt => opt.MapFrom(src => src.Address1AddressCity))
                 .ForMember(dst => dst.Address1AddressStateOrProvince, opt => opt.MapFrom(src => src.Address1AddressStateOrProvince))
                 .ForMember(dst => dst.Address1AddressPostalCode, opt => opt.MapFrom(src => src.Address1AddressPostalCode))
@@ -875,6 +912,7 @@ namespace OpenLawOffice.Web.ViewModels.Contacts
                 .ForMember(dst => dst.Address1AddressPostOfficeBox, opt => opt.MapFrom(src => src.Address1AddressPostOfficeBox))
                 .ForMember(dst => dst.Address2DisplayName, opt => opt.MapFrom(src => src.Address2DisplayName))
                 .ForMember(dst => dst.Address2AddressStreet, opt => opt.MapFrom(src => src.Address2AddressStreet))
+                .ForMember(dst => dst.Address2AddressLine2, opt => opt.MapFrom(src => src.Address2AddressLine2))
                 .ForMember(dst => dst.Address2AddressCity, opt => opt.MapFrom(src => src.Address2AddressCity))
                 .ForMember(dst => dst.Address2AddressStateOrProvince, opt => opt.MapFrom(src => src.Address2AddressStateOrProvince))
                 .ForMember(dst => dst.Address2AddressPostalCode, opt => opt.MapFrom(src => src.Address2AddressPostalCode))
@@ -883,6 +921,7 @@ namespace OpenLawOffice.Web.ViewModels.Contacts
                 .ForMember(dst => dst.Address2AddressPostOfficeBox, opt => opt.MapFrom(src => src.Address2AddressPostOfficeBox))
                 .ForMember(dst => dst.Address3DisplayName, opt => opt.MapFrom(src => src.Address3DisplayName))
                 .ForMember(dst => dst.Address3AddressStreet, opt => opt.MapFrom(src => src.Address3AddressStreet))
+                .ForMember(dst => dst.Address3AddressLine2, opt => opt.MapFrom(src => src.Address3AddressLine2))
                 .ForMember(dst => dst.Address3AddressCity, opt => opt.MapFrom(src => src.Address3AddressCity))
                 .ForMember(dst => dst.Address3AddressStateOrProvince, opt => opt.MapFrom(src => src.Address3AddressStateOrProvince))
                 .ForMember(dst => dst.Address3AddressPostalCode, opt => opt.MapFrom(src => src.Address3AddressPostalCode))
@@ -912,6 +951,7 @@ namespace OpenLawOffice.Web.ViewModels.Contacts
                 .ForMember(dst => dst.Birthday, opt => opt.MapFrom(src => src.Birthday))
                 .ForMember(dst => dst.Wedding, opt => opt.MapFrom(src => src.Wedding))
                 .ForMember(dst => dst.Title, opt => opt.MapFrom(src => src.Title))
+                .ForMember(dst => dst.BarNumber, opt => opt.MapFrom(src => src.BarNumber))
                 .ForMember(dst => dst.CompanyName, opt => opt.MapFrom(src => src.CompanyName))
                 .ForMember(dst => dst.DepartmentName, opt => opt.MapFrom(src => src.DepartmentName))
                 .ForMember(dst => dst.OfficeLocation, opt => opt.MapFrom(src => src.OfficeLocation))
@@ -990,6 +1030,7 @@ namespace OpenLawOffice.Web.ViewModels.Contacts
                 .ForMember(dst => dst.Fax3FaxNumber, opt => opt.MapFrom(src => src.Fax3FaxNumber))
                 .ForMember(dst => dst.Address1DisplayName, opt => opt.MapFrom(src => src.Address1DisplayName))
                 .ForMember(dst => dst.Address1AddressStreet, opt => opt.MapFrom(src => src.Address1AddressStreet))
+                .ForMember(dst => dst.Address1AddressLine2, opt => opt.MapFrom(src => src.Address1AddressLine2))
                 .ForMember(dst => dst.Address1AddressCity, opt => opt.MapFrom(src => src.Address1AddressCity))
                 .ForMember(dst => dst.Address1AddressStateOrProvince, opt => opt.MapFrom(src => src.Address1AddressStateOrProvince))
                 .ForMember(dst => dst.Address1AddressPostalCode, opt => opt.MapFrom(src => src.Address1AddressPostalCode))
@@ -998,6 +1039,7 @@ namespace OpenLawOffice.Web.ViewModels.Contacts
                 .ForMember(dst => dst.Address1AddressPostOfficeBox, opt => opt.MapFrom(src => src.Address1AddressPostOfficeBox))
                 .ForMember(dst => dst.Address2DisplayName, opt => opt.MapFrom(src => src.Address2DisplayName))
                 .ForMember(dst => dst.Address2AddressStreet, opt => opt.MapFrom(src => src.Address2AddressStreet))
+                .ForMember(dst => dst.Address2AddressLine2, opt => opt.MapFrom(src => src.Address2AddressLine2))
                 .ForMember(dst => dst.Address2AddressCity, opt => opt.MapFrom(src => src.Address2AddressCity))
                 .ForMember(dst => dst.Address2AddressStateOrProvince, opt => opt.MapFrom(src => src.Address2AddressStateOrProvince))
                 .ForMember(dst => dst.Address2AddressPostalCode, opt => opt.MapFrom(src => src.Address2AddressPostalCode))
@@ -1006,6 +1048,7 @@ namespace OpenLawOffice.Web.ViewModels.Contacts
                 .ForMember(dst => dst.Address2AddressPostOfficeBox, opt => opt.MapFrom(src => src.Address2AddressPostOfficeBox))
                 .ForMember(dst => dst.Address3DisplayName, opt => opt.MapFrom(src => src.Address3DisplayName))
                 .ForMember(dst => dst.Address3AddressStreet, opt => opt.MapFrom(src => src.Address3AddressStreet))
+                .ForMember(dst => dst.Address3AddressLine2, opt => opt.MapFrom(src => src.Address3AddressLine2))
                 .ForMember(dst => dst.Address3AddressCity, opt => opt.MapFrom(src => src.Address3AddressCity))
                 .ForMember(dst => dst.Address3AddressStateOrProvince, opt => opt.MapFrom(src => src.Address3AddressStateOrProvince))
                 .ForMember(dst => dst.Address3AddressPostalCode, opt => opt.MapFrom(src => src.Address3AddressPostalCode))
@@ -1035,6 +1078,7 @@ namespace OpenLawOffice.Web.ViewModels.Contacts
                 .ForMember(dst => dst.Birthday, opt => opt.MapFrom(src => src.Birthday))
                 .ForMember(dst => dst.Wedding, opt => opt.MapFrom(src => src.Wedding))
                 .ForMember(dst => dst.Title, opt => opt.MapFrom(src => src.Title))
+                .ForMember(dst => dst.BarNumber, opt => opt.MapFrom(src => src.BarNumber))
                 .ForMember(dst => dst.CompanyName, opt => opt.MapFrom(src => src.CompanyName))
                 .ForMember(dst => dst.DepartmentName, opt => opt.MapFrom(src => src.DepartmentName))
                 .ForMember(dst => dst.OfficeLocation, opt => opt.MapFrom(src => src.OfficeLocation))

@@ -169,7 +169,6 @@
     <Compile Include="Controllers\ErrorsController.cs" />
     <Compile Include="Controllers\EventAssignedContactController.cs" />
     <Compile Include="Controllers\EventMatterController.cs" />
-    <Compile Include="Controllers\EventResponsibleUsersController.cs" />
     <Compile Include="Controllers\EventsController.cs" />
     <Compile Include="Controllers\EventTagsController.cs" />
     <Compile Include="Controllers\EventTaskController.cs" />
@@ -187,11 +186,9 @@
     <Compile Include="Controllers\MatterTagsController.cs" />
     <Compile Include="Controllers\MatterTypesController.cs" />
     <Compile Include="Controllers\NotesController.cs" />
-    <Compile Include="Controllers\ResponsibleUsersController.cs" />
     <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\TagCategoriesController.cs" />
     <Compile Include="Controllers\TaskAssignedContactsController.cs" />
-    <Compile Include="Controllers\TaskResponsibleUsersController.cs" />
     <Compile Include="Controllers\TasksController.cs" />
     <Compile Include="Controllers\TaskTagsController.cs" />
     <Compile Include="Controllers\TaskTemplatesController.cs" />
@@ -204,6 +201,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\BooleanHelper.cs" />
     <Compile Include="Helpers\EnumDropDownListForHelper.cs" />
     <Compile Include="Helpers\TimeSpanHelper.cs" />
     <Compile Include="IFormsAuthenticationService.cs" />
@@ -243,7 +241,6 @@
     <Compile Include="ViewModels\Documents\VersionViewModel.cs" />
     <Compile Include="ViewModels\Events\EventAssignedContactViewModel.cs" />
     <Compile Include="ViewModels\Events\EventMatterViewModel.cs" />
-    <Compile Include="ViewModels\Events\EventResponsibleUserViewModel.cs" />
     <Compile Include="ViewModels\Events\EventTagViewModel.cs" />
     <Compile Include="ViewModels\Events\EventTaskViewModel.cs" />
     <Compile Include="ViewModels\Events\EventViewModel.cs" />
@@ -260,7 +257,6 @@
     <Compile Include="ViewModels\Matters\MatterTimeViewModel.cs" />
     <Compile Include="ViewModels\Matters\MatterTypeViewModel.cs" />
     <Compile Include="ViewModels\Matters\MatterViewModel.cs" />
-    <Compile Include="ViewModels\Matters\ResponsibleUserViewModel.cs" />
     <Compile Include="ViewModels\Notes\NoteNotificationViewModel.cs" />
     <Compile Include="ViewModels\Notes\NoteTaskViewModel.cs" />
     <Compile Include="ViewModels\Notes\NoteViewModel.cs" />
@@ -275,7 +271,6 @@
     <Compile Include="ViewModels\Tasks\PhoneCallViewModel.cs" />
     <Compile Include="ViewModels\Tasks\TaskAssignedContactViewModel.cs" />
     <Compile Include="ViewModels\Tasks\TaskMatterViewModel.cs" />
-    <Compile Include="ViewModels\Tasks\TaskResponsibleUserViewModel.cs" />
     <Compile Include="ViewModels\Tasks\TaskTagViewModel.cs" />
     <Compile Include="ViewModels\Tasks\TaskTemplateViewModel.cs" />
     <Compile Include="ViewModels\Tasks\TaskTimeViewModel.cs" />
@@ -584,15 +579,8 @@
     <Content Include="Views\Tasks\Edit.cshtml" />
     <Content Include="Views\Tasks\Events.cshtml" />
     <Content Include="Views\Tasks\Notes.cshtml" />
-    <Content Include="Views\Tasks\ResponsibleUsers.cshtml" />
     <Content Include="Views\Tasks\Tags.cshtml" />
     <Content Include="Views\Tasks\Time.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\TaskResponsibleUsers\Create.cshtml" />
-    <Content Include="Views\TaskResponsibleUsers\Delete.cshtml" />
-    <Content Include="Views\TaskResponsibleUsers\Details.cshtml" />
-    <Content Include="Views\TaskResponsibleUsers\Edit.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\TaskAssignedContacts\AssignContact.cshtml" />
@@ -600,12 +588,6 @@
     <Content Include="Views\TaskAssignedContacts\Details.cshtml" />
     <Content Include="Views\TaskAssignedContacts\Edit.cshtml" />
     <Content Include="Views\TaskAssignedContacts\SelectContactToAssign.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\ResponsibleUsers\Create.cshtml" />
-    <Content Include="Views\ResponsibleUsers\Delete.cshtml" />
-    <Content Include="Views\ResponsibleUsers\Details.cshtml" />
-    <Content Include="Views\ResponsibleUsers\Edit.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Notes\Create.cshtml" />
@@ -632,7 +614,6 @@
     <Content Include="Views\Matters\Index.cshtml" />
     <Content Include="Views\Matters\Invoices.cshtml" />
     <Content Include="Views\Matters\Notes.cshtml" />
-    <Content Include="Views\Matters\ResponsibleUsers.cshtml" />
     <Content Include="Views\Matters\Tags.cshtml" />
     <Content Include="Views\Matters\Tasks.cshtml" />
     <Content Include="Views\Matters\Time.cshtml" />

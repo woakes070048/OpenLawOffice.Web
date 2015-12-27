@@ -279,25 +279,6 @@ if (ViewBag.OverrideConflict != null)
     </tr>
     <tr>
         <td class="display-label">
-            Responsible User
-        </td>
-        <td class="display-field">
-            @(Html.DropDownListFor(x => x.ResponsibleUser.User.PId,
-                    new SelectList(ViewBag.UserList, "PId", "Username"),
-                    new { @size = 5, @style = "width: 100%" }))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Responsiblity<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.ResponsibleUser.Responsibility, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.ResponsibleUser.Responsibility))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
             Bill To<span class="required-field" title="Required Field">*</span>
         </td>
         <td class="display-field">

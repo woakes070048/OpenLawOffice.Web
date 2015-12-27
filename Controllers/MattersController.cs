@@ -607,13 +607,6 @@ namespace OpenLawOffice.Web.Controllers
                     // Lead Attorney is created within this method
                     model = Data.Matters.Matter.Create(trans, model, currentUser);
 
-                    Data.Matters.ResponsibleUser.Create(trans, new Common.Models.Matters.ResponsibleUser()
-                    {
-                        Matter = model,
-                        User = new Common.Models.Account.Users() { PId = viewModel.ResponsibleUser.User.PId },
-                        Responsibility = viewModel.ResponsibleUser.Responsibility
-                    }, currentUser);
-
                     // Assign Contacts
 
                     if (viewModel.Contact1 != null && viewModel.Contact1.Id.HasValue &&
@@ -863,37 +856,6 @@ namespace OpenLawOffice.Web.Controllers
 
                 matter = Data.Matters.Matter.Get(id, conn, false);
             }
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
-
-            return View(viewModelList);
-        }
-
-        [Authorize(Roles = "Login, User")]
-        public ActionResult ResponsibleUsers(Guid id)
-        {
-            Common.Models.Matters.Matter matter;
-            Common.Models.Account.Users user;
-            ViewModels.Matters.ResponsibleUserViewModel viewModel;
-            List<ViewModels.Matters.ResponsibleUserViewModel> viewModelList;
-
-            viewModelList = new List<ViewModels.Matters.ResponsibleUserViewModel>();
-
-            using (IDbConnection conn = Data.Database.Instance.GetConnection())
-            {
-                Data.Matters.ResponsibleUser.ListForMatter(id, conn, false).ForEach(x =>
-                {
-                    user = Data.Account.Users.Get(x.User.PId.Value, conn, false);
-
-                    viewModel = Mapper.Map<ViewModels.Matters.ResponsibleUserViewModel>(x);
-                    viewModel.User = Mapper.Map<ViewModels.Account.UsersViewModel>(user);
-
-                    viewModelList.Add(viewModel);
-                });
-
-                matter = Data.Matters.Matter.Get(id, conn, false);
-            }
-
             ViewBag.Matter = matter.Title;
             ViewBag.MatterId = matter.Id;
 
