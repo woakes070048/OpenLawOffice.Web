@@ -111,7 +111,9 @@ namespace OpenLawOffice.Web.Controllers
                         matterContact = Data.Matters.MatterContact.Enable(matterContact, currentUser);
                     }
 
-                    if (model.Role == "Lead Attorney")
+                    matterContact.Contact = Data.Contacts.Contact.Get(trans, matterContact.Contact.Id.Value);
+
+                    if (model.IsLeadAttorney && matterContact.Contact.IsOurEmployee)
                     {
                         Common.Models.Matters.Matter matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
                         matter.LeadAttorney = Mapper.Map<Common.Models.Contacts.Contact>(model.Contact);
@@ -180,7 +182,8 @@ namespace OpenLawOffice.Web.Controllers
                 {
                     currentUser = Data.Account.Users.Get(User.Identity.Name);
 
-                    modelCurrent = Data.Matters.MatterContact.Get(id);
+                    modelCurrent = Data.Matters.MatterContact.Get(trans, id);
+                    modelCurrent.Contact = Data.Contacts.Contact.Get(trans, modelCurrent.Contact.Id.Value);
 
                     model = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel);
 
@@ -189,7 +192,7 @@ namespace OpenLawOffice.Web.Controllers
 
                     model = Data.Matters.MatterContact.Edit(model, currentUser);
 
-                    if (model.Role == "Lead Attorney")
+                    if (model.IsLeadAttorney && model.Contact.IsOurEmployee)
                     {
                         model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
                         model.Matter.LeadAttorney = model.Contact;
@@ -268,11 +271,12 @@ namespace OpenLawOffice.Web.Controllers
                     currentUser = Data.Account.Users.Get(User.Identity.Name);
 
                     model = Data.Matters.MatterContact.Get(viewModel.Id.Value);
+                    model.Contact = Data.Contacts.Contact.Get(trans, model.Contact.Id.Value);
                     matterId = model.Matter.Id.Value;
 
                     model = Data.Matters.MatterContact.Disable(model, currentUser);
 
-                    if (model.Role == "Lead Attorney")
+                    if (model.IsLeadAttorney && model.Contact.IsOurEmployee)
                     {
                         Common.Models.Matters.Matter matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
                         matter.LeadAttorney = null;

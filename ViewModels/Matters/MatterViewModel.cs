@@ -31,6 +31,8 @@ namespace OpenLawOffice.Web.ViewModels.Matters
     {
         public Guid? Id { get; set; }
 
+        public long? IdInt { get; set; }
+
         public MatterViewModel Parent { get; set; }
 
         public MatterTypeViewModel MatterType { get; set; }
@@ -40,8 +42,6 @@ namespace OpenLawOffice.Web.ViewModels.Matters
         public string Synopsis { get; set; }
 
         public bool Active { get; set; }
-
-        public string Jurisdiction { get; set; }
 
         public string CaseNumber { get; set; }
 
@@ -57,9 +57,29 @@ namespace OpenLawOffice.Web.ViewModels.Matters
 
         public bool OverrideMatterRateWithEmployeeRate { get; set; }
 
+        public string AttorneyForPartyTitle { get; set; }
+
+        public CourtTypeViewModel CourtType { get; set; }
+
+        public CourtGeographicalJurisdictionViewModel CourtGeographicalJurisdiction { get; set; }
+
+        public CourtSittingInCityViewModel CourtSittingInCity { get; set; }
+
+        public string CaptionPlaintiffOrSubjectShort { get; set; }
+
+        public string CaptionPlaintiffOrSubjectRegular { get; set; }
+
+        public string CaptionPlaintiffOrSubjectLong { get; set; }
+
+        public string CaptionOtherPartyShort { get; set; }
+
+        public string CaptionOtherPartyRegular { get; set; }
+
+        public string CaptionOtherPartyLong { get; set; }
+
         // -- Financial Information
-            
-            // -- DB Values
+
+        // -- DB Values
         public decimal? MinimumCharge { get; set; }
         public decimal? EstimatedCharge { get; set; }
         public decimal? MaximumCharge { get; set; }
@@ -112,6 +132,7 @@ namespace OpenLawOffice.Web.ViewModels.Matters
                     };
                 }))
                 .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dst => dst.IdInt, opt => opt.MapFrom(src => src.IdInt))
                 .ForMember(dst => dst.Parent, opt => opt.ResolveUsing(db =>
                 {
                     if (!db.ParentId.HasValue) return null;
@@ -133,7 +154,6 @@ namespace OpenLawOffice.Web.ViewModels.Matters
                 .ForMember(dst => dst.Title, opt => opt.MapFrom(src => src.Title))
                 .ForMember(dst => dst.Synopsis, opt => opt.MapFrom(src => src.Synopsis))
                 .ForMember(dst => dst.Active, opt => opt.MapFrom(src => src.Active))
-                .ForMember(dst => dst.Jurisdiction, opt => opt.MapFrom(src => src.Jurisdiction))
                 .ForMember(dst => dst.CaseNumber, opt => opt.MapFrom(src => src.CaseNumber))
                 .ForMember(dst => dst.LeadAttorney, opt => opt.ResolveUsing(db =>
                 {
@@ -172,6 +192,16 @@ namespace OpenLawOffice.Web.ViewModels.Matters
                     };
                 }))
                 .ForMember(dst => dst.OverrideMatterRateWithEmployeeRate, opt => opt.MapFrom(src => src.OverrideMatterRateWithEmployeeRate))
+                .ForMember(dst => dst.AttorneyForPartyTitle, opt => opt.MapFrom(src => src.AttorneyForPartyTitle))
+                .ForMember(dst => dst.CourtType, opt => opt.MapFrom(src => src.CourtType))
+                .ForMember(dst => dst.CourtGeographicalJurisdiction, opt => opt.MapFrom(src => src.CourtGeographicalJurisdiction))
+                .ForMember(dst => dst.CourtSittingInCity, opt => opt.MapFrom(src => src.CourtSittingInCity))
+                .ForMember(dst => dst.CaptionPlaintiffOrSubjectShort, opt => opt.MapFrom(src => src.CaptionPlaintiffOrSubjectShort))
+                .ForMember(dst => dst.CaptionPlaintiffOrSubjectRegular, opt => opt.MapFrom(src => src.CaptionPlaintiffOrSubjectRegular))
+                .ForMember(dst => dst.CaptionPlaintiffOrSubjectLong, opt => opt.MapFrom(src => src.CaptionPlaintiffOrSubjectLong))
+                .ForMember(dst => dst.CaptionOtherPartyShort, opt => opt.MapFrom(src => src.CaptionOtherPartyShort))
+                .ForMember(dst => dst.CaptionOtherPartyRegular, opt => opt.MapFrom(src => src.CaptionOtherPartyRegular))
+                .ForMember(dst => dst.CaptionOtherPartyLong, opt => opt.MapFrom(src => src.CaptionOtherPartyLong))
                 .ForMember(dst => dst.Clients, opt => opt.Ignore())
                 .ForMember(dst => dst.Tasks, opt => opt.Ignore())
                 .ForMember(dst => dst.Notes, opt => opt.Ignore())
@@ -224,6 +254,7 @@ namespace OpenLawOffice.Web.ViewModels.Matters
                     };
                 }))
                 .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dst => dst.IdInt, opt => opt.MapFrom(src => src.IdInt))
                 .ForMember(dst => dst.ParentId, opt => opt.ResolveUsing(model =>
                 {
                     if (model.Parent == null || !model.Parent.Id.HasValue)
@@ -243,7 +274,6 @@ namespace OpenLawOffice.Web.ViewModels.Matters
                 .ForMember(dst => dst.Title, opt => opt.MapFrom(src => src.Title))
                 .ForMember(dst => dst.Synopsis, opt => opt.MapFrom(src => src.Synopsis))
                 .ForMember(dst => dst.Active, opt => opt.MapFrom(src => src.Active))
-                .ForMember(dst => dst.Jurisdiction, opt => opt.MapFrom(src => src.Jurisdiction))
                 .ForMember(dst => dst.CaseNumber, opt => opt.MapFrom(src => src.CaseNumber))
                 .ForMember(dst => dst.LeadAttorney, opt => opt.ResolveUsing(x =>
                 {
@@ -286,6 +316,16 @@ namespace OpenLawOffice.Web.ViewModels.Matters
                     };
                 }))
                 .ForMember(dst => dst.OverrideMatterRateWithEmployeeRate, opt => opt.MapFrom(src => src.OverrideMatterRateWithEmployeeRate))
+                .ForMember(dst => dst.AttorneyForPartyTitle, opt => opt.MapFrom(src => src.AttorneyForPartyTitle))
+                .ForMember(dst => dst.CourtType, opt => opt.MapFrom(src => src.CourtType))
+                .ForMember(dst => dst.CourtGeographicalJurisdiction, opt => opt.MapFrom(src => src.CourtGeographicalJurisdiction))
+                .ForMember(dst => dst.CourtSittingInCity, opt => opt.MapFrom(src => src.CourtSittingInCity))
+                .ForMember(dst => dst.CaptionPlaintiffOrSubjectShort, opt => opt.MapFrom(src => src.CaptionPlaintiffOrSubjectShort))
+                .ForMember(dst => dst.CaptionPlaintiffOrSubjectRegular, opt => opt.MapFrom(src => src.CaptionPlaintiffOrSubjectRegular))
+                .ForMember(dst => dst.CaptionPlaintiffOrSubjectLong, opt => opt.MapFrom(src => src.CaptionPlaintiffOrSubjectLong))
+                .ForMember(dst => dst.CaptionOtherPartyShort, opt => opt.MapFrom(src => src.CaptionOtherPartyShort))
+                .ForMember(dst => dst.CaptionOtherPartyRegular, opt => opt.MapFrom(src => src.CaptionOtherPartyRegular))
+                .ForMember(dst => dst.CaptionOtherPartyLong, opt => opt.MapFrom(src => src.CaptionOtherPartyLong))
                 .ForMember(dst => dst.MinimumCharge, opt => opt.MapFrom(src => src.MinimumCharge))
                 .ForMember(dst => dst.EstimatedCharge, opt => opt.MapFrom(src => src.EstimatedCharge))
                 .ForMember(dst => dst.MaximumCharge, opt => opt.MapFrom(src => src.MaximumCharge));
