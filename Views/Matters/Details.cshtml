@@ -156,17 +156,77 @@ if (Model.Active || ViewBag.AlertText != null)
     </tr>
     <tr>
         <td class="display-label" style="width: 125px;">
-            Jurisdiction
+            Attorney for Party Title:
         </td>
         <td class="display-field">
-            @(Model.Jurisdiction)
+            @(Model.AttorneyForPartyTitle)
         </td>
         <td></td>
         <td class="display-label" style="width: 125px;">
-            Case Number
+            Court Type
         </td>
         <td class="display-field">
-            @(Model.CaseNumber)
+            @(Model.CourtType.Title)
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label" style="width: 125px;">
+            Court Geo. Jurisdiction
+        </td>
+        <td class="display-field">
+            @(Model.CourtGeographicalJurisdiction.Title)
+        </td>
+        <td></td>
+        <td class="display-label" style="width: 125px;">
+            Court Sitting in City
+        </td>
+        <td class="display-field">
+            @(Model.CourtSittingInCity.Title)
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label" style="width: 125px;">
+            Plaintiff or Subject (Short):
+        </td>
+        <td class="display-field">
+            @(Model.CaptionPlaintiffOrSubjectShort)
+        </td>
+        <td></td>
+        <td class="display-label" style="width: 125px;">
+            Other Party (Short):
+        </td>
+        <td class="display-field">
+            @(Model.CaptionOtherPartyShort)
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label" style="width: 125px;">
+            Plaintiff or Subject (Regular):
+        </td>
+        <td class="display-field">
+            @(Model.CaptionPlaintiffOrSubjectRegular)
+        </td>
+        <td></td>
+        <td class="display-label" style="width: 125px;">
+            Other Party (Regular):
+        </td>
+        <td class="display-field">
+            @(Model.CaptionOtherPartyRegular)
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label" style="width: 125px;">
+            Plaintiff or Subject (Long):
+        </td>
+        <td class="display-field">
+            @(Model.CaptionPlaintiffOrSubjectLong)
+        </td>
+        <td></td>
+        <td class="display-label" style="width: 125px;">
+            Other Party (Long):
+        </td>
+        <td class="display-field">
+            @(Model.CaptionOtherPartyLong)
         </td>
     </tr>
 </table>

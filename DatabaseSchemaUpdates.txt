@@ -5,6 +5,108 @@ UPDATE matter_contact SET "is_client"=TRUE WHERE LOWER("role") LIKE LOWER('clien
 UPDATE matter_contact SET "is_client_contact"=TRUE WHERE LOWER("role") LIKE LOWER('%client contact%');
 UPDATE matter_contact SET "is_appointed"=TRUE WHERE LOWER("role") LIKE LOWER('%appointed client%');
 
+
+-- Table: court_type
+
+-- DROP TABLE court_type;
+
+CREATE TABLE court_type
+(
+-- Inherited from table core:  created_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  modified_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  disabled_by_user_pid uuid,
+-- Inherited from table core:  utc_created timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_modified timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_disabled timestamp without time zone,
+  id serial NOT NULL,
+  title text NOT NULL,
+  CONSTRAINT court_type_pkey PRIMARY KEY (id)
+)
+INHERITS (core)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE court_type
+  OWNER TO postgres;
+
+-- Table: court_geographical_jurisdiction
+
+-- DROP TABLE court_geographical_jurisdiction;
+
+CREATE TABLE court_geographical_jurisdiction
+(
+-- Inherited from table core:  created_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  modified_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  disabled_by_user_pid uuid,
+-- Inherited from table core:  utc_created timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_modified timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_disabled timestamp without time zone,
+  id serial NOT NULL,
+  title text NOT NULL,
+  CONSTRAINT court_geographical_jurisdiction_pkey PRIMARY KEY (id)
+)
+INHERITS (core)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE court_geographical_jurisdiction
+  OWNER TO postgres;
+
+-- Table: court_sitting_in_city
+
+-- DROP TABLE court_sitting_in_city;
+
+CREATE TABLE court_sitting_in_city
+(
+-- Inherited from table core:  created_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  modified_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  disabled_by_user_pid uuid,
+-- Inherited from table core:  utc_created timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_modified timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_disabled timestamp without time zone,
+  id serial NOT NULL,
+  title text NOT NULL,
+  CONSTRAINT court_sitting_in_city_pkey PRIMARY KEY (id)
+)
+INHERITS (core)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE court_sitting_in_city
+  OWNER TO postgres;
+
+ALTER TABLE matter
+  DROP COLUMN jurisdiction;
+ALTER TABLE matter
+  ADD COLUMN attorney_for_party_title text;
+ALTER TABLE matter
+  ADD COLUMN court_type_id integer;
+ALTER TABLE matter
+  ADD COLUMN court_geographical_jurisdiction_id integer;
+ALTER TABLE matter
+  ADD COLUMN court_sitting_in_city_id integer;
+ALTER TABLE matter
+  ADD COLUMN caption_plaintiff_or_subject_short text;
+ALTER TABLE matter
+  ADD COLUMN caption_plaintiff_or_subject_regular text;
+ALTER TABLE matter
+  ADD COLUMN caption_plaintiff_or_subject_long text;
+ALTER TABLE matter
+  ADD COLUMN caption_other_party_short text;
+ALTER TABLE matter
+  ADD COLUMN caption_other_party_regular text;
+ALTER TABLE matter
+  ADD COLUMN caption_other_party_long text;
+ALTER TABLE matter
+  ADD CONSTRAINT "FK_matter_court_type_CourtTypeId" FOREIGN KEY (court_type_id) REFERENCES court_type (id) ON UPDATE NO ACTION ON DELETE NO ACTION;
+ALTER TABLE matter
+  ADD CONSTRAINT "FK_matter_court_geographical_jurisdiction_CourtGeographicalJurisdictionId" FOREIGN KEY (court_geographical_jurisdiction_id) REFERENCES court_geographical_jurisdiction (id) ON UPDATE NO ACTION ON DELETE NO ACTION;
+ALTER TABLE matter
+  ADD CONSTRAINT "FK_matter_court_sitting_in_city_CourtSittingInCityId" FOREIGN KEY (court_sitting_in_city_id) REFERENCES court_sitting_in_city (id) ON UPDATE NO ACTION ON DELETE NO ACTION;
+
+
+
+
 12/26/2015
 
 DROP TABLE event_responsible_user;

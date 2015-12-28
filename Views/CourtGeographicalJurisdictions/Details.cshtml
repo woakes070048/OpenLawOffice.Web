@@ -1,0 +1,28 @@
+@model OpenLawOffice.Web.ViewModels.Matters.CourtGeographicalJurisdictionViewModel
+
+@{ 
+    ViewBag.Title = "Court Geographical Jurisdiction Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<h2>
+    Court Geographical Jurisdiction Details<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></h2>
+    
+<table class="detail_table">
+    <tr>
+        <td class="display-label">
+            Title<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">
+            @(Model.Title)
+        </td>
+    </tr>
+</table>
+
+<div id="pageInfoDialog" title="Help">
+    <p>
+    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
+    Displays detailed information regarding the Court Geographical Jurisdiction.
+    </p>
+</div> 

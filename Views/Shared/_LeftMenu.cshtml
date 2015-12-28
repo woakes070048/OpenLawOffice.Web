@@ -31,6 +31,15 @@
             <li>
                 @(Html.ActionLink("Task Templates", "", "TaskTemplates")) @(Html.ActionLink("New Template", "Create", "TaskTemplates", null, new { @class = "btn-plus" }))
             </li>
+            <li>
+                @(Html.ActionLink("Court Types", "", "CourtTypes")) @(Html.ActionLink("New Court Type", "Create", "CourtTypes", null, new { @class = "btn-plus" }))
+            </li>
+            <li>
+                @(Html.ActionLink("Court Juris.", "", "CourtGeographicalJurisdictions")) @(Html.ActionLink("New Court Juris.", "Create", "CourtGeographicalJurisdictions", null, new { @class = "btn-plus" }))
+            </li>
+            <li>
+                @(Html.ActionLink("Court Cities", "", "CourtSittingInCities")) @(Html.ActionLink("New Court City", "Create", "CourtSittingInCities", null, new { @class = "btn-plus" }))
+            </li>
         </ul>
         @*<li>
                 Calendar</li>

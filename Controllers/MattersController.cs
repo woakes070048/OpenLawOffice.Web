@@ -39,7 +39,8 @@ namespace OpenLawOffice.Web.Controllers
         {
             List<ViewModels.Matters.MatterViewModel> viewModelList;
             bool? active;
-            string activeStr, contactFilter, titleFilter, caseNumberFilter, jurisdictionFilter;
+            string activeStr, contactFilter, titleFilter, caseNumberFilter, courtTypeFilter,
+                courtGeographicalJurisdictionFilter;
 
             switch (activeStr = Request["active"])
             {
@@ -59,12 +60,13 @@ namespace OpenLawOffice.Web.Controllers
             contactFilter = Request["contactFilter"];
             titleFilter = Request["titleFilter"];
             caseNumberFilter = Request["caseNumberFilter"];
-            jurisdictionFilter = Request["jurisdictionFilter"];
+            courtTypeFilter = Request["courtTypeFilter"];
+            courtGeographicalJurisdictionFilter = Request["courtGeographicalJurisdictionFilter"];
 
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
                 Data.Matters.Matter.List(active, contactFilter, 
-                    titleFilter, caseNumberFilter, jurisdictionFilter,
+                    titleFilter, caseNumberFilter, courtTypeFilter, courtGeographicalJurisdictionFilter,
                     conn, false).ForEach(x =>
                 {
                     viewModelList.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
@@ -101,14 +103,27 @@ namespace OpenLawOffice.Web.Controllers
         }
 
         [Authorize(Roles = "Login, User")]
-        public ActionResult ListJurisdictionOnly()
+        public ActionResult ListCourtTypeOnly()
         {
             string term;
             List<Common.Models.Matters.Matter> list;
 
             term = Request["term"];
 
-            list = Data.Matters.Matter.ListJurisdictionsOnly(term.Trim());
+            list = Data.Matters.Matter.ListCourtTypeOnly(term.Trim());
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [Authorize(Roles = "Login, User")]
+        public ActionResult ListCourtGeographicalJurisdictionOnly()
+        {
+            string term;
+            List<Common.Models.Matters.Matter> list;
+
+            term = Request["term"];
+
+            list = Data.Matters.Matter.ListCourtGeographicalJurisdictionOnly(term.Trim());
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -192,39 +207,39 @@ namespace OpenLawOffice.Web.Controllers
         //    };
         //}
 
-        private List<ViewModels.Matters.MatterViewModel> GetChildrenList(Guid? id)
-        {
-            List<ViewModels.Matters.MatterViewModel> viewModelList;
+        //private List<ViewModels.Matters.MatterViewModel> GetChildrenList(Guid? id)
+        //{
+        //    List<ViewModels.Matters.MatterViewModel> viewModelList;
 
-            viewModelList = new List<ViewModels.Matters.MatterViewModel>();
+        //    viewModelList = new List<ViewModels.Matters.MatterViewModel>();
 
-            using (IDbConnection conn = Data.Database.Instance.GetConnection())
-            {
-                Data.Matters.Matter.ListChildren(id, conn, false).ForEach(x =>
-                {
-                    viewModelList.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
-                });
-            }
+        //    using (IDbConnection conn = Data.Database.Instance.GetConnection())
+        //    {
+        //        Data.Matters.Matter.ListChildren(id, conn, false).ForEach(x =>
+        //        {
+        //            viewModelList.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
+        //        });
+        //    }
 
-            return viewModelList;
-        }
+        //    return viewModelList;
+        //}
 
-        private List<ViewModels.Matters.MatterViewModel> GetChildrenListForContact(Guid? id, int contactId)
-        {
-            List<ViewModels.Matters.MatterViewModel> viewModelList;
+        //private List<ViewModels.Matters.MatterViewModel> GetChildrenListForContact(Guid? id, int contactId)
+        //{
+        //    List<ViewModels.Matters.MatterViewModel> viewModelList;
 
-            viewModelList = new List<ViewModels.Matters.MatterViewModel>();
+        //    viewModelList = new List<ViewModels.Matters.MatterViewModel>();
 
-            using (IDbConnection conn = Data.Database.Instance.GetConnection())
-            {
-                Data.Matters.Matter.ListChildrenForContact(id, contactId, conn, false).ForEach(x =>
-                {
-                    viewModelList.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
-                });
-            }
+        //    using (IDbConnection conn = Data.Database.Instance.GetConnection())
+        //    {
+        //        Data.Matters.Matter.ListChildrenForContact(id, contactId, conn, false).ForEach(x =>
+        //        {
+        //            viewModelList.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
+        //        });
+        //    }
 
-            return viewModelList;
-        }
+        //    return viewModelList;
+        //}
 
         [Authorize(Roles = "Login, User")]
         public ActionResult Close(Guid id)
@@ -295,6 +310,15 @@ namespace OpenLawOffice.Web.Controllers
                 if (viewModel.MatterType != null)
                     viewModel.MatterType = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(
                         Data.Matters.MatterType.Get(viewModel.MatterType.Id.Value, conn, false));
+                if (viewModel.CourtType != null)
+                    viewModel.CourtType = Mapper.Map<ViewModels.Matters.CourtTypeViewModel>(
+                        Data.Matters.CourtType.Get(viewModel.CourtType.Id.Value, conn, false));
+                if (viewModel.CourtGeographicalJurisdiction != null)
+                    viewModel.CourtGeographicalJurisdiction = Mapper.Map<ViewModels.Matters.CourtGeographicalJurisdictionViewModel>(
+                        Data.Matters.CourtGeographicalJurisdiction.Get(viewModel.CourtGeographicalJurisdiction.Id.Value, conn, false));
+                if (viewModel.CourtSittingInCity != null)
+                    viewModel.CourtSittingInCity = Mapper.Map<ViewModels.Matters.CourtSittingInCityViewModel>(
+                        Data.Matters.CourtSittingInCity.Get(viewModel.CourtSittingInCity.Id.Value, conn, false));
                 viewModel.Clients = new List<ViewModels.Contacts.ContactViewModel>();
                 viewModel.Tasks = TasksController.GetListForMatter(id, true, conn);
                 viewModel.LeadAttorney = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.LeadAttorney);
@@ -423,12 +447,18 @@ namespace OpenLawOffice.Web.Controllers
             List<ViewModels.Billing.BillingRateViewModel> billingRateList;
             List<ViewModels.Billing.BillingGroupViewModel> billingGroupList;
             List<ViewModels.Matters.MatterTypeViewModel> matterTypeList;
+            List<ViewModels.Matters.CourtTypeViewModel> courtTypeList;
+            List<ViewModels.Matters.CourtGeographicalJurisdictionViewModel> courtGeographicalJurisdictionList;
+            List<ViewModels.Matters.CourtSittingInCityViewModel> courtSittingInCityList;
 
             userList = new List<ViewModels.Account.UsersViewModel>();
             employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
             billingRateList = new List<ViewModels.Billing.BillingRateViewModel>();
             billingGroupList = new List<ViewModels.Billing.BillingGroupViewModel>();
             matterTypeList = new List<ViewModels.Matters.MatterTypeViewModel>();
+            courtTypeList = new List<ViewModels.Matters.CourtTypeViewModel>();
+            courtGeographicalJurisdictionList = new List<ViewModels.Matters.CourtGeographicalJurisdictionViewModel>();
+            courtSittingInCityList = new List<ViewModels.Matters.CourtSittingInCityViewModel>();
 
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
@@ -460,6 +490,24 @@ namespace OpenLawOffice.Web.Controllers
                 {
                     ViewModels.Matters.MatterTypeViewModel vm = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x);
                     matterTypeList.Add(vm);
+                });
+
+                Data.Matters.CourtType.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Matters.CourtTypeViewModel vm = Mapper.Map<ViewModels.Matters.CourtTypeViewModel>(x);
+                    courtTypeList.Add(vm);
+                });
+
+                Data.Matters.CourtGeographicalJurisdiction.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Matters.CourtGeographicalJurisdictionViewModel vm = Mapper.Map<ViewModels.Matters.CourtGeographicalJurisdictionViewModel>(x);
+                    courtGeographicalJurisdictionList.Add(vm);
+                });
+
+                Data.Matters.CourtSittingInCity.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Matters.CourtSittingInCityViewModel vm = Mapper.Map<ViewModels.Matters.CourtSittingInCityViewModel>(x);
+                    courtSittingInCityList.Add(vm);
                 });
             }
 
@@ -500,6 +548,9 @@ namespace OpenLawOffice.Web.Controllers
                             List<ViewModels.Billing.BillingRateViewModel> billingRateList;
                             List<ViewModels.Billing.BillingGroupViewModel> billingGroupList;
                             List<ViewModels.Matters.MatterTypeViewModel> matterTypeList;
+                            List<ViewModels.Matters.CourtTypeViewModel> courtTypeList;
+                            List<ViewModels.Matters.CourtGeographicalJurisdictionViewModel> courtGeographicalJurisdictionList;
+                            List<ViewModels.Matters.CourtSittingInCityViewModel> courtSittingInCityList;
 
                             possibleDuplicateList.ForEach(x =>
                             {
@@ -511,6 +562,9 @@ namespace OpenLawOffice.Web.Controllers
                             billingRateList = new List<ViewModels.Billing.BillingRateViewModel>();
                             billingGroupList = new List<ViewModels.Billing.BillingGroupViewModel>();
                             matterTypeList = new List<ViewModels.Matters.MatterTypeViewModel>();
+                            courtTypeList = new List<ViewModels.Matters.CourtTypeViewModel>();
+                            courtGeographicalJurisdictionList = new List<ViewModels.Matters.CourtGeographicalJurisdictionViewModel>();
+                            courtSittingInCityList = new List<ViewModels.Matters.CourtSittingInCityViewModel>();
 
                             Data.Account.Users.List(trans).ForEach(x =>
                             {
@@ -542,6 +596,24 @@ namespace OpenLawOffice.Web.Controllers
                                 matterTypeList.Add(vm);
                             });
 
+                            Data.Matters.CourtType.List(trans).ForEach(x =>
+                            {
+                                ViewModels.Matters.CourtTypeViewModel vm = Mapper.Map<ViewModels.Matters.CourtTypeViewModel>(x);
+                                courtTypeList.Add(vm);
+                            });
+
+                            Data.Matters.CourtGeographicalJurisdiction.List(trans).ForEach(x =>
+                            {
+                                ViewModels.Matters.CourtGeographicalJurisdictionViewModel vm = Mapper.Map<ViewModels.Matters.CourtGeographicalJurisdictionViewModel>(x);
+                                courtGeographicalJurisdictionList.Add(vm);
+                            });
+
+                            Data.Matters.CourtSittingInCity.List(trans).ForEach(x =>
+                            {
+                                ViewModels.Matters.CourtSittingInCityViewModel vm = Mapper.Map<ViewModels.Matters.CourtSittingInCityViewModel>(x);
+                                courtSittingInCityList.Add(vm);
+                            });
+
                             ViewBag.ErrorMessage = "Matter possibly conflicts with the following existing matters:<ul>" + errorListString + "</ul>Click Save again to create the matter anyway.";
                             ViewBag.OverrideConflict = "True";
 
@@ -563,11 +635,19 @@ namespace OpenLawOffice.Web.Controllers
                         List<ViewModels.Contacts.ContactViewModel> employeeContactList;
                         List<ViewModels.Billing.BillingRateViewModel> billingRateList;
                         List<ViewModels.Billing.BillingGroupViewModel> billingGroupList;
+                        List<ViewModels.Matters.MatterTypeViewModel> matterTypeList;
+                        List<ViewModels.Matters.CourtTypeViewModel> courtTypeList;
+                        List<ViewModels.Matters.CourtGeographicalJurisdictionViewModel> courtGeographicalJurisdictionList;
+                        List<ViewModels.Matters.CourtSittingInCityViewModel> courtSittingInCityList;
 
                         userList = new List<ViewModels.Account.UsersViewModel>();
                         employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
                         billingRateList = new List<ViewModels.Billing.BillingRateViewModel>();
                         billingGroupList = new List<ViewModels.Billing.BillingGroupViewModel>();
+                        matterTypeList = new List<ViewModels.Matters.MatterTypeViewModel>();
+                        courtTypeList = new List<ViewModels.Matters.CourtTypeViewModel>();
+                        courtGeographicalJurisdictionList = new List<ViewModels.Matters.CourtGeographicalJurisdictionViewModel>();
+                        courtSittingInCityList = new List<ViewModels.Matters.CourtSittingInCityViewModel>();
 
                         Data.Account.Users.List(trans).ForEach(x =>
                         {
@@ -591,6 +671,30 @@ namespace OpenLawOffice.Web.Controllers
                             ViewModels.Billing.BillingGroupViewModel vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(x);
                             vm.Title += " (" + vm.Amount.ToString("C") + ")";
                             billingGroupList.Add(vm);
+                        });
+
+                        Data.Matters.MatterType.List(trans).ForEach(x =>
+                        {
+                            ViewModels.Matters.MatterTypeViewModel vm = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x);
+                            matterTypeList.Add(vm);
+                        });
+
+                        Data.Matters.CourtType.List(trans).ForEach(x =>
+                        {
+                            ViewModels.Matters.CourtTypeViewModel vm = Mapper.Map<ViewModels.Matters.CourtTypeViewModel>(x);
+                            courtTypeList.Add(vm);
+                        });
+
+                        Data.Matters.CourtGeographicalJurisdiction.List(trans).ForEach(x =>
+                        {
+                            ViewModels.Matters.CourtGeographicalJurisdictionViewModel vm = Mapper.Map<ViewModels.Matters.CourtGeographicalJurisdictionViewModel>(x);
+                            courtGeographicalJurisdictionList.Add(vm);
+                        });
+
+                        Data.Matters.CourtSittingInCity.List(trans).ForEach(x =>
+                        {
+                            ViewModels.Matters.CourtSittingInCityViewModel vm = Mapper.Map<ViewModels.Matters.CourtSittingInCityViewModel>(x);
+                            courtSittingInCityList.Add(vm);
                         });
 
                         ModelState.AddModelError("LeadAttorney", "Lead Attorney is required");
@@ -694,6 +798,9 @@ namespace OpenLawOffice.Web.Controllers
             List<ViewModels.Billing.BillingRateViewModel> billingRateList;
             List<ViewModels.Billing.BillingGroupViewModel> billingGroupList;
             List<ViewModels.Matters.MatterTypeViewModel> matterTypeList;
+            List<ViewModels.Matters.CourtTypeViewModel> courtTypeList;
+            List<ViewModels.Matters.CourtGeographicalJurisdictionViewModel> courtGeographicalJurisdictionList;
+            List<ViewModels.Matters.CourtSittingInCityViewModel> courtSittingInCityList;
             ViewModels.Matters.EditMatterViewModel viewModel;
             Common.Models.Matters.Matter model;
 
@@ -701,6 +808,9 @@ namespace OpenLawOffice.Web.Controllers
             billingRateList = new List<ViewModels.Billing.BillingRateViewModel>();
             billingGroupList = new List<ViewModels.Billing.BillingGroupViewModel>();
             matterTypeList = new List<ViewModels.Matters.MatterTypeViewModel>();
+            courtTypeList = new List<ViewModels.Matters.CourtTypeViewModel>();
+            courtGeographicalJurisdictionList = new List<ViewModels.Matters.CourtGeographicalJurisdictionViewModel>();
+            courtSittingInCityList = new List<ViewModels.Matters.CourtSittingInCityViewModel>();
 
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
@@ -717,6 +827,18 @@ namespace OpenLawOffice.Web.Controllers
 
                 if (model.BillingGroup != null)
                     model.BillingGroup = Data.Billing.BillingGroup.Get(model.BillingGroup.Id.Value, conn, false);
+
+                if (model.MatterType != null)
+                    model.MatterType = Data.Matters.MatterType.Get(model.MatterType.Id.Value, conn, false);
+
+                if (model.CourtType != null)
+                    model.CourtType = Data.Matters.CourtType.Get(model.CourtType.Id.Value, conn, false);
+
+                if (model.CourtGeographicalJurisdiction != null)
+                    model.CourtGeographicalJurisdiction = Data.Matters.CourtGeographicalJurisdiction.Get(model.CourtGeographicalJurisdiction.Id.Value, conn, false);
+
+                if (model.CourtSittingInCity != null)
+                    model.CourtSittingInCity = Data.Matters.CourtSittingInCity.Get(model.CourtSittingInCity.Id.Value, conn, false);
 
                 Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
                 {
@@ -742,6 +864,24 @@ namespace OpenLawOffice.Web.Controllers
                     ViewModels.Matters.MatterTypeViewModel vm = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x);
                     matterTypeList.Add(vm);
                 });
+
+                Data.Matters.CourtType.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Matters.CourtTypeViewModel vm = Mapper.Map<ViewModels.Matters.CourtTypeViewModel>(x);
+                    courtTypeList.Add(vm);
+                });
+
+                Data.Matters.CourtGeographicalJurisdiction.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Matters.CourtGeographicalJurisdictionViewModel vm = Mapper.Map<ViewModels.Matters.CourtGeographicalJurisdictionViewModel>(x);
+                    courtGeographicalJurisdictionList.Add(vm);
+                });
+
+                Data.Matters.CourtSittingInCity.List(conn, false).ForEach(x =>
+                {
+                    ViewModels.Matters.CourtSittingInCityViewModel vm = Mapper.Map<ViewModels.Matters.CourtSittingInCityViewModel>(x);
+                    courtSittingInCityList.Add(vm);
+                });
             }
 
             viewModel = new ViewModels.Matters.EditMatterViewModel();
@@ -751,6 +891,9 @@ namespace OpenLawOffice.Web.Controllers
             viewModel.Matter.BillTo = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.BillTo);
             viewModel.Matter.DefaultBillingRate = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(model.DefaultBillingRate);
             viewModel.Matter.BillingGroup = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(model.BillingGroup);
+            viewModel.Matter.CourtType = Mapper.Map<ViewModels.Matters.CourtTypeViewModel>(model.CourtType);
+            viewModel.Matter.CourtGeographicalJurisdiction = Mapper.Map<ViewModels.Matters.CourtGeographicalJurisdictionViewModel>(model.CourtType);
+            viewModel.Matter.CourtSittingInCity = Mapper.Map<ViewModels.Matters.CourtSittingInCityViewModel>(model.CourtType);
 
             ViewBag.EmployeeContactList = employeeContactList;
             ViewBag.BillingRateList = billingRateList;

@@ -722,6 +722,21 @@
     <Content Include="Views\MatterHotdocs\Details.cshtml" />
     <Content Include="Views\MatterHotdocs\Edit.cshtml" />
     <Content Include="Views\Invoices\MatterDelete.cshtml" />
+    <Content Include="Views\CourtTypes\Create.cshtml" />
+    <Content Include="Views\CourtTypes\Delete.cshtml" />
+    <Content Include="Views\CourtTypes\Details.cshtml" />
+    <Content Include="Views\CourtTypes\Edit.cshtml" />
+    <Content Include="Views\CourtTypes\Index.cshtml" />
+    <Content Include="Views\CourtSittingInCities\Create.cshtml" />
+    <Content Include="Views\CourtSittingInCities\Delete.cshtml" />
+    <Content Include="Views\CourtSittingInCities\Details.cshtml" />
+    <Content Include="Views\CourtSittingInCities\Edit.cshtml" />
+    <Content Include="Views\CourtSittingInCities\Index.cshtml" />
+    <Content Include="Views\CourtGeographicalJurisdictions\Create.cshtml" />
+    <Content Include="Views\CourtGeographicalJurisdictions\Delete.cshtml" />
+    <Content Include="Views\CourtGeographicalJurisdictions\Details.cshtml" />
+    <Content Include="Views\CourtGeographicalJurisdictions\Edit.cshtml" />
+    <Content Include="Views\CourtGeographicalJurisdictions\Index.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
