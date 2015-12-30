@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="MatterTypesController.cs" company="Nodine Legal, LLC">
+// <copyright file="CourtTypesController.cs" company="Nodine Legal, LLC">
 // Licensed to Nodine Legal, LLC under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -27,18 +27,18 @@ namespace OpenLawOffice.Web.Controllers
     using System.Data;
 
     [HandleError(View = "Errors/Index", Order = 10)]
-    public class MatterTypesController : BaseController
+    public class CourtTypesController : BaseController
     {
         [Authorize(Roles = "Login, User")]
         public ActionResult Index()
         {
-            List<ViewModels.Matters.MatterTypeViewModel> vmList = new List<ViewModels.Matters.MatterTypeViewModel>();
+            List<ViewModels.Matters.CourtTypeViewModel> vmList = new List<ViewModels.Matters.CourtTypeViewModel>();
 
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                Data.Matters.MatterType.List(conn, false).ForEach(x =>
+                Data.Matters.CourtType.List(conn, false).ForEach(x =>
                 {
-                    vmList.Add(Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x));
+                    vmList.Add(Mapper.Map<ViewModels.Matters.CourtTypeViewModel>(x));
                 });
             }
 
@@ -48,14 +48,14 @@ namespace OpenLawOffice.Web.Controllers
         [Authorize(Roles = "Login, User")]
         public ActionResult Details(int id)
         {
-            ViewModels.Matters.MatterTypeViewModel viewModel;
-            Common.Models.Matters.MatterType model;
+            ViewModels.Matters.CourtTypeViewModel viewModel;
+            Common.Models.Matters.CourtType model;
 
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                model = Data.Matters.MatterType.Get(id, conn, false);
+                model = Data.Matters.CourtType.Get(id, conn, false);
 
-                viewModel = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(model);
+                viewModel = Mapper.Map<ViewModels.Matters.CourtTypeViewModel>(model);
 
                 PopulateCoreDetails(viewModel, conn);
             }
@@ -66,22 +66,22 @@ namespace OpenLawOffice.Web.Controllers
         [Authorize(Roles = "Login, User")]
         public ActionResult Edit(int id)
         {
-            ViewModels.Matters.MatterTypeViewModel viewModel;
-            Common.Models.Matters.MatterType model;
+            ViewModels.Matters.CourtTypeViewModel viewModel;
+            Common.Models.Matters.CourtType model;
 
-            model = Data.Matters.MatterType.Get(id);
+            model = Data.Matters.CourtType.Get(id);
 
-            viewModel = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(model);
+            viewModel = Mapper.Map<ViewModels.Matters.CourtTypeViewModel>(model);
 
             return View(viewModel);
         }
 
         [HttpPost]
         [Authorize(Roles = "Login, User")]
-        public ActionResult Edit(int id, ViewModels.Matters.MatterTypeViewModel viewModel)
+        public ActionResult Edit(int id, ViewModels.Matters.CourtTypeViewModel viewModel)
         {
             Common.Models.Account.Users currentUser;
-            Common.Models.Matters.MatterType model;
+            Common.Models.Matters.CourtType model;
 
             using (Data.Transaction trans = Data.Transaction.Create(true))
             {
@@ -89,9 +89,9 @@ namespace OpenLawOffice.Web.Controllers
                 {
                     currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-                    model = Mapper.Map<Common.Models.Matters.MatterType>(viewModel);
+                    model = Mapper.Map<Common.Models.Matters.CourtType>(viewModel);
 
-                    model = Data.Matters.MatterType.Edit(trans, model, currentUser);
+                    model = Data.Matters.CourtType.Edit(trans, model, currentUser);
 
                     trans.Commit();
 
@@ -113,10 +113,10 @@ namespace OpenLawOffice.Web.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Login, User")]
-        public ActionResult Create(ViewModels.Matters.MatterTypeViewModel viewModel)
+        public ActionResult Create(ViewModels.Matters.CourtTypeViewModel viewModel)
         {
             Common.Models.Account.Users currentUser;
-            Common.Models.Matters.MatterType model;
+            Common.Models.Matters.CourtType model;
 
             using (Data.Transaction trans = Data.Transaction.Create(true))
             {
@@ -124,9 +124,9 @@ namespace OpenLawOffice.Web.Controllers
                 {
                     currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-                    model = Mapper.Map<Common.Models.Matters.MatterType>(viewModel);
+                    model = Mapper.Map<Common.Models.Matters.CourtType>(viewModel);
 
-                    model = Data.Matters.MatterType.Create(trans, model, currentUser);
+                    model = Data.Matters.CourtType.Create(trans, model, currentUser);
 
                     trans.Commit();
 
@@ -143,22 +143,22 @@ namespace OpenLawOffice.Web.Controllers
         [Authorize(Roles = "Login, User")]
         public ActionResult Delete(int id)
         {
-            ViewModels.Matters.MatterTypeViewModel viewModel;
-            Common.Models.Matters.MatterType model;
+            ViewModels.Matters.CourtTypeViewModel viewModel;
+            Common.Models.Matters.CourtType model;
 
-            model = Data.Matters.MatterType.Get(id);
+            model = Data.Matters.CourtType.Get(id);
 
-            viewModel = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(model);
+            viewModel = Mapper.Map<ViewModels.Matters.CourtTypeViewModel>(model);
 
             return View(viewModel);
         }
 
         [HttpPost]
         [Authorize(Roles = "Login, User")]
-        public ActionResult Delete(int id, ViewModels.Matters.MatterTypeViewModel viewModel)
+        public ActionResult Delete(int id, ViewModels.Matters.CourtTypeViewModel viewModel)
         {
             Common.Models.Account.Users currentUser;
-            Common.Models.Matters.MatterType model;
+            Common.Models.Matters.CourtType model;
 
             using (Data.Transaction trans = Data.Transaction.Create(true))
             {
@@ -166,9 +166,9 @@ namespace OpenLawOffice.Web.Controllers
                 {
                     currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
 
-                    model = Mapper.Map<Common.Models.Matters.MatterType>(viewModel);
+                    model = Mapper.Map<Common.Models.Matters.CourtType>(viewModel);
 
-                    model = Data.Matters.MatterType.Disable(trans, model, currentUser);
+                    model = Data.Matters.CourtType.Disable(trans, model, currentUser);
 
                     trans.Commit();
 

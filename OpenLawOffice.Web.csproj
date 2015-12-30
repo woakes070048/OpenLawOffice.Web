@@ -164,6 +164,9 @@
     <Compile Include="Controllers\BillingRatesController.cs" />
     <Compile Include="Controllers\CalendarController.cs" />
     <Compile Include="Controllers\ContactsController.cs" />
+    <Compile Include="Controllers\CourtGeographicalJurisdictionsController.cs" />
+    <Compile Include="Controllers\CourtSittingInCitiesController.cs" />
+    <Compile Include="Controllers\CourtTypesController.cs" />
     <Compile Include="Controllers\DeletingFileResult.cs" />
     <Compile Include="Controllers\DocumentsController.cs" />
     <Compile Include="Controllers\ErrorsController.cs" />
@@ -256,6 +259,7 @@
     <Compile Include="ViewModels\Matters\CreateMatterViewModel.cs" />
     <Compile Include="ViewModels\Matters\EditMatterViewModel.cs" />
     <Compile Include="ViewModels\Matters\MatterContactViewModel.cs" />
+    <Compile Include="ViewModels\Matters\MatterIndexViewModel.cs" />
     <Compile Include="ViewModels\Matters\MatterTagViewModel.cs" />
     <Compile Include="ViewModels\Matters\MatterTimeViewModel.cs" />
     <Compile Include="ViewModels\Matters\MatterTypeViewModel.cs" />

@@ -166,7 +166,7 @@ if (Model.Active || ViewBag.AlertText != null)
             Court Type
         </td>
         <td class="display-field">
-            @(Model.CourtType.Title)
+            @if (Model.CourtType != null) { @(Model.CourtType.Title) }
         </td>
     </tr>
     <tr>
@@ -174,14 +174,14 @@ if (Model.Active || ViewBag.AlertText != null)
             Court Geo. Jurisdiction
         </td>
         <td class="display-field">
-            @(Model.CourtGeographicalJurisdiction.Title)
+            @if (Model.CourtType != null) { @(Model.CourtGeographicalJurisdiction.Title) }
         </td>
         <td></td>
         <td class="display-label" style="width: 125px;">
             Court Sitting in City
         </td>
         <td class="display-field">
-            @(Model.CourtSittingInCity.Title)
+            @if (Model.CourtType != null) { @(Model.CourtSittingInCity.Title) }
         </td>
     </tr>
     <tr>

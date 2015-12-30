@@ -193,9 +193,33 @@ namespace OpenLawOffice.Web.ViewModels.Matters
                 }))
                 .ForMember(dst => dst.OverrideMatterRateWithEmployeeRate, opt => opt.MapFrom(src => src.OverrideMatterRateWithEmployeeRate))
                 .ForMember(dst => dst.AttorneyForPartyTitle, opt => opt.MapFrom(src => src.AttorneyForPartyTitle))
-                .ForMember(dst => dst.CourtType, opt => opt.MapFrom(src => src.CourtType))
-                .ForMember(dst => dst.CourtGeographicalJurisdiction, opt => opt.MapFrom(src => src.CourtGeographicalJurisdiction))
-                .ForMember(dst => dst.CourtSittingInCity, opt => opt.MapFrom(src => src.CourtSittingInCity))
+                .ForMember(dst => dst.CourtType, opt => opt.ResolveUsing(db =>
+                {
+                    if (db.CourtType == null || !db.CourtType.Id.HasValue) return null;
+                    return new ViewModels.Matters.CourtTypeViewModel()
+                    {
+                        Id = db.CourtType.Id.Value,
+                        IsStub = true
+                    };
+                }))
+                .ForMember(dst => dst.CourtGeographicalJurisdiction, opt => opt.ResolveUsing(db =>
+                {
+                    if (db.CourtGeographicalJurisdiction == null || !db.CourtGeographicalJurisdiction.Id.HasValue) return null;
+                    return new ViewModels.Matters.CourtGeographicalJurisdictionViewModel()
+                    {
+                        Id = db.CourtGeographicalJurisdiction.Id.Value,
+                        IsStub = true
+                    };
+                }))
+                .ForMember(dst => dst.CourtSittingInCity, opt => opt.ResolveUsing(db =>
+                {
+                    if (db.CourtSittingInCity == null || !db.CourtSittingInCity.Id.HasValue) return null;
+                    return new ViewModels.Matters.CourtSittingInCityViewModel()
+                    {
+                        Id = db.CourtSittingInCity.Id.Value,
+                        IsStub = true
+                    };
+                }))
                 .ForMember(dst => dst.CaptionPlaintiffOrSubjectShort, opt => opt.MapFrom(src => src.CaptionPlaintiffOrSubjectShort))
                 .ForMember(dst => dst.CaptionPlaintiffOrSubjectRegular, opt => opt.MapFrom(src => src.CaptionPlaintiffOrSubjectRegular))
                 .ForMember(dst => dst.CaptionPlaintiffOrSubjectLong, opt => opt.MapFrom(src => src.CaptionPlaintiffOrSubjectLong))
@@ -317,9 +341,36 @@ namespace OpenLawOffice.Web.ViewModels.Matters
                 }))
                 .ForMember(dst => dst.OverrideMatterRateWithEmployeeRate, opt => opt.MapFrom(src => src.OverrideMatterRateWithEmployeeRate))
                 .ForMember(dst => dst.AttorneyForPartyTitle, opt => opt.MapFrom(src => src.AttorneyForPartyTitle))
-                .ForMember(dst => dst.CourtType, opt => opt.MapFrom(src => src.CourtType))
-                .ForMember(dst => dst.CourtGeographicalJurisdiction, opt => opt.MapFrom(src => src.CourtGeographicalJurisdiction))
-                .ForMember(dst => dst.CourtSittingInCity, opt => opt.MapFrom(src => src.CourtSittingInCity))
+                .ForMember(dst => dst.CourtType, opt => opt.ResolveUsing(x =>
+                {
+                    if (x.CourtType == null || !x.CourtType.Id.HasValue)
+                        return null;
+                    return new ViewModels.Matters.CourtTypeViewModel()
+                    {
+                        Id = x.CourtType.Id.Value,
+                        IsStub = true
+                    };
+                }))
+                .ForMember(dst => dst.CourtGeographicalJurisdiction, opt => opt.ResolveUsing(x =>
+                {
+                    if (x.CourtGeographicalJurisdiction == null || !x.CourtGeographicalJurisdiction.Id.HasValue)
+                        return null;
+                    return new ViewModels.Matters.CourtGeographicalJurisdictionViewModel()
+                    {
+                        Id = x.CourtGeographicalJurisdiction.Id.Value,
+                        IsStub = true
+                    };
+                }))
+                .ForMember(dst => dst.CourtSittingInCity, opt => opt.ResolveUsing(x =>
+                {
+                    if (x.CourtSittingInCity == null || !x.CourtSittingInCity.Id.HasValue)
+                        return null;
+                    return new ViewModels.Matters.CourtSittingInCityViewModel()
+                    {
+                        Id = x.CourtSittingInCity.Id.Value,
+                        IsStub = true
+                    };
+                }))
                 .ForMember(dst => dst.CaptionPlaintiffOrSubjectShort, opt => opt.MapFrom(src => src.CaptionPlaintiffOrSubjectShort))
                 .ForMember(dst => dst.CaptionPlaintiffOrSubjectRegular, opt => opt.MapFrom(src => src.CaptionPlaintiffOrSubjectRegular))
                 .ForMember(dst => dst.CaptionPlaintiffOrSubjectLong, opt => opt.MapFrom(src => src.CaptionPlaintiffOrSubjectLong))

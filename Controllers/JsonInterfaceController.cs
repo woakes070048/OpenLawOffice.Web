@@ -173,7 +173,8 @@ namespace OpenLawOffice.Web.Controllers
             return Json(response, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult Matters(string contactFilter, string titleFilter, string caseNumberFilter, string jurisdictionFilter, bool activeFilter = true)
+        public ActionResult Matters(string contactFilter, string titleFilter, string caseNumberFilter,
+            int? courtTypeFilter, int? courtGeographicalJurisdictionFilter, bool activeFilter = true)
         {
             Guid token;
             Common.Net.Response<List<Common.Models.Matters.Matter>> response 
@@ -202,7 +203,8 @@ namespace OpenLawOffice.Web.Controllers
                     }
 
                     response.Successful = true;
-                    response.Package = Data.Matters.Matter.List(trans, activeFilter, contactFilter, titleFilter, caseNumberFilter, jurisdictionFilter);
+                    response.Package = Data.Matters.Matter.List(trans, activeFilter, contactFilter, titleFilter, 
+                        caseNumberFilter, courtTypeFilter, courtGeographicalJurisdictionFilter);
                 }
                 catch
                 {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Collections.Generic;
 
 namespace OpenLawOffice.Web.ViewModels.Matters
 {
@@ -10,6 +7,10 @@ namespace OpenLawOffice.Web.ViewModels.Matters
         public MatterViewModel Matter { get; set; }
 
         public MatterContactViewModel LeadAttorney { get; set; }
+
+        public List<CourtTypeViewModel> CourtTypes { get; set; }
+        public List<CourtGeographicalJurisdictionViewModel> CourtGeographicalJurisdictions { get; set; }
+        public List<CourtSittingInCityViewModel> CourtSittingInCities { get; set; }
 
         public Contacts.ContactViewModel Contact1 { get; set; }
         public string Role1 { get; set; }
@@ -28,5 +29,12 @@ namespace OpenLawOffice.Web.ViewModels.Matters
 
         public Contacts.ContactViewModel Contact6 { get; set; }
         public string Role6 { get; set; }
+
+        public CreateMatterViewModel()
+        {
+            CourtTypes = new List<CourtTypeViewModel>();
+            CourtGeographicalJurisdictions = new List<CourtGeographicalJurisdictionViewModel>();
+            CourtSittingInCities = new List<CourtSittingInCityViewModel>();
+        }
     }
 }

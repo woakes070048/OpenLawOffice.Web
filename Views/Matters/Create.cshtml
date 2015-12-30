@@ -184,6 +184,15 @@ if (ViewBag.OverrideConflict != null)
     </tr>
     <tr>
         <td class="display-label">
+            Active<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.Matter.Active, new { Checked = true }))
+            Uncheck if the matter is already completed
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
             Title<span class="required-field" title="Required Field">*</span>
         </td>
         <td class="display-field">
@@ -198,7 +207,35 @@ if (ViewBag.OverrideConflict != null)
         <td class="display-field">
             @(Html.DropDownListFor(x => x.Matter.MatterType.Id,
                     new SelectList(ViewBag.MatterTypeList, "Id", "Title"),
-                    new { @size = 5, @style = "width: 100%" }))
+                    new { @size = 1, @style = "width: 100%" }))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Synopsis<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">
+            @(Html.TextAreaFor(model => model.Matter.Synopsis, new { style = "height: 50px; width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Matter.Synopsis))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Lead Attorney<span class="required-field" title="Required Field">*</span>
+        </td>
+        <td class="display-field">
+            @(Html.ValidationMessageFor(model => model.LeadAttorney))
+            @(Html.DropDownListFor(x => x.LeadAttorney.Contact.Id,
+                    new SelectList(ViewBag.EmployeeContactList, "Id", "DisplayName"),
+                    new { @size = 1, @style = "width: 100%" }))
+        </td>
+    </tr>
+</table>
+
+<table class="detail_table">
+    <tr>
+        <td colspan="3" class="listing_table_heading">
+            Financial Details
         </td>
     </tr>
     <tr>
@@ -208,7 +245,7 @@ if (ViewBag.OverrideConflict != null)
         <td class="display-field">
             @(Html.DropDownListFor(x => x.Matter.DefaultBillingRate.Id,
                     new SelectList(ViewBag.BillingRateList, "Id", "Title"),
-                    new { @size = 5, @style = "width: 100%" }))
+                    new { @size = 1, @style = "width: 100%" }))
         </td>
     </tr>
     <tr>
@@ -227,25 +264,25 @@ if (ViewBag.OverrideConflict != null)
         <td class="display-field">
             @(Html.DropDownListFor(x => x.Matter.BillingGroup.Id,
                     new SelectList(ViewBag.BillingGroupList, "Id", "Title"),
-                    new { @size = 5, @style = "width: 100%" }))
+                    new { @size = 1, @style = "width: 100%" }))
         </td>
     </tr>
     <tr>
         <td class="display-label">
-            Synopsis<span class="required-field" title="Required Field">*</span>
+            Bill To<span class="required-field" title="Required Field">*</span>
         </td>
         <td class="display-field">
-            @(Html.TextAreaFor(model => model.Matter.Synopsis, new { style = "height: 50px; width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Matter.Synopsis))
+            @(Html.HiddenFor(model => model.Matter.BillTo.Id))
+            @(Html.TextBoxFor(model => model.Matter.BillTo.DisplayName, new { @style = "width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Matter.BillTo.DisplayName))
         </td>
     </tr>
+</table>
+
+<table class="detail_table">
     <tr>
-        <td class="display-label">
-            Jurisdiction
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Matter.Jurisdiction, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Matter.Jurisdiction))
+        <td colspan="3" class="listing_table_heading">
+            Court Details
         </td>
     </tr>
     <tr>
@@ -259,32 +296,96 @@ if (ViewBag.OverrideConflict != null)
     </tr>
     <tr>
         <td class="display-label">
-            Lead Attorney<span class="required-field" title="Required Field">*</span>
+            Title of Party Represented:<br />
+            (E.g., Defendant, Petitioner, Respondent, etc.)
         </td>
         <td class="display-field">
-            @(Html.ValidationMessageFor(model => model.LeadAttorney))
-            @(Html.DropDownListFor(x => x.LeadAttorney.Contact.Id,
-                    new SelectList(ViewBag.EmployeeContactList, "Id", "DisplayName"),
-                    new { @size = 5, @style = "width: 100%" }))
+            @(Html.TextBoxFor(model => model.Matter.AttorneyForPartyTitle, new { @style = "width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Matter.AttorneyForPartyTitle))
         </td>
     </tr>
     <tr>
         <td class="display-label">
-            Active<span class="required-field" title="Required Field">*</span>
+            Court Type
         </td>
         <td class="display-field">
-            @(Html.CheckBoxFor(model => model.Matter.Active, new { Checked = true }))
-            Uncheck if the matter is already completed
+            @(Html.DropDownListFor(x => x.Matter.CourtType.Id,
+                    new SelectList(ViewBag.CourtTypeList, "Id", "Title"),
+                    new { @style = "width: 100%" }))
         </td>
     </tr>
     <tr>
         <td class="display-label">
-            Bill To<span class="required-field" title="Required Field">*</span>
+            Court Geographical Jurisdiction
         </td>
         <td class="display-field">
-            @(Html.HiddenFor(model => model.Matter.BillTo.Id))
-            @(Html.TextBoxFor(model => model.Matter.BillTo.DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Matter.BillTo.DisplayName))
+            @(Html.DropDownListFor(x => x.Matter.CourtGeographicalJurisdiction.Id,
+                    new SelectList(ViewBag.CourtGeographicalJurisdictionList, "Id", "Title"),
+                    new { @style = "width: 100%" }))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            City where Court sits
+        </td>
+        <td class="display-field">
+            @(Html.DropDownListFor(x => x.Matter.CourtSittingInCity.Id,
+                    new SelectList(ViewBag.CourtSittingInCityList, "Id", "Title"),
+                    new { @style = "width: 100%" }))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Plaintiff or Subject (Short)
+        </td>
+        <td class="display-field">
+            @(Html.TextBoxFor(model => model.Matter.CaptionPlaintiffOrSubjectShort, new { @style = "width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Matter.CaptionPlaintiffOrSubjectShort))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Plaintiff or Subject (Regular)
+        </td>
+        <td class="display-field">
+            @(Html.TextBoxFor(model => model.Matter.CaptionPlaintiffOrSubjectRegular, new { @style = "width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Matter.CaptionPlaintiffOrSubjectRegular))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Plaintiff or Subject (Long)
+        </td>
+        <td class="display-field">
+            @(Html.TextBoxFor(model => model.Matter.CaptionPlaintiffOrSubjectLong, new { @style = "width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Matter.CaptionPlaintiffOrSubjectLong))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Other Party (Short)
+        </td>
+        <td class="display-field">
+            @(Html.TextBoxFor(model => model.Matter.CaptionOtherPartyShort, new { @style = "width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Matter.CaptionOtherPartyShort))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Other Party (Regular)
+        </td>
+        <td class="display-field">
+            @(Html.TextBoxFor(model => model.Matter.CaptionOtherPartyRegular, new { @style = "width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Matter.CaptionOtherPartyRegular))
+        </td>
+    </tr>
+    <tr>
+        <td class="display-label">
+            Other Party (Long)
+        </td>
+        <td class="display-field">
+            @(Html.TextBoxFor(model => model.Matter.CaptionOtherPartyLong, new { @style = "width: 100%;" }))
+            @(Html.ValidationMessageFor(model => model.Matter.CaptionOtherPartyLong))
         </td>
     </tr>
 </table>
