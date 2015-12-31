@@ -164,7 +164,7 @@
     </tr>
     <tr class="tr_alternate">
         <td class="display-label">
-            Contact is <span style="text-decoration: underline;">appointed</span>
+            Contact is an <span style="text-decoration: underline;">appointed</span> client
         </td>
         <td class="display-field">
             @(Html.CheckBoxFor(model => model.IsAppointed))
@@ -189,13 +189,21 @@
     </tr>
     <tr>
         <td class="display-label">
+            Contact is a <span style="text-decoration: underline;">judge</span>
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.IsJudge))
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
             Contact is a <span style="text-decoration: underline;">witness</span>
         </td>
         <td class="display-field">
             @(Html.CheckBoxFor(model => model.IsWitness))
         </td>
     </tr>
-    <tr class="tr_alternate">
+    <tr>
         <td class="display-label">
             Contact is an <span style="text-decoration: underline;">attorney</span> for another contact
         </td>
@@ -203,7 +211,7 @@
             @(Html.CheckBoxFor(model => model.IsAttorney))
         </td>
     </tr>
-    <tr>
+    <tr class="tr_alternate">
         <td class="display-label">
             Contact that <span style="text-decoration: underline;">attorney is representing</span>
         </td>
@@ -213,7 +221,7 @@
             @(Html.ValidationMessageFor(model => model.AttorneyFor))
         </td>
     </tr>
-    <tr class="tr_alternate">
+    <tr>
         <td class="display-label">
             Contact is the <span style="text-decoration: underline;">lead attorney</span>
         </td>
@@ -221,7 +229,7 @@
             @(Html.CheckBoxFor(model => model.IsLeadAttorney))
         </td>
     </tr>
-    <tr>
+    <tr class="tr_alternate">
         <td class="display-label">
             Contact is <span style="text-decoration: underline;">support staff</span> for contact
         </td>
@@ -229,7 +237,7 @@
             @(Html.CheckBoxFor(model => model.IsSupportStaff))
         </td>
     </tr>
-    <tr class="tr_alternate">
+    <tr>
         <td class="display-label">
             <span style="text-decoration: underline;">Support staff</span> for contact
         </td>
@@ -239,7 +247,7 @@
             @(Html.ValidationMessageFor(model => model.SupportStaffFor))
         </td>
     </tr>
-    <tr>
+    <tr class="tr_alternate">
         <td class="display-label">
             Contact is a <span style="text-decoration: underline;">third party payor</span>
         </td>
@@ -247,7 +255,7 @@
             @(Html.CheckBoxFor(model => model.IsThirdPartyPayor))
         </td>
     </tr>
-    <tr class="tr_alternate">
+    <tr>
         <td class="display-label">
             <span style="text-decoration: underline;">Third party payor</span> for contact
         </td>
