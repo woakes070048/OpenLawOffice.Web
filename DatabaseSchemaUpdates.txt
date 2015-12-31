@@ -1,7 +1,7 @@
 ﻿12/27/2015
 UPDATE matter_contact SET "is_attorney"=TRUE WHERE LOWER("role") LIKE LOWER('%attorney%');
 UPDATE matter_contact SET "is_lead_attorney"=TRUE WHERE LOWER("role") LIKE LOWER('%lead attorney%');
-UPDATE matter_contact SET "is_client"=TRUE WHERE LOWER("role") LIKE LOWER('client')
+UPDATE matter_contact SET "is_client"=TRUE WHERE LOWER("role") LIKE LOWER('client');
 UPDATE matter_contact SET "is_client_contact"=TRUE WHERE LOWER("role") LIKE LOWER('%client contact%');
 UPDATE matter_contact SET "is_appointed"=TRUE WHERE LOWER("role") LIKE LOWER('%appointed client%');
 
