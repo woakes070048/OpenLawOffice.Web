@@ -33,8 +33,6 @@ namespace OpenLawOffice.Web.ViewModels.Matters
 
         public Contacts.ContactViewModel Contact { get; set; }
 
-        public string Role { get; set; }
-
         public bool IsClient { get; set; }
 
         public bool IsClientContact { get; set; }
@@ -112,7 +110,6 @@ namespace OpenLawOffice.Web.ViewModels.Matters
                         IsStub = true
                     };
                 }))
-                .ForMember(dst => dst.Role, opt => opt.MapFrom(src => src.Role))
                 .ForMember(dst => dst.IsClient, opt => opt.MapFrom(src => src.IsClient))
                 .ForMember(dst => dst.IsClientContact, opt => opt.MapFrom(src => src.IsClientContact))
                 .ForMember(dst => dst.IsAppointed, opt => opt.MapFrom(src => src.IsAppointed))
@@ -202,7 +199,6 @@ namespace OpenLawOffice.Web.ViewModels.Matters
                         IsStub = true
                     };
                 }))
-                .ForMember(dst => dst.Role, opt => opt.MapFrom(src => src.Role))
                 .ForMember(dst => dst.IsClient, opt => opt.MapFrom(src => src.IsClient))
                 .ForMember(dst => dst.IsClientContact, opt => opt.MapFrom(src => src.IsClientContact))
                 .ForMember(dst => dst.IsAppointed, opt => opt.MapFrom(src => src.IsAppointed))

@@ -23,7 +23,9 @@
         @(Html.ActionLink("Tags", "Tags", new { id = Model.Id }))
         (@(Html.ActionLink("Add", "Create", "MatterTags", new { id = Model.Id }, null)))</li>*@
     <li>
-        @(Html.ActionLink("Contacts", "Contacts", new { id = Model.Id }))</li>
+    @(Html.ActionLink("Contacts", "Contacts", new { id = Model.Id }))
+    (@(Html.ActionLink("Add", "AssignContact", "MatterContact", new { Id = Model.Id }, null)))
+</li>
     <li>
         @(Html.ActionLink("Tasks", "Tasks", "Matters", new { id = Model.Id }, null))
         (@(Html.ActionLink("Add", "Create", "Tasks", new { controller = "Matters", MatterId = Model.Id }, null)))</li>
@@ -239,12 +241,21 @@ if (Model.Active || ViewBag.AlertText != null)
     </tr>
     <tr>
         <td class="display-label" style="width: 125px;">
-            Lead Attorney
+            Default Billing Rate:
         </td>
         <td class="display-field">
-            @if (Model.LeadAttorney != null)
-                {
-                @(Html.ActionLink(Model.LeadAttorney.DisplayName, "Details", "Contacts", new { Id = Model.LeadAttorney.Id }, null))
+            @if (Model.DefaultBillingRate != null)
+            {
+                @(Model.DefaultBillingRate.Title) <text>(@(Model.DefaultBillingRate.PricePerUnit.ToString("C")))</text>
+            }
+            Employee Rate Override:
+            @if (Model.OverrideMatterRateWithEmployeeRate)
+            {
+                <text>On</text>
+            }
+            else
+            {
+                <text>Off</text>
             }
         </td>
         <td>
@@ -261,25 +272,15 @@ if (Model.Active || ViewBag.AlertText != null)
     </tr>
     <tr>
         <td class="display-label" style="width: 125px;">
-            Default Billing Rate:
+            Matter Type:
         </td>
         <td class="display-field">
-            @if (Model.DefaultBillingRate != null)
-                {
-                @(Model.DefaultBillingRate.Title) <text>(@(Model.DefaultBillingRate.PricePerUnit.ToString("C")))</text>
-}
-            Employee Rate Override: 
-            @if (Model.OverrideMatterRateWithEmployeeRate)
-                {
-                <text>On</text>
+            @if (Model.MatterType != null)
+            {
+                @(Model.MatterType.Title)
             }
-                else
-                {
-                <text>Off</text>
-}
         </td>
-        <td>
-        </td>
+        <td></td>
         <td class="display-label" style="width: 125px;">
             Billing Group:
         </td>
@@ -293,13 +294,10 @@ if (Model.Active || ViewBag.AlertText != null)
     </tr>
     <tr>
         <td class="display-label" style="width: 125px;">
-            Matter Type:
+            Synopsis:
         </td>
         <td class="display-field">
-            @if (Model.MatterType != null)
-                {
-                @(Model.MatterType.Title)
-            }
+            @(Model.Synopsis)
         </td>
         <td></td>
         <td class="display-label" style="width: 125px;">
@@ -351,14 +349,6 @@ if (Model.Active || ViewBag.AlertText != null)
                 </script>
                 }
             }
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label" style="width: 125px;">
-            Synopsis:
-        </td>
-        <td class="display-field" colspan="4">
-            @(Model.Synopsis)
         </td>
     </tr>
 </table>

@@ -12,7 +12,7 @@
 
 <div class="options_div" style="text-align: right;">
     <div style="width: 200px; display: inline;">
-        <a href="../../MatterContact/SelectContactToAssign/@(ViewBag.MatterId)">
+        <a href="../../MatterContact/AssignContact/@(ViewBag.MatterId)">
             <input type="button" value="Assign Contact" id="AssignContact"
                    style="background-image: url('/Content/fugue-icons-3.5.6/icons-shadowless/plus.png');
                 background-position: left center; background-repeat: no-repeat; padding-left: 20px;" />
@@ -26,7 +26,7 @@
             Display Name
         </th>
         <th>
-            Role
+            Flags
         </th>
         <th style="width: 45px;">
         </th>
@@ -35,6 +35,21 @@
     @foreach (var item in Model)
     {
         altRow = !altRow;
+        string flags = "";
+        if (item.IsClient) { flags += "Client, "; }
+        if (item.IsClientContact) { flags += "Client Contact, "; }
+        if (item.IsAppointed) { flags += "Appointed, "; }
+        if (item.IsParty) { flags += "Party, "; }
+        if (item.IsJudge) { flags += "Judge, "; }
+        if (item.IsWitness) { flags += "Witness, "; }
+        if (item.IsAttorney) { flags += "Attorney, "; }
+        if (item.IsLeadAttorney) { flags += "Lead Attorney, "; }
+        if (item.IsSupportStaff) { flags += "Support Staff, "; }
+        if (item.IsThirdPartyPayor) { flags += "Third Party Payor, "; }
+        if (flags.Length > 0)
+        {
+            flags = flags.Substring(0, flags.Length - 2);
+        }
         if (altRow)
         {
             <tr class="tr_alternate">
@@ -42,7 +57,7 @@
                     @(Html.ActionLink(item.Contact.DisplayName, "Details", "Contacts", new { id = item.Contact.Id }, null))
                 </td>
                 <td>
-                    @(Html.ActionLink(item.Role, "Details", "MatterContact", new { id = item.Id }, null))
+                    @(Html.ActionLink(flags, "Details", "MatterContact", new { id = item.Id }, null))
                 </td>
                 <td>
                     @(Html.ActionLink("Edit", "Edit", "MatterContact", new { id = item.Id }, new { @class = "btn-edit", title = "Edit" }))
@@ -57,7 +72,7 @@
                     @(Html.ActionLink(item.Contact.DisplayName, "Details", "Contacts", new { id = item.Contact.Id }, null))
                 </td>
                 <td>
-                    @(Html.ActionLink(item.Role, "Details", "MatterContact", new { id = item.Id }, null))
+                    @(Html.ActionLink(flags, "Details", "MatterContact", new { id = item.Id }, null))
                 </td>
                 <td>
                     @(Html.ActionLink("Edit", "Edit", "MatterContact", new { id = item.Id }, new { @class = "btn-edit", title = "Edit" }))

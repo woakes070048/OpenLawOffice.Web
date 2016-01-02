@@ -28,6 +28,11 @@
 
 <table class="detail_table">
     <tr>
+        <td colspan="5" class="detail_table_heading">
+            Role Information
+        </td>
+    </tr>
+    <tr>
         <td class="display-label">
             Matter
         </td>
@@ -45,21 +50,13 @@
     </tr>
     <tr>
         <td class="display-label">
-            User Defined Role
-        </td>
-        <td class="display-field">
-            @(Model.Role)
-        </td>
-    </tr>
-    <tr class="tr_alternate">
-        <td class="display-label">
             Contact is <span style="text-decoration: underline;">Client</span>
         </td>
         <td class="display-field">
             @(BooleanHelper.YesNo(Model.IsClient))
         </td>
     </tr>
-    <tr>
+    <tr class="tr_alternate">
         <td class="display-label">
             Contact is the <span style="text-decoration: underline;">point of contact</span> for Client
         </td>
@@ -67,7 +64,7 @@
             @(BooleanHelper.YesNo(Model.IsClientContact))
         </td>
     </tr>
-    <tr class="tr_alternate">
+    <tr>
         <td class="display-label">
             Contact is <span style="text-decoration: underline;">appointed</span>
         </td>
@@ -75,7 +72,7 @@
             @(BooleanHelper.YesNo(Model.IsAppointed))
         </td>
     </tr>
-    <tr>
+    <tr class="tr_alternate">
         <td class="display-label">
             Contact is a <span style="text-decoration: underline;">party</span> to the matter
         </td>
@@ -83,12 +80,20 @@
             @(BooleanHelper.YesNo(Model.IsParty))
         </td>
     </tr>
-    <tr class="tr_alternate">
+    <tr>
         <td class="display-label">
             <span style="text-decoration: underline;">Title</span> for party (e.g., Defendant, Petitioner, etc.)
         </td>
         <td class="display-field">
             @(Model.PartyTitle)
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            Contact is a <span style="text-decoration: underline;">judge</span>
+        </td>
+        <td class="display-field">
+            @(BooleanHelper.YesNo(Model.IsJudge))
         </td>
     </tr>
     <tr>

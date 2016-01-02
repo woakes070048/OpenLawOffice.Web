@@ -294,9 +294,6 @@ namespace OpenLawOffice.Web.Controllers
             {
                 model = Data.Matters.Matter.Get(id, conn, false);
 
-                if (model.LeadAttorney != null)
-                    model.LeadAttorney = Data.Contacts.Contact.Get(model.LeadAttorney.Id.Value, conn, false);
-
                 if (model.BillTo != null)
                     model.BillTo = Data.Contacts.Contact.Get(model.BillTo.Id.Value, conn, false);
 
@@ -315,7 +312,6 @@ namespace OpenLawOffice.Web.Controllers
                         Data.Matters.CourtSittingInCity.Get(viewModel.CourtSittingInCity.Id.Value, conn, false));
                 viewModel.Clients = new List<ViewModels.Contacts.ContactViewModel>();
                 viewModel.Tasks = TasksController.GetListForMatter(id, true, conn);
-                viewModel.LeadAttorney = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.LeadAttorney);
                 viewModel.BillTo = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.BillTo);
                 if (viewModel.DefaultBillingRate != null)
                     viewModel.DefaultBillingRate = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(
@@ -401,31 +397,39 @@ namespace OpenLawOffice.Web.Controllers
 
                 PopulateCoreDetails(viewModel, conn);
 
-                neededRoles = new List<string>(new string[] { "Lead Attorney", "Client", "Appointed Client" });
+                neededRoles = new List<string>();
+                neededRoles.Add("Client");
+
+                if (!string.IsNullOrEmpty(model.CaseNumber))
+                {
+                    // If a case has been filed
+                    neededRoles.Add("Judge");
+                    neededRoles.Add("Party");
+                }
 
                 Data.Matters.MatterContact.ListForMatter(model.Id.Value, conn, false).ForEach(x =>
                 {
-                    if (x.Role == "Lead Attorney")
-                        neededRoles.Remove("Lead Attorney");
-                    if (x.Role == "Appointed Client")
-                    {
-                        neededRoles.Remove("Appointed Client");
-                        Common.Models.Contacts.Contact contactModel = Data.Contacts.Contact.Get(x.Contact.Id.Value, conn, false);
-                        viewModel.Clients.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(contactModel));
-                    }
-                    if (x.Role == "Client")
+                    if (x.IsClient)
                     {
                         neededRoles.Remove("Client");
                         Common.Models.Contacts.Contact contactModel = Data.Contacts.Contact.Get(x.Contact.Id.Value, conn, false);
                         viewModel.Clients.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(contactModel));
                     }
+
+                    if (x.IsJudge && neededRoles.Contains("Judge"))
+                        neededRoles.Remove("Judge");
+
+                    if (x.IsParty && neededRoles.Contains("Party"))
+                        neededRoles.Remove("Party");
                 });
             }
 
-            if (neededRoles.Contains("Lead Attorney"))
-                alertText += "<li>Missing role 'Lead Attorney'.</li>";
-            if (neededRoles.Contains("Appointed Client") && neededRoles.Contains("Client"))
-                alertText += "<li>Missing role 'Client' or 'Appointed Client' - one or the other is needed.</li>";
+            if (neededRoles.Contains("Judge"))
+                alertText += "<li>Missing role 'Judge'.</li>";
+            if (neededRoles.Contains("Party"))
+                alertText += "<li>Missing role 'Party'.</li>";
+            if (neededRoles.Contains("Client"))
+                alertText += "<li>Missing role 'Client'.</li>";
 
             if (alertText.Length > 0)
                 ViewBag.AlertText = "<ul>" + alertText + "</ul>";
@@ -514,7 +518,7 @@ namespace OpenLawOffice.Web.Controllers
             ViewBag.CourtGeographicalJurisdictionList = courtGeographicalJurisdictionList;
             ViewBag.CourtSittingInCityList = courtSittingInCityList;
 
-            return View();
+            return View(new ViewModels.Matters.CreateMatterViewModel());
         }
 
         [HttpPost]
@@ -624,164 +628,88 @@ namespace OpenLawOffice.Web.Controllers
                         }
                     }
 
-
-                    if (viewModel.LeadAttorney == null || viewModel.LeadAttorney.Contact == null ||
-                        !viewModel.LeadAttorney.Contact.Id.HasValue)
-                    {
-                        List<ViewModels.Account.UsersViewModel> userList;
-                        List<ViewModels.Contacts.ContactViewModel> employeeContactList;
-                        List<ViewModels.Billing.BillingRateViewModel> billingRateList;
-                        List<ViewModels.Billing.BillingGroupViewModel> billingGroupList;
-                        List<ViewModels.Matters.MatterTypeViewModel> matterTypeList;
-                        List<ViewModels.Matters.CourtTypeViewModel> courtTypeList;
-                        List<ViewModels.Matters.CourtGeographicalJurisdictionViewModel> courtGeographicalJurisdictionList;
-                        List<ViewModels.Matters.CourtSittingInCityViewModel> courtSittingInCityList;
-
-                        userList = new List<ViewModels.Account.UsersViewModel>();
-                        employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
-                        billingRateList = new List<ViewModels.Billing.BillingRateViewModel>();
-                        billingGroupList = new List<ViewModels.Billing.BillingGroupViewModel>();
-                        matterTypeList = new List<ViewModels.Matters.MatterTypeViewModel>();
-                        courtTypeList = new List<ViewModels.Matters.CourtTypeViewModel>();
-                        courtGeographicalJurisdictionList = new List<ViewModels.Matters.CourtGeographicalJurisdictionViewModel>();
-                        courtSittingInCityList = new List<ViewModels.Matters.CourtSittingInCityViewModel>();
-
-                        Data.Account.Users.List(trans).ForEach(x =>
-                        {
-                            userList.Add(Mapper.Map<ViewModels.Account.UsersViewModel>(x));
-                        });
-
-                        Data.Contacts.Contact.ListEmployeesOnly(trans).ForEach(x =>
-                        {
-                            employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-                        });
-
-                        Data.Billing.BillingRate.List(trans).ForEach(x =>
-                        {
-                            ViewModels.Billing.BillingRateViewModel vm = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(x);
-                            vm.Title += " (" + vm.PricePerUnit.ToString("C") + ")";
-                            billingRateList.Add(vm);
-                        });
-
-                        Data.Billing.BillingGroup.List(trans).ForEach(x =>
-                        {
-                            ViewModels.Billing.BillingGroupViewModel vm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(x);
-                            vm.Title += " (" + vm.Amount.ToString("C") + ")";
-                            billingGroupList.Add(vm);
-                        });
-
-                        Data.Matters.MatterType.List(trans).ForEach(x =>
-                        {
-                            ViewModels.Matters.MatterTypeViewModel vm = Mapper.Map<ViewModels.Matters.MatterTypeViewModel>(x);
-                            matterTypeList.Add(vm);
-                        });
-
-                        Data.Matters.CourtType.List(trans).ForEach(x =>
-                        {
-                            ViewModels.Matters.CourtTypeViewModel vm = Mapper.Map<ViewModels.Matters.CourtTypeViewModel>(x);
-                            courtTypeList.Add(vm);
-                        });
-
-                        Data.Matters.CourtGeographicalJurisdiction.List(trans).ForEach(x =>
-                        {
-                            ViewModels.Matters.CourtGeographicalJurisdictionViewModel vm = Mapper.Map<ViewModels.Matters.CourtGeographicalJurisdictionViewModel>(x);
-                            courtGeographicalJurisdictionList.Add(vm);
-                        });
-
-                        Data.Matters.CourtSittingInCity.List(trans).ForEach(x =>
-                        {
-                            ViewModels.Matters.CourtSittingInCityViewModel vm = Mapper.Map<ViewModels.Matters.CourtSittingInCityViewModel>(x);
-                            courtSittingInCityList.Add(vm);
-                        });
-
-                        ModelState.AddModelError("LeadAttorney", "Lead Attorney is required");
-
-                        ViewBag.UserList = userList;
-                        ViewBag.EmployeeContactList = employeeContactList;
-                        ViewBag.BillingRateList = billingRateList;
-                        ViewBag.BillingGroupList = billingGroupList;
-                        return View(viewModel);
-                    }
-
-                    model.LeadAttorney = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.LeadAttorney.Contact);
-
                     // Lead Attorney is created within this method
                     model = Data.Matters.Matter.Create(trans, model, currentUser);
 
                     // Assign Contacts
 
-                    if (viewModel.Contact1 != null && viewModel.Contact1.Id.HasValue &&
-                        !string.IsNullOrEmpty(viewModel.Role1))
+                    if (viewModel.Contact1 != null && viewModel.Contact1.Contact != null
+                        && viewModel.Contact1.Contact.Id.HasValue)
                     {
-                        Data.Matters.MatterContact.Create(trans, new Common.Models.Matters.MatterContact()
-                        {
-                            Matter = model,
-                            Role = viewModel.Role1,
-                            Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact1)
-                        }, currentUser);
+                        Common.Models.Matters.MatterContact mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact1);
+                        mc.Matter = model;
+                        Data.Matters.MatterContact.Create(trans, mc, currentUser);
                     }
-
-                    if (viewModel.Contact2 != null && viewModel.Contact2.Id.HasValue &&
-                        !string.IsNullOrEmpty(viewModel.Role2))
+                    if (viewModel.Contact2 != null && viewModel.Contact2.Contact != null
+                        && viewModel.Contact2.Contact.Id.HasValue)
                     {
-                        Data.Matters.MatterContact.Create(trans, new Common.Models.Matters.MatterContact()
-                        {
-                            Matter = model,
-                            Role = viewModel.Role2,
-                            Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact2)
-                        }, currentUser);
+                        Common.Models.Matters.MatterContact mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact2);
+                        mc.Matter = model;
+                        Data.Matters.MatterContact.Create(trans, mc, currentUser);
                     }
-
-                    if (viewModel.Contact3 != null && viewModel.Contact3.Id.HasValue &&
-                        !string.IsNullOrEmpty(viewModel.Role3))
+                    if (viewModel.Contact3 != null && viewModel.Contact3.Contact != null
+                        && viewModel.Contact3.Contact.Id.HasValue)
                     {
-                        Data.Matters.MatterContact.Create(trans, new Common.Models.Matters.MatterContact()
-                        {
-                            Matter = model,
-                            Role = viewModel.Role3,
-                            Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact3)
-                        }, currentUser);
+                        Common.Models.Matters.MatterContact mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact3);
+                        mc.Matter = model;
+                        Data.Matters.MatterContact.Create(trans, mc, currentUser);
                     }
-
-                    if (viewModel.Contact4 != null && viewModel.Contact4.Id.HasValue &&
-                        !string.IsNullOrEmpty(viewModel.Role4))
+                    if (viewModel.Contact4 != null && viewModel.Contact4.Contact != null
+                        && viewModel.Contact4.Contact.Id.HasValue)
                     {
-                        Data.Matters.MatterContact.Create(trans, new Common.Models.Matters.MatterContact()
-                        {
-                            Matter = model,
-                            Role = viewModel.Role4,
-                            Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact4)
-                        }, currentUser);
+                        Common.Models.Matters.MatterContact mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact4);
+                        mc.Matter = model;
+                        Data.Matters.MatterContact.Create(trans, mc, currentUser);
                     }
-
-                    if (viewModel.Contact5 != null && viewModel.Contact5.Id.HasValue &&
-                        !string.IsNullOrEmpty(viewModel.Role5))
+                    if (viewModel.Contact5 != null && viewModel.Contact5.Contact != null
+                        && viewModel.Contact5.Contact.Id.HasValue)
                     {
-                        Data.Matters.MatterContact.Create(trans, new Common.Models.Matters.MatterContact()
-                        {
-                            Matter = model,
-                            Role = viewModel.Role5,
-                            Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact5)
-                        }, currentUser);
+                        Common.Models.Matters.MatterContact mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact5);
+                        mc.Matter = model;
+                        Data.Matters.MatterContact.Create(trans, mc, currentUser);
                     }
-
-                    if (viewModel.Contact6 != null && viewModel.Contact6.Id.HasValue &&
-                        !string.IsNullOrEmpty(viewModel.Role6))
+                    if (viewModel.Contact6 != null && viewModel.Contact6.Contact != null
+                        && viewModel.Contact6.Contact.Id.HasValue)
                     {
-                        Data.Matters.MatterContact.Create(trans, new Common.Models.Matters.MatterContact()
-                        {
-                            Matter = model,
-                            Role = viewModel.Role6,
-                            Contact = Mapper.Map<Common.Models.Contacts.Contact>(viewModel.Contact6)
-                        }, currentUser);
+                        Common.Models.Matters.MatterContact mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact6);
+                        mc.Matter = model;
+                        Data.Matters.MatterContact.Create(trans, mc, currentUser);
                     }
-
+                    if (viewModel.Contact7 != null && viewModel.Contact7.Contact != null
+                        && viewModel.Contact7.Contact.Id.HasValue)
+                    {
+                        Common.Models.Matters.MatterContact mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact7);
+                        mc.Matter = model;
+                        Data.Matters.MatterContact.Create(trans, mc, currentUser);
+                    }
+                    if (viewModel.Contact8 != null && viewModel.Contact8.Contact != null
+                        && viewModel.Contact8.Contact.Id.HasValue)
+                    {
+                        Common.Models.Matters.MatterContact mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact8);
+                        mc.Matter = model;
+                        Data.Matters.MatterContact.Create(trans, mc, currentUser);
+                    }
+                    if (viewModel.Contact9 != null && viewModel.Contact9.Contact != null
+                        && viewModel.Contact9.Contact.Id.HasValue)
+                    {
+                        Common.Models.Matters.MatterContact mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact9);
+                        mc.Matter = model;
+                        Data.Matters.MatterContact.Create(trans, mc, currentUser);
+                    }
+                    if (viewModel.Contact10 != null && viewModel.Contact10.Contact != null
+                        && viewModel.Contact10.Contact.Id.HasValue)
+                    {
+                        Common.Models.Matters.MatterContact mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact10);
+                        mc.Matter = model;
+                        Data.Matters.MatterContact.Create(trans, mc, currentUser);
+                    }
+                    
                     trans.Commit();
                 }
                 catch
                 {
                     trans.Rollback();
-                    return Create();
+                    throw;
                 }
             }
 
@@ -812,9 +740,6 @@ namespace OpenLawOffice.Web.Controllers
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
                 model = Data.Matters.Matter.Get(id, conn, false);
-
-                if (model.LeadAttorney != null)
-                    model.LeadAttorney = Data.Contacts.Contact.Get(model.LeadAttorney.Id.Value, conn, false);
 
                 if (model.BillTo != null)
                     model.BillTo = Data.Contacts.Contact.Get(model.BillTo.Id.Value, conn, false);
@@ -883,8 +808,6 @@ namespace OpenLawOffice.Web.Controllers
 
             viewModel = new ViewModels.Matters.EditMatterViewModel();
             viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(model);
-            viewModel.LeadAttorney = new ViewModels.Matters.MatterContactViewModel();
-            viewModel.LeadAttorney.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.LeadAttorney);
             viewModel.Matter.BillTo = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.BillTo);
             viewModel.Matter.DefaultBillingRate = Mapper.Map<ViewModels.Billing.BillingRateViewModel>(model.DefaultBillingRate);
             viewModel.Matter.BillingGroup = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(model.BillingGroup);
@@ -892,21 +815,19 @@ namespace OpenLawOffice.Web.Controllers
             viewModel.Matter.CourtGeographicalJurisdiction = Mapper.Map<ViewModels.Matters.CourtGeographicalJurisdictionViewModel>(model.CourtGeographicalJurisdiction);
             viewModel.Matter.CourtSittingInCity = Mapper.Map<ViewModels.Matters.CourtSittingInCityViewModel>(model.CourtSittingInCity);
 
+            viewModel.EmployeeContactList = employeeContactList;
+            viewModel.BillingRateList = billingRateList;
+            viewModel.BillingGroupList = billingGroupList;
+            viewModel.MatterTypeList = matterTypeList;
             viewModel.CourtTypes = courtTypeList;
             viewModel.CourtGeographicalJurisdictions = courtGeographicalJurisdictionList;
             viewModel.CourtSittingInCities = courtSittingInCityList;
-
-            ViewBag.EmployeeContactList = employeeContactList;
-            ViewBag.BillingRateList = billingRateList;
-            ViewBag.BillingGroupList = billingGroupList;
-            ViewBag.MatterTypeList = matterTypeList;
+                        
             ViewBag.Matter = model.Title;
             ViewBag.MatterId = model.Id;
 
             if (viewModel.Matter.MatterType != null && viewModel.Matter.MatterType.Id.HasValue)
                 viewModel.MatterTypeId = viewModel.Matter.MatterType.Id.Value;
-            if (viewModel.Matter.LeadAttorney != null && viewModel.Matter.LeadAttorney.Id.HasValue)
-                viewModel.LeadAttorneyId = viewModel.Matter.LeadAttorney.Id.Value;
             if (viewModel.Matter.DefaultBillingRate != null && viewModel.Matter.DefaultBillingRate.Id.HasValue)
                 viewModel.DefaultBillingRateId = viewModel.Matter.DefaultBillingRate.Id.Value;
             if (viewModel.Matter.BillingGroup != null && viewModel.Matter.BillingGroup.Id.HasValue)
@@ -931,13 +852,6 @@ namespace OpenLawOffice.Web.Controllers
             viewModel.Matter.Id = id;
             if (viewModel.MatterTypeId.HasValue)
                 viewModel.Matter.MatterType = new ViewModels.Matters.MatterTypeViewModel() { Id = viewModel.MatterTypeId };
-            if (viewModel.LeadAttorneyId.HasValue)
-            {
-                viewModel.LeadAttorney = new ViewModels.Matters.MatterContactViewModel()
-                {
-                    Contact = new ViewModels.Contacts.ContactViewModel() { Id = viewModel.LeadAttorneyId }
-                };
-            }
             if (viewModel.DefaultBillingRateId.HasValue)
                 viewModel.Matter.DefaultBillingRate = new ViewModels.Billing.BillingRateViewModel() { Id = viewModel.DefaultBillingRateId };
             if (viewModel.BillingGroupId.HasValue)
@@ -953,28 +867,6 @@ namespace OpenLawOffice.Web.Controllers
             {
                 try
                 {
-                    if (viewModel.LeadAttorney == null || viewModel.LeadAttorney.Contact == null ||
-                        !viewModel.LeadAttorney.Contact.Id.HasValue)
-                    {
-                        List<ViewModels.Contacts.ContactViewModel> employeeContactList;
-
-                        model = Data.Matters.Matter.Get(trans, id);
-
-                        employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
-
-                        Data.Contacts.Contact.ListEmployeesOnly(trans).ForEach(x =>
-                        {
-                            employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
-                        });
-
-                        ModelState.AddModelError("LeadAttorney", "Lead Attorney is required");
-
-                        ViewBag.EmployeeContactList = employeeContactList;
-                        ViewBag.Matter = model.Title;
-                        ViewBag.MatterId = model.Id;
-                        return View(viewModel);
-                    }
-
                     if (viewModel.Matter.BillTo == null || !viewModel.Matter.BillTo.Id.HasValue)
                     {
                         List<ViewModels.Contacts.ContactViewModel> employeeContactList;
@@ -997,8 +889,7 @@ namespace OpenLawOffice.Web.Controllers
                     }
 
                     currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
-
-                    viewModel.Matter.LeadAttorney = viewModel.LeadAttorney.Contact;
+                    
                     model = Mapper.Map<Common.Models.Matters.Matter>(viewModel.Matter);
 
                     model = Data.Matters.Matter.Edit(trans, model, currentUser);

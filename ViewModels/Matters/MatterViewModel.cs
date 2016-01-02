@@ -45,8 +45,6 @@ namespace OpenLawOffice.Web.ViewModels.Matters
 
         public string CaseNumber { get; set; }
 
-        public Contacts.ContactViewModel LeadAttorney { get; set; }
-
         public List<Contacts.ContactViewModel> Clients { get; set; }
 
         public Contacts.ContactViewModel BillTo { get; set; }
@@ -155,15 +153,6 @@ namespace OpenLawOffice.Web.ViewModels.Matters
                 .ForMember(dst => dst.Synopsis, opt => opt.MapFrom(src => src.Synopsis))
                 .ForMember(dst => dst.Active, opt => opt.MapFrom(src => src.Active))
                 .ForMember(dst => dst.CaseNumber, opt => opt.MapFrom(src => src.CaseNumber))
-                .ForMember(dst => dst.LeadAttorney, opt => opt.ResolveUsing(db =>
-                {
-                    if (db.LeadAttorney == null || !db.LeadAttorney.Id.HasValue) return null;
-                    return new ViewModels.Contacts.ContactViewModel()
-                    {
-                        Id = db.LeadAttorney.Id.Value,
-                        IsStub = true
-                    };
-                }))
                 .ForMember(dst => dst.BillTo, opt => opt.ResolveUsing(db =>
                 {
                     if (db.BillTo == null || !db.BillTo.Id.HasValue) return null;
@@ -299,16 +288,6 @@ namespace OpenLawOffice.Web.ViewModels.Matters
                 .ForMember(dst => dst.Synopsis, opt => opt.MapFrom(src => src.Synopsis))
                 .ForMember(dst => dst.Active, opt => opt.MapFrom(src => src.Active))
                 .ForMember(dst => dst.CaseNumber, opt => opt.MapFrom(src => src.CaseNumber))
-                .ForMember(dst => dst.LeadAttorney, opt => opt.ResolveUsing(x =>
-                {
-                    if (x.LeadAttorney == null || !x.LeadAttorney.Id.HasValue)
-                        return null;
-                    return new ViewModels.Contacts.ContactViewModel()
-                    {
-                        Id = x.LeadAttorney.Id.Value,
-                        IsStub = true
-                    };
-                }))
                 .ForMember(dst => dst.BillTo, opt => opt.ResolveUsing(x =>
                 {
                     if (x.BillTo == null || !x.BillTo.Id.HasValue)

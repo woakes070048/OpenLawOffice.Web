@@ -1,4 +1,12 @@
-﻿12/27/2015
+﻿1/1/2016
+
+ALTER TABLE matter
+  DROP COLUMN lead_attorney_contact_id;
+ALTER TABLE matter_contact
+  DROP COLUMN role;
+
+
+12/27/2015
 UPDATE matter_contact SET "is_attorney"=TRUE WHERE LOWER("role") LIKE LOWER('%attorney%');
 UPDATE matter_contact SET "is_lead_attorney"=TRUE WHERE LOWER("role") LIKE LOWER('%lead attorney%');
 UPDATE matter_contact SET "is_client"=TRUE WHERE LOWER("role") LIKE LOWER('client');

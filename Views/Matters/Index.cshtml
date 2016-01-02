@@ -38,9 +38,9 @@
                 if (vars['caseNumberFilter'] != null)
                     $('#caseNumberFilter').val(decodeURIComponent(vars['caseNumberFilter']));
                 if (vars['courtTypeFilter'] != null)
-                    $('#courtTypeFilter').val(decodeURIComponent(vars['courtTypeFilter']));
+                    $('#SelectedCourtType_Id').val(decodeURIComponent(vars['courtTypeFilter']));
                 if (vars['courtGeographicalJurisdictionFilter'] != null)
-                    $('#courtGeographicalJurisdictionFilter').val(decodeURIComponent(vars['courtGeographicalJurisdictionFilter']));
+                    $('#SelectedCourtGeographicalJurisdiction_Id').val(decodeURIComponent(vars['courtGeographicalJurisdictionFilter']));
 
                 $("#activeSelector").change(function () {
                     go();
@@ -57,9 +57,6 @@
                 $('#caseNumberFilter').focus(function () {
                     $('#caseNumberFilter').val('');
                 });
-                $('#jurisdictionFilter').focus(function () {
-                    $('#jurisdictionFilter').val('');
-                });
                 $('#contactFilter').keyup(function (e) {
                     if (e.keyCode == 13) go();
                 });
@@ -69,11 +66,11 @@
                 $('#caseNumberFilter').keyup(function (e) {
                     if (e.keyCode == 13) go();
                 });
-                $('#courtTypeFilter').keyup(function (e) {
-                    if (e.keyCode == 13) go();
+                $('#SelectedCourtType_Id').change(function () {
+                    go();
                 });
-                $('#courtGeographicalJurisdictionFilter').keyup(function (e) {
-                    if (e.keyCode == 13) go();
+                $('#SelectedCourtGeographicalJurisdiction_Id').change(function () {
+                    go();
                 });
                 $('#contactFilter').autocomplete({
                     source: "/Contacts/ListDisplayNameOnly",
@@ -132,8 +129,8 @@
                 var contactFilter = $('#contactFilter').val().trim();
                 var titleFilter = $('#titleFilter').val().trim();
                 var caseNumberFilter = $('#caseNumberFilter').val().trim();
-                var courtTypeFilter = $('#courtTypeFilter').val().trim();
-                var courtGeographicalJurisdictionFilter = $('#courtGeographicalJurisdictionFilter').val().trim();
+                var courtTypeFilter = $('#SelectedCourtType_Id').val();
+                var courtGeographicalJurisdictionFilter = $('#SelectedCourtGeographicalJurisdiction_Id').val();
                 var base;
                 var qMarkAt = window.location.href.lastIndexOf('?');
                 $('#contactFilterGo').attr('disabled', 'disabled');
@@ -150,7 +147,7 @@
                     href += '&titleFilter=' + titleFilter;
                 if (caseNumberFilter.length > 0)
                     href += '&caseNumberFilter=' + caseNumberFilter;
-                if (jurisdictionFilter.length > 0)
+                if (courtTypeFilter.length > 0)
                     href += '&courtTypeFilter=' + courtTypeFilter;
                 if (courtGeographicalJurisdictionFilter.length > 0)
                     href += '&courtGeographicalJurisdictionFilter=' + courtGeographicalJurisdictionFilter;
@@ -170,12 +167,12 @@
     </div>
     <div style="width: 200px; display: inline;">
         Court Type: @(Html.DropDownListFor(x => x.SelectedCourtType.Id,
-            new SelectList(Model.CourtTypes, "Id", "Title"),
+            new SelectList(Model.CourtTypes, "Id", "Title"), "< Select >",
             new { @style = "width: 150px;" }))
     </div>
     <div style="width: 200px; display: inline;">
-        Court Type: @(Html.DropDownListFor(x => x.SelectedCourtGeographicalJurisdiction.Id,
-            new SelectList(Model.CourtGeographicalJurisdictions, "Id", "Title"),
+        Geo. Juris.: @(Html.DropDownListFor(x => x.SelectedCourtGeographicalJurisdiction.Id,
+            new SelectList(Model.CourtGeographicalJurisdictions, "Id", "Title"), "< Select >",
             new { @style = "width: 150px;" }))
     </div>
     <div style="width: 200px; display: inline;">
