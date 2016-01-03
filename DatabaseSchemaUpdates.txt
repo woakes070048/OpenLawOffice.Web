@@ -159,6 +159,8 @@ ALTER TABLE matter_contact
 ALTER TABLE matter_contact
   ADD CONSTRAINT "FK_matter_contact_contact_ThirdPartyPayorForContactId" FOREIGN KEY (third_party_payor_for_contact_id) REFERENCES contact (id) ON UPDATE NO ACTION ON DELETE NO ACTION;
 
+ALTER TABLE matter
+  ADD COLUMN id_int bigserial NOT NULL;
 
 
 5/25/2015
