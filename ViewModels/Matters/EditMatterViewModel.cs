@@ -9,15 +9,16 @@ namespace OpenLawOffice.Web.ViewModels.Matters
     {
         public MatterViewModel Matter { get; set; }
 
-        public Matters.MatterContactViewModel LeadAttorney { get; set; }
-
+        public List<Contacts.ContactViewModel> EmployeeContactList;
+        public List<Billing.BillingRateViewModel> BillingRateList;
+        public List<Billing.BillingGroupViewModel> BillingGroupList;
+        public List<MatterTypeViewModel> MatterTypeList;
         public List<CourtTypeViewModel> CourtTypes { get; set; }
         public List<CourtGeographicalJurisdictionViewModel> CourtGeographicalJurisdictions { get; set; }
         public List<CourtSittingInCityViewModel> CourtSittingInCities { get; set; }
 
 
         public int? MatterTypeId { get; set; }
-        public int? LeadAttorneyId { get; set; }
         public int? DefaultBillingRateId { get; set; }
         public int? BillingGroupId { get; set; }
         public int? CourtTypeId { get; set; }
@@ -26,12 +27,15 @@ namespace OpenLawOffice.Web.ViewModels.Matters
 
         public EditMatterViewModel()
         {
+            EmployeeContactList = new List<Contacts.ContactViewModel>();
+            BillingRateList = new List<Billing.BillingRateViewModel>();
+            BillingGroupList = new List<Billing.BillingGroupViewModel>();
+            MatterTypeList = new List<MatterTypeViewModel>();
             CourtTypes = new List<CourtTypeViewModel>();
             CourtGeographicalJurisdictions = new List<CourtGeographicalJurisdictionViewModel>();
             CourtSittingInCities = new List<CourtSittingInCityViewModel>();
 
             Matter = new MatterViewModel();
-            Matter.LeadAttorney = new Contacts.ContactViewModel();
             Matter.MatterType = new MatterTypeViewModel();
             Matter.DefaultBillingRate = new Billing.BillingRateViewModel();
             Matter.BillingGroup = new Billing.BillingGroupViewModel();

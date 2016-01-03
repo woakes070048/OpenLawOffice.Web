@@ -256,6 +256,7 @@
     <Compile Include="ViewModels\Matters\CourtGeographicalJurisdictionViewModel.cs" />
     <Compile Include="ViewModels\Matters\CourtSittingInCityViewModel.cs" />
     <Compile Include="ViewModels\Matters\CourtTypeViewModel.cs" />
+    <Compile Include="ViewModels\Matters\CreateMatterContactViewModel.cs" />
     <Compile Include="ViewModels\Matters\CreateMatterViewModel.cs" />
     <Compile Include="ViewModels\Matters\EditMatterViewModel.cs" />
     <Compile Include="ViewModels\Matters\MatterContactViewModel.cs" />
@@ -634,7 +635,6 @@
     <Content Include="Views\MatterContact\Delete.cshtml" />
     <Content Include="Views\MatterContact\Details.cshtml" />
     <Content Include="Views\MatterContact\Edit.cshtml" />
-    <Content Include="Views\MatterContact\SelectContactToAssign.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Invoices\GroupDetails.cshtml" />
@@ -723,8 +723,6 @@
     <Content Include="Scripts\tinymce\skins\lightgray\fonts\tinymce.ttf" />
     <Content Include="Scripts\tinymce\skins\lightgray\fonts\tinymce.woff" />
     <Content Include="Views\Invoices\MatterEdit.cshtml" />
-    <Content Include="Views\MatterHotdocs\Details.cshtml" />
-    <Content Include="Views\MatterHotdocs\Edit.cshtml" />
     <Content Include="Views\Invoices\MatterDelete.cshtml" />
     <Content Include="Views\CourtTypes\Create.cshtml" />
     <Content Include="Views\CourtTypes\Delete.cshtml" />
@@ -741,6 +739,7 @@
     <Content Include="Views\CourtGeographicalJurisdictions\Details.cshtml" />
     <Content Include="Views\CourtGeographicalJurisdictions\Edit.cshtml" />
     <Content Include="Views\CourtGeographicalJurisdictions\Index.cshtml" />
+    <Content Include="Views\Matters\_AssignContact.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

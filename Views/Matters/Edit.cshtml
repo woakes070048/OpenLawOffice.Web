@@ -71,11 +71,11 @@
         </tr>
         <tr>
             <td class="display-label">
-                Matter Type
+                Matter Type<span class="required-field" title="Required Field">*</span>
             </td>
             <td class="display-field">
                 @(Html.DropDownListFor(x => x.MatterTypeId,
-                    new SelectList(ViewBag.MatterTypeList, "Id", "Title"),
+                    new SelectList(Model.MatterTypeList, "Id", "Title"),
                     new { @size = 1, @style = "width: 100%" }))
             </td>
         </tr>
@@ -88,17 +88,6 @@
                 @(Html.ValidationMessageFor(model => model.Matter.Synopsis))
             </td>
         </tr>
-        <tr>
-            <td class="display-label">
-                Lead Attorney<span class="required-field" title="Required Field">*</span>
-            </td>
-            <td class="display-field">
-                @(Html.ValidationMessageFor(model => model.LeadAttorney))
-                @(Html.DropDownListFor(x => x.LeadAttorneyId,
-                    new SelectList(ViewBag.EmployeeContactList, "Id", "DisplayName"),
-                    new { @size = 1, @style = "width: 100%" }))
-            </td>
-        </tr>
     </table>
 
     <table class="detail_table">
@@ -109,12 +98,12 @@
         </tr>
         <tr>
             <td class="display-label">
-                Default Billing Rate
+                Default Billing Rate<span class="required-field" title="Required Field">*</span>
             </td>
             <td class="display-field">
                 @(Html.DropDownListFor(model => model.DefaultBillingRateId,
-                    new SelectList(ViewBag.BillingRateList, "Id", "Title"),
-                    new { @size = 5, @style = "width: 100%" }))
+                    new SelectList(Model.BillingRateList, "Id", "Title"),
+                    new { @size = 1, @style = "width: 100%" }))
             </td>
         </tr>
         <tr>
@@ -132,7 +121,7 @@
             </td>
             <td class="display-field">
                 @(Html.DropDownListFor(x => x.BillingGroupId,
-                    new SelectList(ViewBag.BillingGroupList, "Id", "Title"),
+                    new SelectList(Model.BillingGroupList, "Id", "Title"), "< NONE >",
                     new { @size = 1, @style = "width: 100%" }))
             </td>
         </tr>
@@ -179,7 +168,7 @@
             </td>
             <td class="display-field">
                 @(Html.DropDownListFor(x => x.CourtTypeId,
-                    new SelectList(Model.CourtTypes, "Id", "Title"),
+                    new SelectList(Model.CourtTypes, "Id", "Title"), "< NONE >",
                     new { @style = "width: 100%" }))
             </td>
         </tr>
@@ -189,7 +178,7 @@
             </td>
             <td class="display-field">
                 @(Html.DropDownListFor(x => x.CourtGeographicalJurisdictionId,
-                    new SelectList(Model.CourtGeographicalJurisdictions, "Id", "Title"),
+                    new SelectList(Model.CourtGeographicalJurisdictions, "Id", "Title"), "< NONE >",
                     new { @style = "width: 100%" }))
             </td>
         </tr>
@@ -199,7 +188,7 @@
             </td>
             <td class="display-field">
                 @(Html.DropDownListFor(x => x.CourtSittingInCityId,
-                    new SelectList(Model.CourtSittingInCities, "Id", "Title"),
+                    new SelectList(Model.CourtSittingInCities, "Id", "Title"), "< NONE >",
                     new { @style = "width: 100%" }))
             </td>
         </tr>

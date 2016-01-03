@@ -29,9 +29,9 @@ namespace OpenLawOffice.Web.Helpers
         public static IHtmlString YesNo(bool var)
         {
             if (var)
-                return new HtmlString("Yes");
+                return new HtmlString("<span style=\"color: green;\">Yes</span>");
             else
-                return new HtmlString("No");
+                return new HtmlString("<span style=\"color: red;\">No</span>");
         }
 
         public static IHtmlString YesNo(object obj)

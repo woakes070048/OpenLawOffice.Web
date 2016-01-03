@@ -22,7 +22,6 @@
 namespace OpenLawOffice.Web.Controllers
 {
     using System;
-    using System.Collections.Generic;
     using System.Web.Mvc;
     using AutoMapper;
     using System.Data;
@@ -31,48 +30,16 @@ namespace OpenLawOffice.Web.Controllers
     public class MatterContactController : BaseController
     {
         [Authorize(Roles = "Login, User")]
-        public ActionResult SelectContactToAssign(Guid id)
+        public ActionResult AssignContact(Guid id)
         {
             Common.Models.Matters.Matter matter;
-            List<ViewModels.Contacts.SelectableContactViewModel> modelList = new List<ViewModels.Contacts.SelectableContactViewModel>();
+            ViewModels.Matters.CreateMatterContactViewModel vm;
 
+            vm = new ViewModels.Matters.CreateMatterContactViewModel();
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                Data.Contacts.Contact.List(conn, false).ForEach(x =>
-                {
-                    modelList.Add(Mapper.Map<ViewModels.Contacts.SelectableContactViewModel>(x));
-                });
-
                 matter = Data.Matters.Matter.Get(id, conn, false);
-            }
-
-            ViewData["MatterId"] = matter.Id.Value;
-            ViewData["Matter"] = matter.Title;
-
-            return View(modelList);
-        }
-
-        [Authorize(Roles = "Login, User")]
-        public ActionResult AssignContact(int id)
-        {
-            Common.Models.Matters.Matter matter;
-            ViewModels.Matters.MatterContactViewModel vm;
-            Guid matterId = Guid.Empty;
-
-            if (Request["MatterId"] == null)
-                return View("InvalidRequest");
-
-            if (!Guid.TryParse(Request["MatterId"], out matterId))
-                return View("InvalidRequest");
-
-            vm = new ViewModels.Matters.MatterContactViewModel();
-            using (IDbConnection conn = Data.Database.Instance.GetConnection())
-            {
-                vm.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(
-                    Data.Matters.Matter.Get(matterId, conn, false));
-                vm.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
-                    Data.Contacts.Contact.Get(id, conn, false));
-                matter = Data.Matters.Matter.Get(matterId, conn, false);
+                vm.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(matter);
             }
 
             ViewData["MatterId"] = matter.Id.Value;
@@ -83,55 +50,247 @@ namespace OpenLawOffice.Web.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Login, User")]
-        public ActionResult AssignContact(ViewModels.Matters.MatterContactViewModel model)
+        public ActionResult AssignContact(ViewModels.Matters.CreateMatterContactViewModel viewModel)
         {
             Common.Models.Account.Users currentUser;
-            Common.Models.Matters.MatterContact matterContact;
+            Common.Models.Matters.Matter matter;
 
-            // We need to reset the Id of the model as it is picking up the id from the route,
-            // which is incorrect
-            model.Id = null;
+            if (viewModel.Matter == null)
+                viewModel.Matter = new ViewModels.Matters.MatterViewModel();
+
+            if (!viewModel.Matter.Id.HasValue)
+                viewModel.Matter.Id = Guid.Parse((string)RouteData.Values["Id"]);
 
             using (Data.Transaction trans = Data.Transaction.Create(true))
             {
                 try
                 {
-                    currentUser = Data.Account.Users.Get(User.Identity.Name);
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
+                    matter = Data.Matters.Matter.Get(trans, viewModel.Matter.Id.Value);
 
-                    matterContact = Data.Matters.MatterContact.Get(model.Matter.Id.Value, model.Contact.Id.Value);
-
-                    if (matterContact == null)
-                    { // Create
-                        matterContact = Mapper.Map<Common.Models.Matters.MatterContact>(model);
-                        matterContact = Data.Matters.MatterContact.Create(matterContact, currentUser);
-                    }
-                    else
-                    { // Enable
-                        matterContact = Mapper.Map<Common.Models.Matters.MatterContact>(model);
-                        matterContact = Data.Matters.MatterContact.Enable(matterContact, currentUser);
-                    }
-
-                    matterContact.Contact = Data.Contacts.Contact.Get(trans, matterContact.Contact.Id.Value);
-
-                    if (model.IsLeadAttorney && matterContact.Contact.IsOurEmployee)
+                    if (viewModel.Contact1 != null && viewModel.Contact1.Contact != null
+                        && viewModel.Contact1.Contact.Id.HasValue)
                     {
-                        Common.Models.Matters.Matter matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
-                        matter.LeadAttorney = Mapper.Map<Common.Models.Contacts.Contact>(model.Contact);
-                        Data.Matters.Matter.Edit(matter, currentUser);
+                        Common.Models.Matters.MatterContact mc;
+
+                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact1.Contact.Id.Value);
+                        
+                        if (mc == null)
+                        { // Create
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact1);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
+                        }
+                        else
+                        { // Enable
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact1);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
+                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
+                        }
                     }
+                    if (viewModel.Contact2 != null && viewModel.Contact2.Contact != null
+                        && viewModel.Contact2.Contact.Id.HasValue)
+                    {
+                        Common.Models.Matters.MatterContact mc;
+
+                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact2.Contact.Id.Value);
+
+                        if (mc == null)
+                        { // Create
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact2);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
+                        }
+                        else
+                        { // Enable
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact2);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
+                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
+                        }
+                    }
+                    if (viewModel.Contact3 != null && viewModel.Contact3.Contact != null
+                        && viewModel.Contact3.Contact.Id.HasValue)
+                    {
+                        Common.Models.Matters.MatterContact mc;
+
+                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact3.Contact.Id.Value);
+
+                        if (mc == null)
+                        { // Create
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact3);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
+                        }
+                        else
+                        { // Enable
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact3);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
+                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
+                        }
+                    }
+                    if (viewModel.Contact4 != null && viewModel.Contact4.Contact != null
+                        && viewModel.Contact4.Contact.Id.HasValue)
+                    {
+                        Common.Models.Matters.MatterContact mc;
+
+                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact4.Contact.Id.Value);
+
+                        if (mc == null)
+                        { // Create
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact4);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
+                        }
+                        else
+                        { // Enable
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact4);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
+                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
+                        }
+                    }
+                    if (viewModel.Contact5 != null && viewModel.Contact5.Contact != null
+                        && viewModel.Contact5.Contact.Id.HasValue)
+                    {
+                        Common.Models.Matters.MatterContact mc;
+
+                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact5.Contact.Id.Value);
+
+                        if (mc == null)
+                        { // Create
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact5);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
+                        }
+                        else
+                        { // Enable
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact5);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
+                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
+                        }
+                    }
+                    if (viewModel.Contact6 != null && viewModel.Contact6.Contact != null
+                        && viewModel.Contact6.Contact.Id.HasValue)
+                    {
+                        Common.Models.Matters.MatterContact mc;
+
+                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact6.Contact.Id.Value);
+
+                        if (mc == null)
+                        { // Create
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact6);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
+                        }
+                        else
+                        { // Enable
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact6);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
+                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
+                        }
+                    }
+                    if (viewModel.Contact7 != null && viewModel.Contact7.Contact != null
+                        && viewModel.Contact7.Contact.Id.HasValue)
+                    {
+                        Common.Models.Matters.MatterContact mc;
+
+                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact7.Contact.Id.Value);
+
+                        if (mc == null)
+                        { // Create
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact7);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
+                        }
+                        else
+                        { // Enable
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact7);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
+                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
+                        }
+                    }
+                    if (viewModel.Contact8 != null && viewModel.Contact8.Contact != null
+                        && viewModel.Contact8.Contact.Id.HasValue)
+                    {
+                        Common.Models.Matters.MatterContact mc;
+
+                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact8.Contact.Id.Value);
+
+                        if (mc == null)
+                        { // Create
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact8);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
+                        }
+                        else
+                        { // Enable
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact8);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
+                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
+                        }
+                    }
+                    if (viewModel.Contact9 != null && viewModel.Contact9.Contact != null
+                        && viewModel.Contact9.Contact.Id.HasValue)
+                    {
+                        Common.Models.Matters.MatterContact mc;
+
+                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact9.Contact.Id.Value);
+
+                        if (mc == null)
+                        { // Create
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact9);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
+                        }
+                        else
+                        { // Enable
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact9);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
+                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
+                        }
+                    }
+                    if (viewModel.Contact10 != null && viewModel.Contact10.Contact != null
+                        && viewModel.Contact10.Contact.Id.HasValue)
+                    {
+                        Common.Models.Matters.MatterContact mc;
+
+                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact10.Contact.Id.Value);
+
+                        if (mc == null)
+                        { // Create
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact10);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
+                        }
+                        else
+                        { // Enable
+                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact10);
+                            mc.Matter = matter;
+                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
+                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
+                        }
+                    }
+
 
                     trans.Commit();
                 }
                 catch
                 {
                     trans.Rollback();
-                    return RedirectToAction("AssignContact", "MatterContact", 
-                        new { Id = model.Contact.Id, MatterId = model.Matter.Id });
+                    throw;
                 }
             }
 
-            return RedirectToAction("Contacts", "Matters",
-                new { id = matterContact.Matter.Id.Value.ToString() });
+            return RedirectToAction("Details", "Matters",
+                new { id = viewModel.Matter.Id });
         }
 
         [Authorize(Roles = "Login, User")]
@@ -191,13 +350,6 @@ namespace OpenLawOffice.Web.Controllers
                     model.Contact = modelCurrent.Contact;
 
                     model = Data.Matters.MatterContact.Edit(model, currentUser);
-
-                    if (model.IsLeadAttorney && model.Contact.IsOurEmployee)
-                    {
-                        model.Matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
-                        model.Matter.LeadAttorney = model.Contact;
-                        Data.Matters.Matter.Edit(model.Matter, currentUser);
-                    }
 
                     trans.Commit();
 
@@ -275,13 +427,6 @@ namespace OpenLawOffice.Web.Controllers
                     matterId = model.Matter.Id.Value;
 
                     model = Data.Matters.MatterContact.Disable(model, currentUser);
-
-                    if (model.IsLeadAttorney && model.Contact.IsOurEmployee)
-                    {
-                        Common.Models.Matters.Matter matter = Data.Matters.Matter.Get(model.Matter.Id.Value);
-                        matter.LeadAttorney = null;
-                        Data.Matters.Matter.Edit(matter, currentUser);
-                    }
 
                     trans.Commit();
                     return RedirectToAction("Contacts", "Matters",

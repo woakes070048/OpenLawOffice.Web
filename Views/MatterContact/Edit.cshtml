@@ -9,17 +9,94 @@
     <div class="zero">Matter: [@(Html.ActionLink((string)ViewData["Matter"], "Details", "Matters", new { id = ViewData["MatterId"] }, null))]</div>
     <div id="current" class="one">Edit Contact Assignment to Matter<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
 </div>
-            
+     
+<script language="javascript">
+    $(document).ready(function () {
+        $('#AttorneyFor_DisplayName').change(function () {
+            if ($('#AttorneyFor_DisplayName').val() == '')
+                $("#AttorneyFor_Id").val(null);
+        });
+        $('#AttorneyFor_DisplayName').autocomplete({
+            source: "/Contacts/ListDisplayNameOnly",
+            minLength: 2,
+            focus: function (event, ui) {
+                $("#AttorneyFor_Id").val(ui.item.Id);
+                $("#AttorneyFor_DisplayName").val(ui.item.DisplayName);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#AttorneyFor_Id").val(ui.item.Id);
+                $("#AttorneyFor_DisplayName").val(ui.item.DisplayName);
+                return false;
+            }
+        }).data("ui-autocomplete")._renderItem = function (ul, item) {
+            return $("<li>")
+            .append("<a>" + item.DisplayName + "</a>")
+            .appendTo(ul);
+        };
+        $('#SupportStaffFor_DisplayName').change(function () {
+            if ($('#SupportStaffFor_DisplayName').val() == '')
+                $("#SupportStaffFor_Id").val(null);
+        });
+        $('#SupportStaffFor_DisplayName').autocomplete({
+            source: "/Contacts/ListDisplayNameOnly",
+            minLength: 2,
+            focus: function (event, ui) {
+                $("#SupportStaffFor_Id").val(ui.item.Id);
+                $("#SupportStaffFor_DisplayName").val(ui.item.DisplayName);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#SupportStaffFor_Id").val(ui.item.Id);
+                $("#SupportStaffFor_DisplayName").val(ui.item.DisplayName);
+                return false;
+            }
+        }).data("ui-autocomplete")._renderItem = function (ul, item) {
+            return $("<li>")
+            .append("<a>" + item.DisplayName + "</a>")
+            .appendTo(ul);
+        };
+        $('#ThirdPartyPayorFor_DisplayName').change(function () {
+            if ($('#ThirdPartyPayorFor_DisplayName').val() == '')
+                $("#ThirdPartyPayorFor_Id").val(null);
+        });
+        $('#ThirdPartyPayorFor_DisplayName').autocomplete({
+            source: "/Contacts/ListDisplayNameOnly",
+            minLength: 2,
+            focus: function (event, ui) {
+                $("#ThirdPartyPayorFor_Id").val(ui.item.Id);
+                $("#ThirdPartyPayorFor_DisplayName").val(ui.item.DisplayName);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#ThirdPartyPayorFor_Id").val(ui.item.Id);
+                $("#ThirdPartyPayorFor_DisplayName").val(ui.item.DisplayName);
+                return false;
+            }
+        }).data("ui-autocomplete")._renderItem = function (ul, item) {
+            return $("<li>")
+            .append("<a>" + item.DisplayName + "</a>")
+            .appendTo(ul);
+        };
+    });
+</script>
+       
 @using (Html.BeginForm())
     {
 @(Html.ValidationSummary(true))
 <table class="detail_table">
     <tr>
+        <td colspan="5" class="detail_table_heading">
+            Role Information
+        </td>
+    </tr>
+    <tr>
         <td class="display-label">
             Matter
         </td>
         <td class="display-field">
-            @(Model.Matter.Title)
+            @(Html.HiddenFor(model => model.Matter.Id))
+            @(Html.ActionLink(Model.Matter.Title, "Details", "Matters", new { id = Model.Matter.Id }, null))
         </td>
     </tr>
     <tr class="tr_alternate">
@@ -27,119 +104,11 @@
             Contact
         </td>
         <td class="display-field">
-            @(Model.Contact.DisplayName)
+            @(Html.HiddenFor(model => model.Contact.Id))
+            @(Html.ActionLink(Model.Contact.DisplayName, "Details", "Contacts", new { id = Model.Contact.Id }, null))
         </td>
     </tr>
     <tr>
-        <td class="display-label">
-            User Defined Role<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(x => x.Role))
-            @(Html.ValidationMessageFor(x => x.Role))
-            Special Roles:  <a href="#" id="LeadAttorney">Lead Attorney</a>, 
-                            <a href="#" id="Attorney">Attorney</a>, 
-                            <a href="#" id="OpposingAttorney">Opposing Attorney</a>, 
-                            <a href="#" id="Client">Client</a>, 
-                            <a href="#" id="AppointedClient">Appointed Client</a>, 
-                            <a href="#" id="OpposingParty">Opposing Party</a>
-            <script language="javascript">
-            $(document).ready(function () {
-                $("#LeadAttorney").click(function () {
-                    $("#Role").val("Lead Attorney");
-                    return false;
-                });
-                $("#Attorney").click(function () {
-                    $("#Role").val("Attorney");
-                    return false;
-                });
-                $("#OpposingAttorney").click(function () {
-                    $("#Role").val("Opposing Attorney");
-                    return false;
-                });
-                $("#Client").click(function () {
-                    $("#Role").val("Client");
-                    return false;
-                });
-                $("#AppointedClient").click(function () {
-                    $("#Role").val("Appointed Client");
-                    return false;
-                });
-                $("#OpposingParty").click(function () {
-                    $("#Role").val("Opposing Party");
-                    return false;
-                });
-                $('#AttorneyFor_DisplayName').focus(function () {
-                    $("#AttorneyFor_Id").val('');
-                    $('#AttorneyFor_DisplayName').val('');
-                });
-                $('#AttorneyFor_DisplayName').autocomplete({
-                    source: "/Contacts/ListDisplayNameOnly",
-                    minLength: 2,
-                    focus: function (event, ui) {
-                        $("#AttorneyFor_Id").val(ui.item.Id);
-                        $("#AttorneyFor_DisplayName").val(ui.item.DisplayName);
-                        return false;
-                    },
-                    select: function (event, ui) {
-                        $("#AttorneyFor_Id").val(ui.item.Id);
-                        $("#AttorneyFor_DisplayName").val(ui.item.DisplayName);
-                        return false;
-                    }
-                }).data("ui-autocomplete")._renderItem = function (ul, item) {
-                    return $("<li>")
-                    .append("<a>" + item.DisplayName + "</a>")
-                    .appendTo(ul);
-                };
-                $('#SupportStaffFor_DisplayName').focus(function () {
-                    $("#SupportStaffFor_Id").val('');
-                    $('#SupportStaffFor_DisplayName').val('');
-                });
-                $('#SupportStaffFor_DisplayName').autocomplete({
-                    source: "/Contacts/ListDisplayNameOnly",
-                    minLength: 2,
-                    focus: function (event, ui) {
-                        $("#SupportStaffFor_Id").val(ui.item.Id);
-                        $("#SupportStaffFor_DisplayName").val(ui.item.DisplayName);
-                        return false;
-                    },
-                    select: function (event, ui) {
-                        $("#SupportStaffFor_Id").val(ui.item.Id);
-                        $("#SupportStaffFor_DisplayName").val(ui.item.DisplayName);
-                        return false;
-                    }
-                }).data("ui-autocomplete")._renderItem = function (ul, item) {
-                    return $("<li>")
-                    .append("<a>" + item.DisplayName + "</a>")
-                    .appendTo(ul);
-                };
-                $('#ThirdPartyPayorFor_DisplayName').focus(function () {
-                    $("#ThirdPartyPayorFor_Id").val('');
-                    $('#ThirdPartyPayorFor_DisplayName').val('');
-                });
-                $('#ThirdPartyPayorFor_DisplayName').autocomplete({
-                    source: "/Contacts/ListDisplayNameOnly",
-                    minLength: 2,
-                    focus: function (event, ui) {
-                        $("#ThirdPartyPayorFor_Id").val(ui.item.Id);
-                        $("#ThirdPartyPayorFor_DisplayName").val(ui.item.DisplayName);
-                        return false;
-                    },
-                    select: function (event, ui) {
-                        $("#ThirdPartyPayorFor_Id").val(ui.item.Id);
-                        $("#ThirdPartyPayorFor_DisplayName").val(ui.item.DisplayName);
-                        return false;
-                    }
-                }).data("ui-autocomplete")._renderItem = function (ul, item) {
-                    return $("<li>")
-                    .append("<a>" + item.DisplayName + "</a>")
-                    .appendTo(ul);
-                };
-            });
-            </script>
-        </td>
-    </tr>
-    <tr class="tr_alternate">
         <td class="display-label">
             Contact is <span style="text-decoration: underline;">Client</span>
         </td>
@@ -147,7 +116,7 @@
             @(Html.CheckBoxFor(model => model.IsClient))
         </td>
     </tr>
-    <tr>
+    <tr class="tr_alternate">
         <td class="display-label">
             Contact is the <span style="text-decoration: underline;">point of contact</span> for Client
         </td>
@@ -155,7 +124,7 @@
             @(Html.CheckBoxFor(model => model.IsClientContact))
         </td>
     </tr>
-    <tr class="tr_alternate">
+    <tr>
         <td class="display-label">
             Contact is <span style="text-decoration: underline;">appointed</span>
         </td>
@@ -163,7 +132,7 @@
             @(Html.CheckBoxFor(model => model.IsAppointed))
         </td>
     </tr>
-    <tr>
+    <tr class="tr_alternate">
         <td class="display-label">
             Contact is a <span style="text-decoration: underline;">party</span> to the matter
         </td>
@@ -171,13 +140,21 @@
             @(Html.CheckBoxFor(model => model.IsParty))
         </td>
     </tr>
-    <tr class="tr_alternate">
+    <tr>
         <td class="display-label">
             <span style="text-decoration: underline;">Title</span> for party (e.g., Defendant, Petitioner, etc.)
         </td>
         <td class="display-field">
             @(Html.TextBoxFor(model => model.PartyTitle))
             @(Html.ValidationMessageFor(model => model.PartyTitle))
+        </td>
+    </tr>
+    <tr class="tr_alternate">
+        <td class="display-label">
+            Contact is a <span style="text-decoration: underline;">judge</span>
+        </td>
+        <td class="display-field">
+            @(Html.CheckBoxFor(model => model.IsJudge))
         </td>
     </tr>
     <tr>
