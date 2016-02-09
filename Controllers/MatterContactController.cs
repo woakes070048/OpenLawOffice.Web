@@ -48,6 +48,38 @@ namespace OpenLawOffice.Web.Controllers
             return View(vm);
         }
 
+        private void MatterContactAssignment(
+            ViewModels.Matters.MatterContactViewModel viewModel, 
+            Common.Models.Matters.Matter matter,
+            Common.Models.Account.Users currentUser, 
+            Data.Transaction trans)
+        {
+            if (viewModel != null && viewModel.Contact != null
+                && viewModel.Contact.Id.HasValue)
+            {
+                Common.Models.Matters.MatterContact mcOld;
+
+                mcOld = Data.Matters.MatterContact.Get(matter.Id.Value, viewModel.Contact.Id.Value);
+
+                if (mcOld == null)
+                { // Create
+                    Common.Models.Matters.MatterContact mcNew;
+                    mcNew = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel);
+                    mcNew.Matter = matter;
+                    mcNew = Data.Matters.MatterContact.Create(trans, mcNew, currentUser);
+                }
+                else
+                { // Enable
+                    Common.Models.Matters.MatterContact mcNew;
+                    mcNew = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel);
+                    mcNew.Matter = matter;
+                    mcNew.Id = mcOld.Id;
+                    mcNew = Data.Matters.MatterContact.Enable(trans, mcNew, currentUser);
+                    mcNew = Data.Matters.MatterContact.Edit(trans, mcNew, currentUser);
+                }
+            }
+        }
+
         [HttpPost]
         [Authorize(Roles = "Login, User")]
         public ActionResult AssignContact(ViewModels.Matters.CreateMatterContactViewModel viewModel)
@@ -68,217 +100,16 @@ namespace OpenLawOffice.Web.Controllers
                     currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
                     matter = Data.Matters.Matter.Get(trans, viewModel.Matter.Id.Value);
 
-                    if (viewModel.Contact1 != null && viewModel.Contact1.Contact != null
-                        && viewModel.Contact1.Contact.Id.HasValue)
-                    {
-                        Common.Models.Matters.MatterContact mc;
-
-                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact1.Contact.Id.Value);
-                        
-                        if (mc == null)
-                        { // Create
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact1);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
-                        }
-                        else
-                        { // Enable
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact1);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
-                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
-                        }
-                    }
-                    if (viewModel.Contact2 != null && viewModel.Contact2.Contact != null
-                        && viewModel.Contact2.Contact.Id.HasValue)
-                    {
-                        Common.Models.Matters.MatterContact mc;
-
-                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact2.Contact.Id.Value);
-
-                        if (mc == null)
-                        { // Create
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact2);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
-                        }
-                        else
-                        { // Enable
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact2);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
-                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
-                        }
-                    }
-                    if (viewModel.Contact3 != null && viewModel.Contact3.Contact != null
-                        && viewModel.Contact3.Contact.Id.HasValue)
-                    {
-                        Common.Models.Matters.MatterContact mc;
-
-                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact3.Contact.Id.Value);
-
-                        if (mc == null)
-                        { // Create
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact3);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
-                        }
-                        else
-                        { // Enable
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact3);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
-                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
-                        }
-                    }
-                    if (viewModel.Contact4 != null && viewModel.Contact4.Contact != null
-                        && viewModel.Contact4.Contact.Id.HasValue)
-                    {
-                        Common.Models.Matters.MatterContact mc;
-
-                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact4.Contact.Id.Value);
-
-                        if (mc == null)
-                        { // Create
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact4);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
-                        }
-                        else
-                        { // Enable
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact4);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
-                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
-                        }
-                    }
-                    if (viewModel.Contact5 != null && viewModel.Contact5.Contact != null
-                        && viewModel.Contact5.Contact.Id.HasValue)
-                    {
-                        Common.Models.Matters.MatterContact mc;
-
-                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact5.Contact.Id.Value);
-
-                        if (mc == null)
-                        { // Create
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact5);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
-                        }
-                        else
-                        { // Enable
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact5);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
-                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
-                        }
-                    }
-                    if (viewModel.Contact6 != null && viewModel.Contact6.Contact != null
-                        && viewModel.Contact6.Contact.Id.HasValue)
-                    {
-                        Common.Models.Matters.MatterContact mc;
-
-                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact6.Contact.Id.Value);
-
-                        if (mc == null)
-                        { // Create
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact6);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
-                        }
-                        else
-                        { // Enable
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact6);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
-                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
-                        }
-                    }
-                    if (viewModel.Contact7 != null && viewModel.Contact7.Contact != null
-                        && viewModel.Contact7.Contact.Id.HasValue)
-                    {
-                        Common.Models.Matters.MatterContact mc;
-
-                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact7.Contact.Id.Value);
-
-                        if (mc == null)
-                        { // Create
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact7);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
-                        }
-                        else
-                        { // Enable
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact7);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
-                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
-                        }
-                    }
-                    if (viewModel.Contact8 != null && viewModel.Contact8.Contact != null
-                        && viewModel.Contact8.Contact.Id.HasValue)
-                    {
-                        Common.Models.Matters.MatterContact mc;
-
-                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact8.Contact.Id.Value);
-
-                        if (mc == null)
-                        { // Create
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact8);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
-                        }
-                        else
-                        { // Enable
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact8);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
-                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
-                        }
-                    }
-                    if (viewModel.Contact9 != null && viewModel.Contact9.Contact != null
-                        && viewModel.Contact9.Contact.Id.HasValue)
-                    {
-                        Common.Models.Matters.MatterContact mc;
-
-                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact9.Contact.Id.Value);
-
-                        if (mc == null)
-                        { // Create
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact9);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
-                        }
-                        else
-                        { // Enable
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact9);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
-                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
-                        }
-                    }
-                    if (viewModel.Contact10 != null && viewModel.Contact10.Contact != null
-                        && viewModel.Contact10.Contact.Id.HasValue)
-                    {
-                        Common.Models.Matters.MatterContact mc;
-
-                        mc = Data.Matters.MatterContact.Get(viewModel.Matter.Id.Value, viewModel.Contact10.Contact.Id.Value);
-
-                        if (mc == null)
-                        { // Create
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact10);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Create(trans, mc, currentUser);
-                        }
-                        else
-                        { // Enable
-                            mc = Mapper.Map<Common.Models.Matters.MatterContact>(viewModel.Contact10);
-                            mc.Matter = matter;
-                            mc = Data.Matters.MatterContact.Enable(trans, mc, currentUser);
-                            mc = Data.Matters.MatterContact.Edit(trans, mc, currentUser);
-                        }
-                    }
-
+                    MatterContactAssignment(viewModel.Contact1, matter, currentUser, trans);
+                    MatterContactAssignment(viewModel.Contact2, matter, currentUser, trans);
+                    MatterContactAssignment(viewModel.Contact3, matter, currentUser, trans);
+                    MatterContactAssignment(viewModel.Contact4, matter, currentUser, trans);
+                    MatterContactAssignment(viewModel.Contact5, matter, currentUser, trans);
+                    MatterContactAssignment(viewModel.Contact6, matter, currentUser, trans);
+                    MatterContactAssignment(viewModel.Contact7, matter, currentUser, trans);
+                    MatterContactAssignment(viewModel.Contact8, matter, currentUser, trans);
+                    MatterContactAssignment(viewModel.Contact9, matter, currentUser, trans);
+                    MatterContactAssignment(viewModel.Contact10, matter, currentUser, trans);
 
                     trans.Commit();
                 }

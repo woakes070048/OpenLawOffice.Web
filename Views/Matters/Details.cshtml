@@ -72,7 +72,12 @@
 </style>
 
 <div id="roadmap">
-    <div id="current" class="zero">Matter: @(Model.Title)<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
+    <div id="current" class="zero">Matter: @(Model.Title)
+    @{  if (!string.IsNullOrEmpty(Model.CaseNumber))
+        {
+            <text> (@(Model.CaseNumber))</text> 
+        }
+    }<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
 </div>
 
 <script language="javascript">
@@ -176,14 +181,14 @@ if (Model.Active || ViewBag.AlertText != null)
             Court Geo. Jurisdiction
         </td>
         <td class="display-field">
-            @if (Model.CourtType != null) { @(Model.CourtGeographicalJurisdiction.Title) }
+            @if (Model.CourtGeographicalJurisdiction != null) { @(Model.CourtGeographicalJurisdiction.Title) }
         </td>
         <td></td>
         <td class="display-label" style="width: 175px;">
             Court Sitting in City
         </td>
         <td class="display-field">
-            @if (Model.CourtType != null) { @(Model.CourtSittingInCity.Title) }
+            @if (Model.CourtSittingInCity != null) { @(Model.CourtSittingInCity.Title) }
         </td>
     </tr>
     <tr>
@@ -294,10 +299,10 @@ if (Model.Active || ViewBag.AlertText != null)
     </tr>
     <tr>
         <td class="display-label" style="width: 125px;">
-            Synopsis:
+            Case Number:
         </td>
         <td class="display-field">
-            @(Model.Synopsis)
+            @(Model.CaseNumber)
         </td>
         <td></td>
         <td class="display-label" style="width: 125px;">
@@ -351,6 +356,13 @@ if (Model.Active || ViewBag.AlertText != null)
             }
         </td>
     </tr>
+    <tr>
+        <td class="display-label" style="width: 125px;">
+            Synopsis:
+        </td>
+        <td class="display-field" colspan="4">
+            @(Model.Synopsis)
+        </td>
 </table>
     
 <table class="detail_table">    
