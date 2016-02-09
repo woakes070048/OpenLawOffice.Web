@@ -1,10 +1,19 @@
 @model IEnumerable<OpenLawOffice.Web.ViewModels.Billing.InvoiceViewModel>
 
 @{ 
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Billing Group Invoices";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Billing Group Invoices";
 }
 
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Settings">Settings</a></li>
+        <li><a href="/BillingGroups" class="active">Billing Groups</a></li>
+        <li>Group: <a href="/BillingGroups/Details/@(ViewContext.RouteData.Values["Id"])">@(ViewContext.RouteData.Values["Id"])</a></li>
+        <li><a href="/BillingGroups/Invoices/@(ViewContext.RouteData.Values["Id"])" class="active">Invoices</a></li>
+    </ul>
+}
 
 <h2>Billing Group Invoices</h2>
     

@@ -1,8 +1,9 @@
 @model OpenLawOffice.Web.ViewModels.Billing.BillingGroupViewModel
 
-@{ 
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Edit Billing Group";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Edit Billing Group";
 }
 
 <script language="javascript">
@@ -28,67 +29,74 @@
     });
 </script>
 
-<div id="roadmap">
-    <div id="current" class="one">Edit Billing Rate<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Settings">Settings</a></li>
+        <li><a href="/BillingGroups">Billing Groups</a></li>
+        <li>Group: <a href="/BillingGroups/Details/@(Model.Id)">@(Model.Title)</a></li>
+        <li><a href="/BillingGroups/Edit/@(Model.Id)" class="active">Edit</a></li>
+    </ul>
+}
+
+<script type="text/javascript">
+    $(function () {
+        $("#new").click(function () {
+            window.location = '/BillingGroups/Create';
+        })
+        $("#details").click(function () {
+            window.location = '/BillingGroups/Details/@(Model.Id)';
+        })
+        $("#edit").click(function () {
+            window.location = '/BillingGroups/Edit/@(Model.Id)';
+        })
+    })
+</script>
+
+<div class="container-fluid">
+    <div class="row text-right">
+        <div class="btn-group">
+            <button id="new" class="btn btn-sm btn-primary"><span class="fa fa-plus"></span> New Group</button>
+            <button id="details" class="btn btn-sm btn-primary"><span class="fa fa-info"></span> Detail</button>
+            <button id="edit" class="btn btn-sm btn-primary"><span class="fa fa-pencil"></span> Edit</button>
+        </div>
+    </div>
 </div>
 
 @using (Html.BeginForm())
-    {
-@(Html.ValidationSummary(true))
-<table class="detail_table">
-    <tr>
-        <td colspan="3" class="listing_table_heading">
+{
+    @(Html.ValidationSummary(true))
+    <div class="panel panel-default">
+        <div class="panel-heading">
             Billing Rate Details
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Title<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Title))
-            @(Html.ValidationMessageFor(model => model.Title))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Next Run<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.NextRun))
-            @(Html.ValidationMessageFor(model => model.NextRun))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Amount<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Amount))
-            @(Html.ValidationMessageFor(model => model.Amount))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Bill To<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.HiddenFor(model => model.BillTo.Id))
-            @(Html.TextBoxFor(model => model.BillTo.DisplayName))
-            @(Html.ValidationMessageFor(model => model.BillTo.DisplayName))
-        </td>
-    </tr>
-</table>
-<p>
-    <input type="submit" value="Save" />
-</p>
+            <div style="float: right;">
+                <button type="button" onclick="navTo('/BillingGroups/Invoices/@(Model.Id)')" class="btn btn-xs btn-default">
+                    <span class="fa fa-money"></span> View Invoices
+                </button>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-2">Title<span class="required-field" title="Required Field">*</span></div>
+                <div class="col-sm-3">@(Html.TextBoxFor(model => model.Title))</div>
+                <div class="col-sm-2"></div>
+                <div class="col-sm-2">Next Run<span class="required-field" title="Required Field">*</span></div>
+                <div class="col-sm-3">@(Html.TextBoxFor(model => model.NextRun))</div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2">Amount<span class="required-field" title="Required Field">*</span></div>
+                <div class="col-sm-3">@(Html.TextBoxFor(model => model.Amount))</div>
+                <div class="col-sm-2"></div>
+                <div class="col-sm-2">Bill To<span class="required-field" title="Required Field">*</span></div>
+                <div class="col-sm-3">
+                    @(Html.HiddenFor(model => model.BillTo.Id))
+                    @(Html.TextBoxFor(model => model.BillTo.DisplayName))
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
 }
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    Fill in the information on this page to modify the billing rate.  Required fields are indicated with an
-    <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span><br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    Fields marked with an <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span> are required.
-    </p>
-</div> 
