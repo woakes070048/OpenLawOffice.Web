@@ -1,45 +1,42 @@
 ﻿@model OpenLawOffice.Web.ViewModels.Account.ProfileViewModel
 
 @{
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "User Profile";
+    ViewBag.PageTitle = "User Profile";
 }
 
-<h2>User Profile</h2>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Account">My Account</a></li>
+        <li><a href="/Account/Profile" class="active">Profile</a></li>
+    </ul>
+}
 
-<p>
-    You may change any profile information displayed below.
-</p>
-
-@using (Html.BeginForm())
+@using (Html.BeginForm("EditUser", "Account", FormMethod.Post, new { @class = "form-horizontal", @role = "form" }))
 {
-    @(Html.ValidationSummary(true))
-    <table class="detail_table">
-        <tr>
-            <td class="display-label">
-                My Contact Info
-            </td>
-            <td class="display-field">
-                @(Html.DropDownListFor(x => x.ContactId,
-                    new SelectList(ViewBag.EmployeeContactList, "Id", "DisplayName")))
-                @(Html.ValidationMessageFor(m => m.ContactId))
-            </td>
-        </tr>
-        <tr>
-            <td class="display-label">
-                External App. Key
-            </td>
-            <td class="display-field">
-                @(Html.TextBoxFor(x => x.ExternalAppKey, new { @style = "width: 400px;" }))
-                @(Html.ValidationMessageFor(m => m.ContactId))
-                <a href="?newAppKey=true">Generate New Key</a>
-            </td>
-        </tr>
-    </table>
-    <p>
-        <input type="submit" value="Save" />
-    </p>
-    <p>
-        To change your password, click @(Html.ActionLink("Change Password", "ChangePassword"))
-    </p>
-} 
+    <div class="panel panel-default">
+        <div class="panel-heading">Profile Information</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">My Contact Info</span>
+                <div class="col-sm-10">
+                    @(Html.DropDownListFor(x => x.ContactId,
+                        new SelectList(ViewBag.EmployeeContactList, "Id", "DisplayName"), new { @class="form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">External App. Key</span>
+                <div class="col-sm-10">
+                    @(Html.TextBoxFor(m => m.ExternalAppKey, new { value = Model.ExternalAppKey, @class = "form-control" }))
+                    <a href="?newAppKey=true">Generate New Key</a>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

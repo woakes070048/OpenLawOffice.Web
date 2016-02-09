@@ -1,92 +1,94 @@
 @model IEnumerable<OpenLawOffice.Web.ViewModels.Account.UsersViewModel>
 
 @{ 
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Administration";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Administration";
 }
 
-<h2>Administration<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></h2>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Settings">Settings</a></li>
+        <li><a href="/Admin" class="active">Administration</a></li>
+    </ul>
+}
 
-<div class="options_div" style="text-align: right;">
-    <div style="width: 200px; display: inline;">
-        <a href="CreateUser">
-            <input type="button" value="New User" id="NewUser"
-                    style="background-image: url('/Content/fugue-icons-3.5.6/icons-shadowless/plus.png');
-                background-position: left center; background-repeat: no-repeat; padding-left: 20px;" />
-        </a>
+<script type="text/javascript">
+    $(function () {
+        $("#newUser").click(function () {
+            window.location = '/Admin/CreateUser';
+        })
+    })
+</script>
+
+<div class="container-fluid">
+    <div class="row text-right">
+        <div class="btn-group">
+            <button id="newUser" class="btn btn-sm btn-primary">
+                <span class="fa fa-plus"></span> New User
+            </button>
+        </div>
     </div>
 </div>
 
-<table class="listing_table">
-    <tr>
-        <th>
-            Username
-        </th>
-        <th>
-            Email
-        </th>
-        <th>
-            Approved
-        </th>
-        <th>
-            Locked Out
-        </th>
-        <th></th>
-    </tr>
+<table class="table table-striped table-condensed table-hover notifications">
+    <thead>
+        <tr>
+            <th>
+                Username
+            </th>
+            <th>
+                Email
+            </th>
+            <th>
+                Approved
+            </th>
+            <th>
+                Locked Out
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model)
+{
+        <tr>
+            <td>
+                @(Html.ActionLink(item.Username, "DetailsUser", new { id = item.Username }))
+            </td>
+            <td>
+                @(item.Email)
+            </td>
+            <td>
+                @if (item.IsApproved)
+            {<text>Yes</text>}
+            else
+            {<text>No</text>}
+            </td>
+            <td>
+                @if (item.IsLockedOut)
+            {<text>Yes</text>}
+            else
+            {<text>No</text>}
+            </td>
+            <td>
+                @(Html.ActionLink("Edit", "EditUser", new { Id = item.Username }))<br />
+                @(Html.ActionLink("Roles", "UserRoles", new { Id = item.Username }))<br />
 
-@foreach (var item in Model) {
-    
-    <tr>
-        <td>
-            @(Html.ActionLink(item.Username, "DetailsUser", new { Username = item.Username }))
-        </td>
-        <td>
-            @(item.Email)
-        </td>
-        <td>
-            @if (item.IsApproved)
-                {<text>Yes</text>}
-                else
-                {<text>No</text>}
-        </td>
-        <td>
-            @if (item.IsLockedOut)
-                {<text>Yes</text>}
-                else
-                {<text>No</text>}
-        </td>
-        <td>
-            @(Html.ActionLink("Edit", "EditUser", new { Id = item.Username }))<br />
-            @(Html.ActionLink("Roles", "UserRoles", new { Id = item.Username }))<br />
+                @if (item.IsLockedOut)
+                {
+                    @(Html.ActionLink("Unlock", "UnlockUser", new { Id = item.Username }))<br />
+                }
 
-            @if (item.IsLockedOut)
-            {
-            @(Html.ActionLink("Unlock", "UnlockUser", new { Id = item.Username }))<br />
-            }
+                @if (item.IsApproved)
+                {
+                    @(Html.ActionLink("Disable", "DisableUser", new { Id = item.Username }))<br />
+                }
 
-            @if (item.IsApproved)
-            {
-            @(Html.ActionLink("Disable", "DisableUser", new { Id = item.Username }))<br />
-            }
-                
-            @(Html.ActionLink("Reset Password", "ResetPassword", new { Id = item.Username }))
-            @(Html.ActionLink("Change Password", "ChangePassword", new { Id = item.Username }))
-        </td>
-    </tr>
-    
+                @(Html.ActionLink("Reset Password", "ResetPassword", new { Id = item.Username }))<br />
+                @(Html.ActionLink("Change Password", "ChangePassword", new { Id = item.Username }))
+            </td>
+        </tr>
 }
-
+    </tbody>
 </table>
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    This page shows a list of users and allows administration of their accounts.<br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    Clicking the title will show the details of the user's account.  To make changes to a user's
-    account, click 'Edit'.  If the user's account is locked, clicking 'Unlock' will allow the
-    user to attempt login again (Unlock only appears if the account is locked out).  Clicking
-    'Reset Password' will send the user an email allowing them to reset their account password.  
-    To prevent access, click 'Disable', this can be changed later by editing the account
-    and clicking the approved checkbox (Disable only appears if the account is Approved).
-    </p>
-</div> 

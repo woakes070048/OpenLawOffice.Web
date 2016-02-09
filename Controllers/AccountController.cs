@@ -24,6 +24,12 @@ namespace OpenLawOffice.Web.Controllers
             base.Initialize(requestContext);
         }
 
+        [Authorize(Roles = "Login, User")]
+        public ActionResult Index()
+        {
+            return View();
+        }
+
         [AllowAnonymous]
         public ActionResult Login()
         {
@@ -121,7 +127,7 @@ namespace OpenLawOffice.Web.Controllers
                     OldPassword = currentPassword
                 });
             else
-                return View();
+                return View(new ViewModels.Account.ChangePasswordViewModel());
         }
 
         [HttpPost]

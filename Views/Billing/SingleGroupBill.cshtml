@@ -2,8 +2,16 @@
 @using OpenLawOffice.Web.Helpers
 
 @{ 
-    ViewBag.Title = "SingleGroupBill";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
+    ViewBag.Title = "Bill a Group";
+    ViewBag.PageTitle = "Bill a Group";
+}
+
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Billing">Billing</a></li>
+        <li><a href="/Billing/SingleGroupBill/@(ViewContext.RouteData.Values["Id"])" class="active">Group Billing</a></li>
+    </ul>
 }
 
 <script>
@@ -79,7 +87,7 @@
         <br />
     }
 
-    <div style="width: 1200px; border: 1px solid black; color: Black; padding: 5px;">
+    <div style="width: 1200px; border: 1px solid black; color: Black; padding: 5px;" class="table-text-small">
     <div style="height: 75px; display: inline-block;">
         <span style="font-weight: bold;">@(ViewData["FirmName"])</span><br />
         @(ViewData["FirmAddress"])<br />
@@ -97,7 +105,7 @@
     <div style="display: inline-block; margin-top: 25px; margin-left: 20px; border: 1px solid #c0c0c0; width: 450px;">
         <div style="display: block; background: #dddddd;">Bill To:</div>
         @(Html.HiddenFor(x => x.BillTo.Id))
-        <table cellpadding="0" cellspacing="0" border="0" style="width: 100%; padding: 0; margin: 0;">
+        <table cellpadding="0" cellspacing="0" border="0" style="width: 100%; padding: 0; margin: 0; line-height: 11px;">
             <tr>
                 <td style="padding: 3px;">Name:</td>
                 <td style="width: 365px; padding: 3px;">@(Html.TextBoxFor(x => x.BillTo_NameLine1, new { @style = "width: 100%;" }))</td>
@@ -130,7 +138,7 @@
     </div>
 
     <div style="display: inline-block; vertical-align: top; padding-left: 15px;">
-        <table cellpadding="0" cellspacing="0" style="border: none; padding: 0px;">
+        <table cellpadding="0" cellspacing="0" style="border: none; padding: 0px; line-height: 11px;">
             <tr>
                 <td style="padding: 0px; text-align: right;">Invoice No.:</td>
                 <td style="padding: 0 0 0 5px;">@(Model.Id)@(Html.HiddenFor(x => x.Id))</td>
@@ -154,7 +162,7 @@
         </table>
             
         <div style="display: inline-block; margin-top: 25px; margin-left: 20px; border: 1px solid #c0c0c0; width: 450px;">
-            <div style="display: block; background: #dddddd;">Billing Options:</div>
+            <div style="display: block; background: #dddddd; line-height: 11px;">Billing Options:</div>
             <table cellpadding="0" cellspacing="0" border="0" style="width: 100%; padding: 0; margin: 0;">
                 <tr>
                     <td style="padding: 3px; font-size: 10px;">Rate From:</td>
@@ -167,11 +175,11 @@
                 </tr>
                 <tr>
                     <td style="padding: 3px; font-size: 10px;">Start Date:</td>
-                    <td style="width: 365px; padding: 3px;"><input type="text" name="StartDate" id="StartDate" style="width: 100px; font-size: 10px;" /></td>
+                    <td style="width: 365px; padding: 3px;"><input type="text" name="StartDate" id="StartDate" style="width: 100px; font-size: 10px; line-height: 11px;" /></td>
                 </tr>
                 <tr>
                     <td style="padding: 3px; font-size: 10px;">Stop Date:</td>
-                    <td style="width: 365px; padding: 3px;"><input type="text" name="StopDate" id="StopDate" style="width: 100px; font-size: 10px;" /></td>
+                    <td style="width: 365px; padding: 3px;"><input type="text" name="StopDate" id="StopDate" style="width: 100px; font-size: 10px; line-height: 11px;" /></td>
                 </tr>
             </table>
         </div>
@@ -197,7 +205,7 @@
         -moz-border-top-right-radius: 5px; background: #f5f5f5;">Expenses</div>
         
         <div style="border: none; padding: 0;">            
-            <table cellpadding="0" cellspacing="0" style="border: none; width: 100%; font-size: 10px;">
+            <table class="table-striped table-condensed" cellpadding="0" cellspacing="0" style="border: none; width: 100%; font-size: 10px; line-height: 11px;">
                 <thead style="background: #dddddd; text-align: center; font-weight: bold;">
                     <tr>
                         <td style="width: 100px;">
@@ -272,7 +280,7 @@
         -moz-border-top-right-radius: 5px; background: #f5f5f5;">Fees</div>
         
         <div style="border: none; padding: 0;">            
-            <table cellpadding="0" cellspacing="0" style="border: none; width: 100%; font-size: 10px;">
+            <table class="table-striped table-condensed" cellpadding="0" cellspacing="0" style="border: none; width: 100%; font-size: 10px; line-height: 11px;">
                 <thead style="background: #dddddd; text-align: center; font-weight: bold;">
                     <tr>
                         <td style="width: 100px;">
@@ -342,7 +350,7 @@
         -moz-border-top-right-radius: 5px; background: #f5f5f5;">Time</div>
         
         <div style="border: none; padding: 0;">            
-            <table cellpadding="0" cellspacing="0" style="border: none; width: 100%; font-size: 10px;">
+            <table class="table-striped table-condensed" cellpadding="0" cellspacing="0" style="border: none; width: 100%; font-size: 10px; line-height: 11px;">
                 <thead style="background: #dddddd; text-align: center; font-weight: bold;">
                     <tr>
                         <td style="width: 100px;">
@@ -417,16 +425,16 @@
     }
 
 
-    <div style="display: block; text-align: right; padding-top: 20px; padding-right: 20px; font-size: 10px;">
+    <div style="display: block; text-align: right; padding-top: 20px; padding-right: 20px; font-size: 10px; line-height: 11px;">
         Contract Amount: $@(Html.TextBoxFor(x => Model.BillingGroup.Amount, new { @style = "width: 75px; font-size: 11px;" }))
     </div>
 
-    <div style="display: block; text-align: right; padding-top: 20px; padding-right: 20px; font-size: 10px;">
+    <div style="display: block; text-align: right; padding-top: 20px; padding-right: 20px; font-size: 10px; line-height: 11px;">
         Tax Amount: $@(Html.TextBoxFor(x => x.TaxAmount, new { @style = "width: 75px; font-size: 11px;" }))
     </div>
         
     <div style="display: block; text-align: right; padding-top: 20px; padding-right: 20px;">
-        <input type="submit" value="Save" style="width: 100px;" />
+        <input type="submit" value="Save" class="btn btn-default" style="width: 100px;" />
     </div>
         
     </div>

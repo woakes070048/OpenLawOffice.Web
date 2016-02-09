@@ -25,7 +25,6 @@ namespace OpenLawOffice.Web.Controllers
     using System.Web.Mvc;
     using AutoMapper;
     using System;
-    using System.Net;
     using System.Web.Profile;
     using System.Web.Security;
     using System.Data;
@@ -122,6 +121,11 @@ namespace OpenLawOffice.Web.Controllers
 
         [Authorize(Roles = "Login, User")]
         public ActionResult About()
+        {
+            return View();
+        }
+        
+        public ActionResult Test()
         {
             return View();
         }

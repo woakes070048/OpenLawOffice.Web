@@ -1,0 +1,137 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>@ViewBag.Title</title>
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" type="text/css" href="~/Content/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="~/Content/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="~/Content/dashboard.css">
+    <link rel="stylesheet" type="text/css" href="~/Content/jquery-ui-1.10.4.custom.css" />
+    <link rel="stylesheet" type="text/css" href="~/Scripts/jui_dropdown-1.0.4/jquery.jui_dropdown.css" />
+
+    <script type="text/javascript" src="~/Scripts/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery-ui-1.10.4.custom.js"></script>
+    <script type="text/javascript" src="~/Scripts/bootstrap.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jui_dropdown-1.0.4/jquery.jui_dropdown.js"></script>
+
+    <script type="text/javascript">
+        function navTo(url) { window.location.href = url; }
+    </script>
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">
+                    @if (string.IsNullOrEmpty(OpenLawOffice.Common.Settings.Manager.Instance.System.BillingFirmName))
+                    {
+                        <text>OpenLawOffice</text>
+                    }
+                    else
+                    {
+                        @OpenLawOffice.Common.Settings.Manager.Instance.System.BillingFirmName
+                    }
+                </a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="/Settings"><span class="fa fa-cogs"></span> Settings</a></li>
+                    <li><a href="/Help"><span class="fa fa-question"></span> Help</a></li>
+                </ul>
+                <form class="navbar-form navbar-right">
+                    <input type="text" class="form-control" placeholder="Search...">
+                </form>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-3 col-md-2 sidebar">
+                    
+@if (User.IsInRole("User"))
+{
+    OpenLawOffice.Web.ViewModels.Contacts.ContactViewModel userContact = null;
+    if (Request.IsAuthenticated)
+    {
+        dynamic profile = System.Web.Profile.ProfileBase.Create(Membership.GetUser().UserName);
+        if (profile.ContactId != null && !string.IsNullOrEmpty(profile.ContactId))
+        {
+            userContact = AutoMapper.Mapper.Map<OpenLawOffice.Web.ViewModels.Contacts.ContactViewModel>(OpenLawOffice.Data.Contacts.Contact.Get(int.Parse(profile.ContactId)));
+        }
+    }
+                <ul class="nav nav-sidebar">
+                    <li>
+                        <div class="sidebar-user">
+                            <div class="category-content">
+                                <div class="media">
+                                    <a href="#" class="media-left"><img class="img-circle img-sm fa fa-male" alt=""></a>
+                                    <div class="media-body">
+                                        <span class="media-heading">
+                                            @if (userContact != null)
+                                            {
+                                                <text>@(userContact.DisplayName)</text>
+                                            }
+                                            else
+                                            {
+                                                <text>Not logged in</text>
+                                            }
+                                        </span>
+                                        <div class="text-size-mini text-muted">
+                                            <i class="fa fa-map-marker"></i> &nbsp;@if (userContact != null)
+                                            {
+                                                <text>@(userContact.Address1AddressCity), @(userContact.Address1AddressStateOrProvince)</text>
+                                            }
+                                            else
+                                            {
+                                                <text>Not logged in</text>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="media-left media-middle">
+                                        <a href="/Account"><i class="fa fa-cog"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li><a href="/Home"><span class="fa fa-home"></span> Dashboard</a></li>
+                    <li><a href="/Timing/DayView"><span class="fa fa-clock-o"></span> Daily Time</a></li>
+                    <li><a href="/Contacts"><span class="fa fa-user"></span> Contacts</a></li>
+                    <li>
+                        <ul class="nav">
+                            <li><a href="/Contacts/Create"><span class="fa fa-plus"></span> New Contact</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="/Matters"><span class="fa fa-briefcase"></span> Matters</a></li>
+                    <li>
+                        <ul class="nav">
+                            <li><a href="/Matters/Create"><span class="fa fa-plus"></span> New Matter</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="/Billing"><span class="fa fa-money"></span> Billing</a></li>
+                </ul>
+}
+            </div>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <h1 class="page-header">
+                @(ViewBag.PageTitle)
+            </h1>
+            @RenderSection("Breadcrumb")
+            @RenderBody()
+        </div>
+    </div>
+</body>
+</html>

@@ -190,6 +190,7 @@
     <Compile Include="Controllers\MatterTypesController.cs" />
     <Compile Include="Controllers\NotesController.cs" />
     <Compile Include="Controllers\SearchController.cs" />
+    <Compile Include="Controllers\SettingsController.cs" />
     <Compile Include="Controllers\TagCategoriesController.cs" />
     <Compile Include="Controllers\TaskAssignedContactsController.cs" />
     <Compile Include="Controllers\TasksController.cs" />
@@ -206,6 +207,7 @@
     </Compile>
     <Compile Include="Helpers\BooleanHelper.cs" />
     <Compile Include="Helpers\EnumDropDownListForHelper.cs" />
+    <Compile Include="Helpers\FieldHelper.cs" />
     <Compile Include="Helpers\TimeSpanHelper.cs" />
     <Compile Include="IFormsAuthenticationService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -290,6 +292,13 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
+    <Content Include="Content\bootstrap-theme.css" />
+    <Content Include="Content\bootstrap-theme.min.css" />
+    <Content Include="Content\bootstrap.css" />
+    <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\dashboard.css" />
+    <Content Include="Content\font-awesome.css" />
+    <Content Include="Content\font-awesome.min.css" />
     <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\alarm-clock-pencil.png" />
     <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\alarm-clock-plus.png" />
     <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\alarm-clock-select.png" />
@@ -310,11 +319,16 @@
     <Content Include="Content\fugue-icons-3.5.6\icons-shadowless\user-arrow.png" />
     <Content Include="Content\jquery-ui-1.10.4.custom.css" />
     <Content Include="Content\jquery-ui-1.10.4.custom.min.css" />
+    <Content Include="Content\signin.css" />
     <Content Include="Content\Site.css" />
     <Content Include="DatabaseSchemaUpdates.txt" />
     <Content Include="favicon.ico" />
+    <Content Include="fonts\fontawesome-webfont.svg" />
+    <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="LICENSE.txt" />
+    <Content Include="Scripts\bootstrap.js" />
+    <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-ui-1.10.4.custom.js" />
     <Content Include="Scripts\jquery-ui-1.10.4.custom.min.js" />
@@ -708,6 +722,19 @@
     <Content Include="Views\Shared\_LayoutWithContextMenu.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="Content\bootstrap.min.css.map" />
+    <Content Include="Content\bootstrap.css.map" />
+    <Content Include="Content\bootstrap-theme.min.css.map" />
+    <Content Include="Content\bootstrap-theme.css.map" />
+    <Content Include="fonts\FontAwesome.otf" />
+    <Content Include="fonts\fontawesome-webfont.woff2" />
+    <Content Include="fonts\fontawesome-webfont.woff" />
+    <Content Include="fonts\fontawesome-webfont.ttf" />
+    <Content Include="fonts\fontawesome-webfont.eot" />
     <None Include="Properties\PublishProfiles\Default Settings.pubxml" />
     <None Include="README.md" />
     <Content Include="Views\Tasks\PhoneCall.cshtml" />
@@ -739,6 +766,9 @@
     <Content Include="Views\CourtGeographicalJurisdictions\Details.cshtml" />
     <Content Include="Views\CourtGeographicalJurisdictions\Edit.cshtml" />
     <Content Include="Views\CourtGeographicalJurisdictions\Index.cshtml" />
+    <Content Include="Views\Shared\_NewLayout.cshtml" />
+    <Content Include="Views\Account\Index.cshtml" />
+    <Content Include="Views\Settings\Index.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

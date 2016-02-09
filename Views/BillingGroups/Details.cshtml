@@ -1,104 +1,112 @@
 @model OpenLawOffice.Web.ViewModels.Billing.BillingGroupViewModel
 
-@{ 
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Billing Group Details";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Billing Group Details";
 }
 
-<h2>Billing Group Details</h2>
-    
-<table class="detail_table">    
-    <tr>
-        <td colspan="4" class="detail_table_heading">
-            Financial Information
-            <div style="float: right;">[@(Html.ActionLink("Invoices", "Invoices", "BillingGroups", new { Id = Model.Id }, new { @style = "color: white;" }))]</div>
-        </td>
-    </tr>        
-    <tr>
-        <td class="display-label" style="width: 125px;">
-            Title:
-        </td>
-        <td class="display-field">
-            @(Model.Title)
-        </td>
-        <td class="display-label" style="width: 125px;">
-            Last Run:
-        </td>
-        <td class="display-field">
-            @if (Model.LastRun.HasValue) {
-                @(Model.LastRun.Value.ToShortDateString()) 
-            }
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label" style="width: 125px;">
-            Next Run:
-        </td>
-        <td class="display-field">
-            @(Model.NextRun.ToShortDateString())
-        </td>
-        <td class="display-label" style="width: 125px;">
-            Amount:
-        </td>
-        <td class="display-field">
-            @(Model.Amount.ToString("C"))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label" style="width: 125px;">
-            Bill To:
-        </td>
-        <td class="display-field">
-            @(Html.ActionLink(Model.BillTo.DisplayName, "Details", "Contacts", new { Id = Model.BillTo.Id }, null))
-        </td>
-        <td colspan="2"></td>
-    </tr>
-</table>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Settings">Settings</a></li>
+        <li><a href="/BillingGroups">Billing Groups</a></li>
+        <li>Group: <a href="/BillingGroups/Details/@(Model.Id)">@(Model.Title)</a></li>
+    </ul>
+}
+
+<script type="text/javascript">
+    $(function () {
+        $("#new").click(function () {
+            window.location = '/BillingGroups/Create';
+        })
+        $("#details").click(function () {
+            window.location = '/BillingGroups/Details/@(Model.Id)';
+        })
+        $("#edit").click(function () {
+            window.location = '/BillingGroups/Edit/@(Model.Id)';
+        })
+    })
+</script>
+
+<div class="container-fluid">
+    <div class="row text-right">
+        <div class="btn-group">
+            <button id="new" class="btn btn-sm btn-primary"><span class="fa fa-plus"></span> New Group</button>
+            <button id="details" class="btn btn-sm btn-primary"><span class="fa fa-info"></span> Detail</button>
+            <button id="edit" class="btn btn-sm btn-primary"><span class="fa fa-pencil"></span> Edit</button>
+        </div>
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Financial Information
+        <div style="float: right;">
+            <button type="button" onclick="navTo('/BillingGroups/Invoices/@(Model.Id)')" class="btn btn-xs btn-default">
+                <span class="fa fa-money"></span> View Invoices
+            </button>
+        </div>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-sm-2">Title:</div>
+            <div class="col-sm-3">@(Model.Title)</div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2">Last Run:</div>
+            <div class="col-sm-3">
+                @if (Model.LastRun.HasValue)
+                {
+                    @(Model.LastRun.Value.ToShortDateString())
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Next Run:</div>
+            <div class="col-sm-3">@(Model.NextRun.ToShortDateString())</div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2">Amount:</div>
+            <div class="col-sm-3">@(Model.Amount.ToString("C"))</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Bill To:</div>
+            <div class="col-sm-3">@(Html.ActionLink(Model.BillTo.DisplayName, "Details", "Contacts", new { Id = Model.BillTo.Id }, null))</div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-3"></div>
+        </div>
+    </div>
+</div>
 
 <br />
-    
-<table class="listing_table">    
-    <tr>
-        <td colspan="3" class="listing_table_heading">
-            Matter Members
-        </td>
-    </tr>
-    <tr>
-        <th style="text-align: center;">
-            Title
-        </th>
-        <th style="text-align: center;">
-            Case Number
-        </th>
-    </tr>
-    @{ bool altRow = true;}
-    @foreach (var item in Model.MatterMembers)
-    {
-        altRow = !altRow;
-        if (altRow)
-        {
-            <tr class="tr_alternate">
-                <td>
-                    @(Html.ActionLink(item.Title, "Details", "Matters", new { id = item.Id.Value }, null))
-                </td>
-                <td>
-                    @(item.CaseNumber)
-                </td>
-            </tr>
-        }
-        else
-        {
-            <tr>
-                <td>
-                    @(Html.ActionLink(item.Title, "Details", "Matters", new { id = item.Id.Value }, null))
-                </td>
-                <td>
-                    @(item.CaseNumber)
-                </td>
-            </tr>
-        }        
-    }
-</table>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Matter Members
+    </div>
+    <div class="panel-body">
+        <table class="table table-striped table-condensed table-hover table-text-small">
+            <thead>
+                <tr>
+                    <th style="text-align: center;">Title</th>
+                    <th style="text-align: center;">Case Number</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.MatterMembers)
+            {
+                <tr>
+                    <td>
+                        @(Html.ActionLink(item.Title, "Details", "Matters", new { id = item.Id.Value }, null))
+                    </td>
+                    <td>
+                        @(item.CaseNumber)
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
 
 <br />
 

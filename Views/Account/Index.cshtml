@@ -1,0 +1,24 @@
+﻿@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
+    ViewBag.Title = "My Account";
+    ViewBag.PageTitle = "My Account";
+}
+
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Account" class="active">My Account</a></li>
+    </ul>
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Account Management
+    </div>
+    <div class="panel-body">
+        <ul>
+            <li><a href="/Account/ChangePassword">Change Password</a></li>
+            <li><a href="/Account/EditUser">Edit User</a></li>
+            <li><a href="/Account/Profile">Edit Profile</a></li>
+        </ul>        
+    </div>
+</div>

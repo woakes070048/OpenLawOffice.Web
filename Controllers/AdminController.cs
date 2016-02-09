@@ -116,12 +116,12 @@ namespace OpenLawOffice.Web.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        public ActionResult DetailsUser(string username)
+        public ActionResult DetailsUser(string id)
         {
             Common.Models.Account.Users model;
             ViewModels.Account.UsersViewModel viewModel;
 
-            model = Data.Account.Users.Get(username);
+            model = Data.Account.Users.Get(id);
 
             viewModel = Mapper.Map<ViewModels.Account.UsersViewModel>(model);
 

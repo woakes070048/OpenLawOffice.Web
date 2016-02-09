@@ -1,171 +1,163 @@
 @model OpenLawOffice.Web.ViewModels.Account.UsersViewModel
 
 @{ 
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Disable User Account";
-    Layout = "~/Views/Shared/_LayoutWithContextMenu.cshtml";
+    ViewBag.PageTitle = "Disable User Account";
 }
 
-@section ContextMenu {
-    <li>Actions</li>
-    <ul style="list-style: none outside none; padding-left: 1em;">
-        <li>
-            @(Html.ActionLink("New User", "CreateUser"))
-        </li>
-        <li>
-            @(Html.ActionLink("Details", "DetailsUser", new { id = Model.Username }))
-        </li>
-        <li>
-            @(Html.ActionLink("Edit", "EditUser", new { id = Model.Username }))
-        </li>
-        <li>
-            @(Html.ActionLink("Roles", "UserRoles", new { id = Model.Username }))
-        </li>
-        <li>
-            @(Html.ActionLink("Unlock", "UnlockUser", new { id = Model.Username }))
-        </li>
-        <li>
-            @(Html.ActionLink("Change Password", "ChangePassword", new { id = Model.Username }))
-        </li>
-        <li>
-            @(Html.ActionLink("Reset Password", "ResetPassword", new { id = Model.Username }))
-        </li>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Settings">Settings</a></li>
+        <li><a href="/Admin">Administration</a></li>
+        <li>User: <a href="/Admin/Details/@(Model.Username)">@(Model.Username)</a></li>
+        <li><a href="/Admin/DisableUser/@(Model.Username)">Disable</a></li>
     </ul>
-    <li>
-        @(Html.ActionLink("List", "Index"))
-    </li>
 }
 
-<h2>Disable User Account<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></h2>
-@using (Html.BeginForm())
-    {
-@(Html.ValidationSummary(true))
+<script type="text/javascript">
+    $(function () {
+        $("#newUser").click(function () {
+            window.location = '/Admin/CreateUser';
+        })
+        $("#details").click(function () {
+            window.location = '/Admin/DetailsUser/@(Model.Username)';
+        })
+        $("#edit").click(function () {
+            window.location = '/Admin/EditUser/@(Model.Username)';
+        })
+        $("#roles").click(function () {
+            window.location = '/Admin/UserRoles/@(Model.Username)';
+        })
+        $("#disable").click(function () {
+            window.location = '/Admin/DisableUser/@(Model.Username)';
+        })
+        $("#unlock").click(function () {
+            window.location = '/Admin/UnlockUser/@(Model.Username)';
+        })
+        $("#changePassword").click(function () {
+            window.location = '/Admin/ChangePassword/@(Model.Username)';
+        })
+        $("#resetPassword").click(function () {
+            window.location = '/Admin/ResetPassword/@(Model.Username)';
+        })
+    })
+</script>
 
+<div class="container-fluid">
+    <div class="row text-right">
+        <div class="btn-group">
+            <button id="newUser" class="btn btn-sm btn-primary"><span class="fa fa-plus"></span> New User</button>
+            <button id="details" class="btn btn-sm btn-primary"><span class="fa fa-info"></span> Detail</button>
+            <button id="edit" class="btn btn-sm btn-primary"><span class="fa fa-pencil"></span> Edit</button>
+            <button id="roles" class="btn btn-sm btn-primary"><span class="fa fa-user-secret"></span> Roles</button>
+            <button id="disable" class="btn btn-sm btn-primary"><span class="fa fa-times"></span> Disable</button>
+            <button id="unlock" class="btn btn-sm btn-primary"><span class="fa fa-unlock"></span> Unlock</button>
+            <button id="changePassword" class="btn btn-sm btn-primary"><span class="fa fa-key"></span> Change Password</button>
+            <button id="resetPassword" class="btn btn-sm btn-primary"><span class="fa fa-recycle"></span> Reset Password</button>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("DisableUser", "Admin", FormMethod.Post, new { @class = "form-horizontal", @role = "form" }))
+{
 @(Html.HiddenFor(model => model.Username))
 
-<table class="detail_table">
-    <tr>
-        <td class="display-label">
-            Username
-        </td>
-        <td class="display-field">
-            @(Model.Username)
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Email
-        </td>
-        <td class="display-field">
-            @(Model.Email)
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Comment
-        </td>
-        <td class="display-field">
-            @(Model.Comment)
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Approved
-        </td>
-        <td class="display-field">
-            @if (Model.IsApproved)
-            {<text>Yes</text>}
-            else
-            {<text>No</text>}
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Last Activity
-        </td>
-        <td class="display-field">
-            @(string.Format("{0:MMM d, yyyy hh:mm:ss tt}", Model.LastActivityDate))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Last Login
-        </td>
-        <td class="display-field">
-            @(string.Format("{0:MMM d, yyyy hh:mm:ss tt}", Model.LastLoginDate))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Last Password Changed
-        </td>
-        <td class="display-field">
-            @(string.Format("{0:MMM d, yyyy hh:mm:ss tt}", Model.LastPasswordChangedDate))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Creation
-        </td>
-        <td class="display-field">
-            @(string.Format("{0:MMM d, yyyy hh:mm:ss tt}", Model.CreationDate))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Online
-        </td>
-        <td class="display-field">
-            @if (Model.IsOnLine)
-            {<text>Yes</text>}
-            else
-            {<text>No</text>}
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Locked Out
-        </td>
-        <td class="display-field">
-            @if (Model.IsLockedOut)
-            {<text>Yes</text>}
-            else
-            {<text>No</text>}
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Last Locked Out
-        </td>
-        <td class="display-field">
-            @(string.Format("{0:MMM d, yyyy hh:mm:ss tt}", Model.LastLockedOutDate))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Failed Password Attempts
-        </td>
-        <td class="display-field">
-            @(Model.FailedPasswordAttemptCount)
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Failed Password Attempt Window Start
-        </td>
-        <td class="display-field">
-            @(string.Format("{0:MMM d, yyyy hh:mm:ss tt}", Model.FailedPasswordAttemptWindowStart))
-        </td>
-    </tr>
-</table>
-<p>
-    <input type="submit" value="Disable" />
-</p>
-}   
-    
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    Disabling the user account shown on this page means this will prevent the user from accessing the
-    system with this account.
-    </p>
-</div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Account Information</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">Username</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Model.Username)
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Email</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Model.Email)
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Comment</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Model.Comment)
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Approved</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @if (Model.IsApproved)
+                    {<text>Yes</text>}
+                    else
+                    {<text>No</text>}
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Last Activity</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(string.Format("{0:MMM d, yyyy hh:mm:ss tt}", Model.LastActivityDate))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Last Login</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(string.Format("{0:MMM d, yyyy hh:mm:ss tt}", Model.LastLoginDate))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Last Password Changed</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(string.Format("{0:MMM d, yyyy hh:mm:ss tt}", Model.LastPasswordChangedDate))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Creation</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(string.Format("{0:MMM d, yyyy hh:mm:ss tt}", Model.CreationDate))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Online</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @if (Model.IsOnLine)
+                    {<text>Yes</text>}
+                    else
+                    {<text>No</text>}
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Locked Out</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @if (Model.IsLockedOut)
+                    {<text>Yes</text>}
+                    else
+                    {<text>No</text>}
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Last Locked Out</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(string.Format("{0:MMM d, yyyy hh:mm:ss tt}", Model.LastLockedOutDate))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Failed Password Attempts</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Model.FailedPasswordAttemptCount)
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Failed Password Attempt Window Start</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(string.Format("{0:MMM d, yyyy hh:mm:ss tt}", Model.FailedPasswordAttemptWindowStart))
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

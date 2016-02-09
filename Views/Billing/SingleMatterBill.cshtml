@@ -2,8 +2,16 @@
 @using OpenLawOffice.Web.Helpers
 
 @{ 
-    ViewBag.Title = "SingleBill";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
+    ViewBag.Title = "Bill on a Matter";
+    ViewBag.PageTitle = "Bill on a Matter";
+}
+
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Billing">Billing</a></li>
+        <li><a href="/Billing/SingleMatterBill/@(ViewContext.RouteData.Values["Id"])" class="active">Matter Billing</a></li>
+    </ul>
 }
 
 <script type="text/javascript" src="/Scripts/moment.min.js"></script>
@@ -155,7 +163,7 @@ if (!ViewContext.ViewData.ModelState.IsValid)
     <br />
 }
 
-<div style="width: 1200px; border: 1px solid black; color: Black; padding: 5px;">
+<div style="width: 1200px; border: 1px solid black; color: Black; padding: 5px;" class="table-text-small">
     <div style="height: 75px; display: inline-block;">
         <span style="font-weight: bold;">@(ViewData["FirmName"])</span><br />
         @(ViewData["FirmAddress"])<br />
@@ -173,7 +181,7 @@ if (!ViewContext.ViewData.ModelState.IsValid)
     <div style="display: inline-block; margin-top: 25px; margin-left: 20px; border: 1px solid #c0c0c0; width: 450px;">
         <div style="display: block; background: #dddddd;">Bill To:</div>
         @(Html.HiddenFor(x => x.BillTo.Id))
-        <table cellpadding="0" cellspacing="0" border="0" style="width: 100%; padding: 0; margin: 0;">
+        <table cellpadding="0" cellspacing="0" border="0" style="width: 100%; padding: 0; margin: 0; line-height: 11px;">
             <tr>
                 <td style="padding: 3px;">Name:</td>
                 <td style="width: 365px; padding: 3px;">@(Html.TextBoxFor(x => x.BillTo_NameLine1, new { @style = "width: 100%;" }))</td>
@@ -206,7 +214,7 @@ if (!ViewContext.ViewData.ModelState.IsValid)
     </div>
 
     <div style="display: inline-block; vertical-align: top; padding-left: 15px;">
-        <table cellpadding="0" cellspacing="0" style="border: none; padding: 0px;">
+        <table cellpadding="0" cellspacing="0" style="border: none; padding: 0px; line-height: 11px;">
             <tr>
                 <td style="padding: 0px; text-align: right;">Invoice No.:</td>
                 <td style="padding: 0 0 0 5px;">@(Model.Id)@(Html.HiddenFor(x => x.Id))</td>
@@ -235,7 +243,7 @@ if (!ViewContext.ViewData.ModelState.IsValid)
             
         <div style="display: inline-block; margin-top: 25px; margin-left: 20px; border: 1px solid #c0c0c0; width: 450px;">
             <div style="display: block; background: #dddddd;">Billing Options:</div>
-            <table cellpadding="0" cellspacing="0" border="0" style="width: 100%; padding: 0; margin: 0;">
+            <table cellpadding="0" cellspacing="0" border="0" style="width: 100%; padding: 0; margin: 0; line-height: 11px;">
                 <tr>
                     <td style="padding: 3px; font-size: 10px;">Rate From:</td>
                     <td style="width: 365px; padding: 3px;">
@@ -247,11 +255,11 @@ if (!ViewContext.ViewData.ModelState.IsValid)
                 </tr>
                 <tr>
                     <td style="padding: 3px; font-size: 10px;">Start Date:</td>
-                    <td style="width: 365px; padding: 3px;"><input type="text" name="StartDate" id="StartDate" style="width: 100px; font-size: 10px;" /></td>
+                    <td style="width: 365px; padding: 3px;"><input type="text" name="StartDate" id="StartDate" style="width: 100px; font-size: 10px; line-height: 11px;" /></td>
                 </tr>
                 <tr>
                     <td style="padding: 3px; font-size: 10px;">Stop Date:</td>
-                    <td style="width: 365px; padding: 3px;"><input type="text" name="StopDate" id="StopDate" style="width: 100px; font-size: 10px;" /></td>
+                    <td style="width: 365px; padding: 3px;"><input type="text" name="StopDate" id="StopDate" style="width: 100px; font-size: 10px; line-height: 11px;" /></td>
                 </tr>
             </table>
         </div>
@@ -267,7 +275,7 @@ if (!ViewContext.ViewData.ModelState.IsValid)
         -moz-border-top-right-radius: 5px; background: #f5f5f5;">Expenses</div>
         
     <div style="border: none; padding: 0;">            
-        <table cellpadding="0" cellspacing="0" style="border: none; width: 100%; font-size: 10px;">
+        <table class="table-striped table-condensed" cellpadding="0" cellspacing="0" style="border: none; width: 100%; font-size: 10px; line-height: 11px;">
             <thead style="background: #dddddd; text-align: center; font-weight: bold;">
                 <tr>
                     <td style="width: 100px;">
@@ -370,7 +378,7 @@ if (!ViewContext.ViewData.ModelState.IsValid)
         -moz-border-top-right-radius: 5px; background: #f5f5f5;">Fees</div>
         
     <div style="border: none; padding: 0;">            
-        <table cellpadding="0" cellspacing="0" style="border: none; width: 100%; font-size: 10px;">
+        <table class="table-striped table-condensed" cellpadding="0" cellspacing="0" style="border: none; width: 100%; font-size: 10px; line-height: 11px;">
             <thead style="background: #dddddd; text-align: center; font-weight: bold;">
                 <tr>
                     <td style="width: 100px;">
@@ -468,7 +476,7 @@ if (!ViewContext.ViewData.ModelState.IsValid)
     </div>
                 
     <div style="border: none; padding: 0; margin: 0;">            
-        <table cellpadding="0" cellspacing="0" style="border: none; width: 100%; font-size: 10px; margin: 0;">
+        <table class="table-striped table-condensed" cellpadding="0" cellspacing="0" style="border: none; width: 100%; font-size: 10px; margin: 0; line-height: 11px;">
             <thead style="background: #dddddd; text-align: center; font-weight: bold;">
                 <tr>
                     <td style="width: 100px;">
@@ -567,7 +575,7 @@ if (!ViewContext.ViewData.ModelState.IsValid)
 
 
     <div style="display: block; text-align: right; padding-top: 20px; padding-right: 20px; height: 100px; font-size: 10px;">
-        <table border="0" cellpadding="0" cellspacing="0" style="float: right; border: none;">
+        <table border="0" cellpadding="0" cellspacing="0" style="float: right; border: none; line-height: 11px;">
             <tr>
                 <td>Subtotal:</td>
                 <td id="subtotal">@(subtotal.ToString("C"))</td>
@@ -584,7 +592,7 @@ if (!ViewContext.ViewData.ModelState.IsValid)
     </div>
 
     <div style="display: block; text-align: right; padding-top: 20px; padding-right: 20px;">
-        <input type="submit" value="Save" style="width: 100px;" />
+        <input type="submit" value="Save" class="btn btn-default" style="width: 100px;" />
     </div>
 </div>
 

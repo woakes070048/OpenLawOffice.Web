@@ -1,105 +1,118 @@
 @model IEnumerable<OpenLawOffice.Web.ViewModels.Account.SelectableUserRoleViewModel>
 
-@{ 
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "User's Roles";
-    Layout = "~/Views/Shared/_LayoutWithContextMenu.cshtml";
+    ViewBag.PageTitle = "User's Roles";
 }
 
-@section ContextMenu {
-    <li>Actions</li>
-    <ul style="list-style: none outside none; padding-left: 1em;">
-        <li>
-            @(Html.ActionLink("New User", "CreateUser"))
-        </li>
-        <li>
-            @(Html.ActionLink("Details", "DetailsUser", new { id = Request["Username"] }))
-        </li>
-        <li>
-            @(Html.ActionLink("Edit", "EditUser", new { id = Request["Username"] }))
-        </li>
-        <li>
-            @(Html.ActionLink("Disable", "DisableUser", new { id = Request["Username"] }))
-        </li>
-        <li>
-            @(Html.ActionLink("Unlock", "UnlockUser", new { id = Request["Username"] }))
-        </li>
-        <li>
-            @(Html.ActionLink("Change Password", "ChangePassword", new { id = Request["Username"] }))
-        </li>
-        <li>
-            @(Html.ActionLink("Reset Password", "ResetPassword", new { id = Request["Username"] }))
-        </li>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Settings">Settings</a></li>
+        <li><a href="/Admin">Administration</a></li>
+        <li>User: <a href="/Admin/Details/@(ViewContext.RouteData.Values["Id"])">@(ViewContext.RouteData.Values["Id"])</a></li>
+        <li><a href="/Admin/UnlockUser/@(Request["Id"])">Unlock</a></li>
     </ul>
-    <li>
-        @(Html.ActionLink("List", "Index"))
-    </li>
 }
 
-<h2>Roles of @(Request["Username"])<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></h2>
-    
-<div style="width: 70px; padding-bottom: 5px;">
-    <a id="SelectAll" href="javascript:void(0);">Select All</a><br />
-    <a id="DeselectAll" href="javascript:void(0);">Deselect All</a>
-<script language="javascript">
-
-$(function () {    
-    var cbs = [];
-
-    @foreach (var item in Model)
-    {
-        @("cbs.push('" + item.Username + "_" + item.Rolename + "');")
-        }
-
-    $("#SelectAll").click(function () {
-        for (var i = 0; i < cbs.length; i++)
-        {
-            $("#CB_" + cbs[i]).prop('checked', true);
-        }
-    });
-
-    $("#DeselectAll").click(function () {
-        for (var i = 0; i < cbs.length; i++)
-        {
-            $("#CB_" + cbs[i]).prop('checked', false);
-        }
-    });
-});
+<script type="text/javascript">
+    $(function () {
+        $("#newUser").click(function () {
+            window.location = '/Admin/CreateUser';
+        })
+        $("#details").click(function () {
+            window.location = '/Admin/DetailsUser/@(ViewContext.RouteData.Values["Id"])';
+        })
+        $("#edit").click(function () {
+            window.location = '/Admin/EditUser/@(ViewContext.RouteData.Values["Id"])';
+        })
+        $("#roles").click(function () {
+            window.location = '/Admin/UserRoles/@(ViewContext.RouteData.Values["Id"])';
+        })
+        $("#disable").click(function () {
+            window.location = '/Admin/DisableUser/@(ViewContext.RouteData.Values["Id"])';
+        })
+        $("#unlock").click(function () {
+            window.location = '/Admin/UnlockUser/@(ViewContext.RouteData.Values["Id"])';
+        })
+        $("#changePassword").click(function () {
+            window.location = '/Admin/ChangePassword/@(ViewContext.RouteData.Values["Id"])';
+        })
+        $("#resetPassword").click(function () {
+            window.location = '/Admin/ResetPassword/@(ViewContext.RouteData.Values["Id"])';
+        })
+    })
 </script>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 text-left" style="margin: 0px; padding: 0px;">
+            <button id="SelectAll" class="btn btn-sm btn-primary"><span class="fa fa-check-square-o"></span> Select All</button>
+            <button id="DeselectAll" class="btn btn-sm btn-primary"><span class="fa fa-square-o"></span> Deselect All</button>
+        </div>
+        <div class="col-sm-9 text-right" style="margin: 0px; padding: 0px;">
+            <div class="btn-group">
+                <button id="newUser" class="btn btn-sm btn-primary"><span class="fa fa-plus"></span> New User</button>
+                <button id="details" class="btn btn-sm btn-primary"><span class="fa fa-info"></span> Detail</button>
+                <button id="edit" class="btn btn-sm btn-primary"><span class="fa fa-pencil"></span> Edit</button>
+                <button id="roles" class="btn btn-sm btn-primary"><span class="fa fa-user-secret"></span> Roles</button>
+                <button id="disable" class="btn btn-sm btn-primary"><span class="fa fa-times"></span> Disable</button>
+                <button id="unlock" class="btn btn-sm btn-primary"><span class="fa fa-unlock"></span> Unlock</button>
+                <button id="changePassword" class="btn btn-sm btn-primary"><span class="fa fa-key"></span> Change Password</button>
+                <button id="resetPassword" class="btn btn-sm btn-primary"><span class="fa fa-recycle"></span> Reset Password</button>
+            </div>
+        </div>
+    </div>
 </div>
-    
 
-@using (Html.BeginForm())
-    {
-@(Html.ValidationSummary(true))
-<table class="listing_table">
-    <tr>
-        <th style="text-align: center; width: 20px;" />
-        <th style="text-align: center;">Role</th>
-    </tr>
 
-@foreach (var item in Model) {    
-    <tr>
-        <td>
-            <input type="checkbox" id="CB_@(item.Username)_@(item.Rolename)" 
-                name="CB_@(item.Username)_@(item.Rolename)" @if (item.IsSelected) { <text>checked</text>}/>
-        </td>
-        <td>
-            @(item.Rolename)
-        </td>
-    </tr>
-    }
-</table>
+<div style="width: 70px; padding-bottom: 5px;">
+    <script language="javascript">
 
-<input type="submit" value="Save" style="margin-top: 5px;" />
-    
+        $(function () {
+            var cbs = [];
+
+            @foreach (var item in Model)
+            {
+                @(Html.Raw("cbs.push('" + item.Username + "_" + item.Rolename + "');"))
+            }
+
+            $("#SelectAll").click(function () {
+                for (var i = 0; i < cbs.length; i++) {
+                    $("#CB_" + cbs[i]).prop('checked', true);
+                }
+            });
+
+            $("#DeselectAll").click(function () {
+                for (var i = 0; i < cbs.length; i++) {
+                    $("#CB_" + cbs[i]).prop('checked', false);
+                }
+            });
+        });
+    </script>
+</div>
+
+@using (Html.BeginForm("UserRoles", "Admin", FormMethod.Post, new { @class = "form-horizontal", @role = "form" }))
+{
+    <div class="panel panel-default">
+        <div class="panel-heading">Role Information</div>
+        <div class="panel-body">
+
+            @foreach (var item in Model)
+            {
+                <div class="form-group">
+                    <span class="control-label col-sm-2">@(item.Rolename)</span>
+                    <div class="col-sm-10" style="padding-top: 7px;">
+                        <input type="checkbox" id="CB_@(item.Username)_@(item.Rolename)"
+                               name="CB_@(item.Username)_@(item.Rolename)" @if (item.IsSelected) { <text>checked</text> } />
+                    </div>
+                </div>
+            }
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
 }
-
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    This page shows a list of roles and indicates those roles that the user has with checkmarks.<br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    A checkmark means the user has the role.  To update the user check or uncheck the desired roles
-    and then click save.
-    </p>
-</div> 

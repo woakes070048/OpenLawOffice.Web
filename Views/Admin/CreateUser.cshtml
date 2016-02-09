@@ -1,66 +1,59 @@
 @model OpenLawOffice.Web.ViewModels.Account.RegisterViewModel
 
 @{ 
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Create User Account";
-    Layout = "~/Views/Shared/_LayoutWithContextMenu.cshtml";
+    ViewBag.PageTitle = "Create User Account";
 }
 
-@section ContextMenu {
-    <li>
-        @(Html.ActionLink("User List", "Index"))
-    </li>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Settings">Settings</a></li>
+        <li><a href="/Admin">Administration</a></li>
+        <li><a href="/Admin/CreateUser" class="active">Create User</a></li>
+    </ul>
 }
 
-<h2>Create User Account<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></h2>
-   
-@using (Html.BeginForm()) {
-    @(Html.ValidationSummary(true, "Account creation was unsuccessful. Please correct the errors and try again."))
-    <div>
-        <fieldset>
-            <legend>Account Information</legend>
-                
-            <div class="editor-label">
-                @(Html.LabelFor(m => m.UserName))
+@using (Html.BeginForm("CreateUser", "Admin", FormMethod.Post, new { @class = "form-horizontal", @role = "form" }))
+{
+    <div class="panel panel-default">
+        <div class="panel-heading">Account Information</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">Username</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.UserName, new { @class = "form-control" }))
+                </div>
             </div>
-            <div class="editor-field">
-                @(Html.TextBoxFor(m => m.UserName))
-                @(Html.ValidationMessageFor(m => m.UserName))
+            <div class="form-group">
+                <span class="control-label col-sm-2">Email</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Email, new { @class = "form-control" }))
+                </div>
             </div>
-                
-            <div class="editor-label">
-                @(Html.LabelFor(m => m.Email))
+            <div class="form-group">
+                <span class="control-label col-sm-2">Password</span>
+                <div class="col-sm-10">
+                    <div class="input-group">
+                        <span class="input-group-addon"><span class="fa fa-key fa-fw"></span></span>
+                        @(Html.PasswordFor(m => m.Password, new { @class = "form-control" }))
+                    </div>
+                </div>
             </div>
-            <div class="editor-field">
-                @(Html.TextBoxFor(m => m.Email))
-                @(Html.ValidationMessageFor(m => m.Email))
+            <div class="form-group">
+                <span class="control-label col-sm-2">Confirm Password</span>
+                <div class="col-sm-10">
+                    <div class="input-group">
+                        <span class="input-group-addon"><span class="fa fa-key fa-fw"></span></span>
+                        @(Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" }))
+                    </div>
+                </div>
             </div>
-                
-            <div class="editor-label">
-                @(Html.LabelFor(m => m.Password))
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
             </div>
-            <div class="editor-field">
-                @(Html.PasswordFor(m => m.Password))
-                @(Html.ValidationMessageFor(m => m.Password))
-            </div>
-                
-            <div class="editor-label">
-                @(Html.LabelFor(m => m.ConfirmPassword))
-            </div>
-            <div class="editor-field">
-                @(Html.PasswordFor(m => m.ConfirmPassword))
-                @(Html.ValidationMessageFor(m => m.ConfirmPassword))
-            </div>
-                
-            <p>
-                <input type="submit" value="Register" />
-            </p>
-        </fieldset>
+        </div>
     </div>
 }
-    
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    Fill in the information on this page to create a new user account.  All fields are required.<br /><br />
-    </p>
-</div> 

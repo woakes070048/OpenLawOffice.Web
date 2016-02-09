@@ -1,0 +1,90 @@
+﻿@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
+    ViewBag.Title = "Settings";
+    ViewBag.PageTitle = "Settings";
+}
+
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Settings" class="active">Settings</a></li>
+    </ul>
+}
+
+<script type="text/javascript">
+    $(function () {
+        $("#matterTypes").click(function () {
+            window.location = '/MatterTypes';
+        })
+        $("#taskTemplates").click(function () {
+            window.location = '/TaskTemplates';
+        })
+        $("#courtTypes").click(function () {
+            window.location = '/CourtTypes';
+        })
+        $("#courtJurisdictions").click(function () {
+            window.location = '/CourtGeographicalJurisdictions';
+        })
+        $("#courtCities").click(function () {
+            window.location = '/CourtSittingInCities';
+        })
+        $("#billingRates").click(function () {
+            window.location = '/BillingRates';
+        })
+        $("#billingGroups").click(function () {
+            window.location = '/BillingGroups';
+        })
+        $("#userManagement").click(function () {
+            window.location = '/Admin';
+        })
+        $("#changePassword").click(function () {
+            window.location = '/Account/ChangePassword';
+        })
+        $("#editUser").click(function () {
+            window.location = '/Account/EditUser';
+        })
+        $("#editProfile").click(function () {
+            window.location = '/Account/Profile';
+        })
+    })
+</script>
+
+<div class="row">
+    <div class="col-sm-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">System Settings</div>
+            <div class="panel-body text-center">
+                <div class="btn-group-vertical">
+                    <button id="matterTypes" class="btn btn-default"><span class="fa fa-folder-o fa-fw"></span> Matter Types</button>
+                    <button id="taskTemplates" class="btn btn-default"><span class="fa fa-clone fa-fw"></span> Task Templates</button>
+                    <button id="courtTypes" class="btn btn-default"><span class="fa fa-balance-scale fa-fw"></span> Court Types</button>
+                    <button id="courtJurisdictions" class="btn btn-default"><span class="fa fa-bank fa-fw"></span> Court Juris.</button>
+                    <button id="courtCities" class="btn btn-default"><span class="fa fa-map-o fa-fw"></span> Court Cities</button>
+                    <button id="billingRates" class="btn btn-default"><span class="fa fa-hourglass-half fa-fw"></span> Billing Rates</button>
+                    <button id="billingGroups" class="btn btn-default"><span class="fa fa-group fa-fw"></span> Billing Groups</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">Administrative Settings</div>
+            <div class="panel-body text-center">
+                <div class="btn-group-vertical">
+                    <button id="userManagement" class="btn btn-default"><span class="fa fa-users fa-fw"></span> User Management</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">User Settings</div>
+            <div class="panel-body text-center">
+                <div class="btn-group-vertical">
+                    <button id="changePassword" class="btn btn-default"><span class="fa fa-key fa-fw"></span> Change Password</button>
+                    <button id="editUser" class="btn btn-default"><span class="fa fa-user fa-fw"></span> Edit User</button>
+                    <button id="editProfile" class="btn btn-default"><span class="fa fa-database fa-fw"></span> Edit Profile</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
