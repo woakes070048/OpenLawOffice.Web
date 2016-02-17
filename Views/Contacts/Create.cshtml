@@ -1,8 +1,16 @@
 @model OpenLawOffice.Web.ViewModels.Contacts.ContactViewModel
 
-@{ 
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Create Contact";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Create Contact";
+}
+
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Contacts">Contacts</a></li>
+        <li><a href="/Contacts/Create" class="active">Create</a></li>
+    </ul>
 }
 
 <script language="javascript">
@@ -15,902 +23,612 @@
                 $("#BillingRate_Id").val([]);
             }
         });
-        $("#BillingPane").hide();
+        @if (Model.IsOurEmployee)
+        {
+            <text>
+                $("#BillingPane").show();
+            </text>
+        } else {
+            <text>
+                $("#BillingPane").hide();
+            </text>
+        }
     });
-    
 </script>
 
-<h2>
-    Create Contact<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></h2>
-@using (Html.BeginForm())
+
+@using (Html.BeginForm("Create", "Contacts", FormMethod.Post, new { @class = "form-horizontal", @role = "form" }))
+{
+    @(Html.ValidationSummary(true))
+    if (ViewBag.ErrorMessage != null)
     {
-@(Html.ValidationSummary(true))
-if (ViewBag.ErrorMessage != null)
+        <div style="color: Red;">@(ViewBag.ErrorMessage)</div>
+    }
+    if (ViewBag.OverrideConflict != null)
     {
-    <div style="color: Red;">@(ViewBag.ErrorMessage)</div>
+        @(Html.Hidden("OverrideConflict", (string)ViewBag.OverrideConflict))
+    }
+
+    <div class="panel panel-default">
+        <div class="panel-heading">Classification</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">Our Employee</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.CheckBoxFor(model => model.IsOurEmployee))Check to indicate that this contact is employed by your company giving them rights
+                    to bill within this system.
+                    @(Html.ValidationMessageFor(model => model.IsOurEmployee))
+                    <table class="detail_table" style="margin-top: 5px;" id="BillingPane">
+                        <thead style="font-weight: bold;">
+                            <tr>
+                                <td colspan="2">
+                                    Billing Details
+                                </td>
+                            </tr>
+                        </thead>
+                        <tr>
+                            <td class="display-label" style="width: 150px;">
+                                Billing Rate
+                            </td>
+                            <td class="display-field">
+                                @(Html.DropDownListFor(model => model.BillingRate.Id,
+                        new SelectList(ViewBag.BillingRateList, "Id", "Title"),
+                        new { @size = 5, @style = "width: 100%" }))
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Organization</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.CheckBoxFor(model => model.IsOrganization))Check to indicate that this contact is for an organization, not an individual.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Contact Name</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">Nickname</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Nickname, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Generation</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Generation, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Display Name Prefix</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.DisplayNamePrefix, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Display Name<span class="required-field" title="Required Field">*</span></span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Surname (Last)</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Surname, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Middle Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.MiddleName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Given (First) Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.GivenName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Initials</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Initials, new { @class = "form-control" }))
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Electronic Addresses</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">Email 1 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Email1DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Email 1 Email Address</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Email1EmailAddress, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Email 2 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Email2DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Email 2 Email Address</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Email2EmailAddress, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Email 3 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Email3DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Email 3 Email Address</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Email3EmailAddress, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Fax 1 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Fax1DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Fax 1 Email Address</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Fax1FaxNumber, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Fax 2 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Fax2DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Fax 2 Email Address</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Fax2FaxNumber, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Fax 3 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Fax3DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Fax 3 Email Address</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Fax3FaxNumber, new { @class = "form-control" }))
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Physical Addresses</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 1 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address1DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 1 Street</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address1AddressStreet, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 1 Line 2</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address1AddressLine2, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 1 City</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address1AddressCity, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 1 State/Province</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address1AddressStateOrProvince, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 1 Postal Code</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address1AddressPostalCode, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 1 Country</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address1AddressCountry, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 1 Country Code</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address1AddressCountryCode, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 1 Post Office Box</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address1AddressPostOfficeBox, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 2 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address2DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 2 Street</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address2AddressStreet, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 2 Line 2</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address2AddressLine2, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 2 City</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address2AddressCity, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 2 State/Province</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address2AddressStateOrProvince, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 2 Postal Code</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address2AddressPostalCode, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 2 Country</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address2AddressCountry, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 2 Country Code</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address2AddressCountryCode, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 2 Post Office Box</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address2AddressPostOfficeBox, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 3 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address3DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 3 Street</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address3AddressStreet, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 3 Line 2</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address3AddressLine2, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 3 City</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address3AddressCity, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 3 State/Province</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address3AddressStateOrProvince, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 3 Postal Code</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address3AddressPostalCode, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 3 Country</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address3AddressCountry, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 3 Country Code</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address3AddressCountryCode, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Address 3 Post Office Box</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Address3AddressPostOfficeBox, new { @class = "form-control" }))
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Telephone Numbers</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 1 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone1DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 1 Telephone Number</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone1TelephoneNumber, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 2 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone2DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 2 Telephone Number</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone2TelephoneNumber, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 3 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone3DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 3 Telephone Number</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone3TelephoneNumber, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 4 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone4DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 4 Telephone Number</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone4TelephoneNumber, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 5 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone5DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 5 Telephone Number</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone5TelephoneNumber, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 6 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone6DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 6 Telephone Number</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone6TelephoneNumber, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 7 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone7DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 7 Telephone Number</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone7TelephoneNumber, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 8 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone8DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 8 Telephone Number</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone8TelephoneNumber, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 9 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone9DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 9 Telephone Number</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone9TelephoneNumber, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 10 Display Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone10DisplayName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Telephone 10 Telephone Number</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Telephone10TelephoneNumber, new { @class = "form-control" }))
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Events</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">Birthday</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Birthday, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Wedding</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Wedding, new { @class = "form-control" }))
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Professional Details</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">Title</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Title, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Bar Number</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.BarNumber, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Company Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.CompanyName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Department Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.DepartmentName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Office Location</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.OfficeLocation, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Manager Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.ManagerName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Assistant Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.AssistantName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Profession</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Profession, new { @class = "form-control" }))
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Other Details</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">Spouse's Name</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.SpouseName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Language</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Language, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Instant Messaging Address</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.InstantMessagingAddress, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Personal Home Page</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.PersonalHomePage, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Business Home Page</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.BusinessHomePage, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Gender</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Gender, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Referred By</span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.ReferredByName, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
 }
-if (ViewBag.OverrideConflict != null)
-    {
-@(Html.Hidden("OverrideConflict", (string)ViewBag.OverrideConflict))
-}
-<table class="detail_table">
-    <thead style="font-weight: bold;">
-        <tr>
-            <td colspan="2">
-                Classification
-            </td>
-        </tr>
-    </thead>
-    <tr>
-        <td class="display-label">
-            Our Employee
-        </td>
-        <td class="display-field">
-            @(Html.CheckBoxFor(model => model.IsOurEmployee))Check to indicate that this contact is employed by your company giving them rights
-            to bill within this system.
-            @(Html.ValidationMessageFor(model => model.IsOurEmployee))
-            <table class="detail_table" style="margin-top: 5px;" id="BillingPane">
-                <thead style="font-weight: bold;">
-                    <tr>
-                        <td colspan="2">
-                            Billing Details
-                        </td>
-                    </tr>
-                </thead>                        
-                <tr>
-                    <td class="display-label" style="width: 150px;">
-                        Billing Rate
-                    </td>
-                    <td class="display-field">                                
-                        @(Html.DropDownListFor(model => model.BillingRate.Id,
-                            new SelectList(ViewBag.BillingRateList, "Id", "Title"),
-                            new { @size = 5, @style = "width: 100%" }))
-                    </td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Organization
-        </td>
-        <td class="display-field">
-            @(Html.CheckBoxFor(model => model.IsOrganization))Check to indicate that this contact is for an organization, not an individual.
-            @(Html.ValidationMessageFor(model => model.IsOrganization))
-        </td>
-    </tr>
-</table>
-<table class="detail_table">
-    <thead style="font-weight: bold;">
-        <tr>
-            <td colspan="2">
-                Contact Name
-            </td>
-        </tr>
-    </thead>
-    <tr>
-        <td class="display-label" style="width: 250px;">
-            Nickname
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Nickname, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Nickname))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Generation
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Generation, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Generation))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Display Name Prefix
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.DisplayNamePrefix, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.DisplayNamePrefix))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Display Name<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Surname (Last)
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Surname, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Surname))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Middle Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.MiddleName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.MiddleName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Given (First) Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.GivenName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.GivenName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Initials
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Initials, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Initials))
-        </td>
-    </tr>
-</table>
-<table class="detail_table">
-    <thead style="font-weight: bold;">
-        <tr>
-            <td colspan="2">
-                Electronic Addresses
-            </td>
-        </tr>
-    </thead>
-    <tr>
-        <td class="display-label" style="width: 250px;">
-            Email 1 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Email1DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Email1DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Email 1 Email Address
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Email1EmailAddress, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Email1EmailAddress))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Email 2 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Email2DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Email2DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Email 2 Email Address
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Email2EmailAddress, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Email2EmailAddress))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Email 3 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Email3DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Email3DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Email 3 Email Address
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Email3EmailAddress, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Email3EmailAddress))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Fax 1 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Fax1DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Fax1DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Fax 1 Fax Number
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Fax1FaxNumber, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Fax1FaxNumber))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Fax 2 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Fax2DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Fax2DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Fax 2 Fax Number
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Fax2FaxNumber, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Fax2FaxNumber))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Fax 3 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Fax3DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Fax3DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Fax 3 Fax Number
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Fax3FaxNumber, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Fax3FaxNumber))
-        </td>
-    </tr>
-</table>
-<table class="detail_table">
-    <thead style="font-weight: bold;">
-        <tr>
-            <td colspan="2">
-                Physical Addresses
-            </td>
-        </tr>
-    </thead>
-    <tr>
-        <td class="display-label" style="width: 250px;">
-            Address 1 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address1DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address1DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 1 Street
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address1AddressStreet, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address1AddressStreet))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 1 Line 2
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address1AddressLine2, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address1AddressLine2))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 1 City
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address1AddressCity, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address1AddressCity))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 1 State/Province
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address1AddressStateOrProvince, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address1AddressStateOrProvince))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 1 Postal Code
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address1AddressPostalCode, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address1AddressPostalCode))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 1 Country
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address1AddressCountry, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address1AddressCountry))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 1 Country Code
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address1AddressCountryCode, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address1AddressCountryCode))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 1 Post Office Box
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address1AddressPostOfficeBox, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address1AddressPostOfficeBox))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 2 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address2DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address2DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 2 Street
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address2AddressStreet, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address2AddressStreet))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 2 Line 2
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address2AddressLine2, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address2AddressLine2))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 2 City
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address2AddressCity, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address2AddressCity))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 2 State/Province
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address2AddressStateOrProvince, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address2AddressStateOrProvince))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 2 Postal Code
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address2AddressPostalCode, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address2AddressPostalCode))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 2 Country
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address2AddressCountry, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address2AddressCountry))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 2 Country Code
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address2AddressCountryCode, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address2AddressCountryCode))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 2 Post Office Box
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address2AddressPostOfficeBox, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address2AddressPostOfficeBox))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 3 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address3DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address3DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 3 Street
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address3AddressStreet, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address3AddressStreet))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 3 Line 2
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address3AddressLine2, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address3AddressLine2))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 3 City
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address3AddressCity, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address3AddressCity))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 3 State/Province
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address3AddressStateOrProvince, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address3AddressStateOrProvince))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 3 Postal Code
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address3AddressPostalCode, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address3AddressPostalCode))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 3 Country
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address3AddressCountry, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address3AddressCountry))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 3 Country Code
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address3AddressCountryCode, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address3AddressCountryCode))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Address 3 Post Office Box
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Address3AddressPostOfficeBox, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Address3AddressPostOfficeBox))
-        </td>
-    </tr>
-</table>
-<table class="detail_table">
-    <thead style="font-weight: bold;">
-        <tr>
-            <td colspan="2">
-                Telephone Numbers
-            </td>
-        </tr>
-    </thead>
-    <tr>
-        <td class="display-label" style="width: 250px;">
-            Telephone 1 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone1DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone1DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 1 Telephone Number
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone1TelephoneNumber, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone1TelephoneNumber))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 2 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone2DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone2DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 2 Telephone Number
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone2TelephoneNumber, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone2TelephoneNumber))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 3 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone3DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone3DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 3 Telephone Number
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone3TelephoneNumber, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone3TelephoneNumber))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 4 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone4DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone4DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 4 Telephone Number
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone4TelephoneNumber, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone4TelephoneNumber))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 5 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone5DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone5DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 5 Telephone Number
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone5TelephoneNumber, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone5TelephoneNumber))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 6 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone6DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone6DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 6 Telephone Number
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone6TelephoneNumber, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone6TelephoneNumber))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 7 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone7DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone7DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 7 Telephone Number
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone7TelephoneNumber, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone7TelephoneNumber))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 8 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone8DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone8DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 8 Telephone Number
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone8TelephoneNumber, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone8TelephoneNumber))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 9 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone9DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone9DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 9 Telephone Number
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone9TelephoneNumber, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone9TelephoneNumber))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 10 Display Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone10DisplayName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone10DisplayName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Telephone 10 Telephone Number
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Telephone10TelephoneNumber, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Telephone10TelephoneNumber))
-        </td>
-    </tr>
-</table>
-<table class="detail_table">
-    <thead style="font-weight: bold;">
-        <tr>
-            <td colspan="2">
-                Events
-            </td>
-        </tr>
-    </thead>
-    <tr>
-        <td class="display-label" style="width: 250px;">
-            Birthday
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Birthday, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Birthday))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Wedding
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Wedding, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Wedding))
-        </td>
-    </tr>
-</table>
-<table class="detail_table">
-    <thead style="font-weight: bold;">
-        <tr>
-            <td colspan="2">
-                Professional Details
-            </td>
-        </tr>
-    </thead>
-    <tr>
-        <td class="display-label" style="width: 250px;">
-            Title
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Title, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Title))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label" style="width: 250px;">
-            Bar Number
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.BarNumber, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.BarNumber))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Company Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.CompanyName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.CompanyName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Department Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.DepartmentName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.DepartmentName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Office Location
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.OfficeLocation, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.OfficeLocation))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Manager Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.ManagerName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.ManagerName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Assistant Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.AssistantName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.AssistantName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Profession
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Profession, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Profession))
-        </td>
-    </tr>
-</table>
-<table class="detail_table">
-    <thead style="font-weight: bold;">
-        <tr>
-            <td colspan="2">
-                Other Details
-            </td>
-        </tr>
-    </thead>
-    <tr>
-        <td class="display-label" style="width: 250px;">
-            Spouse's Name
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.SpouseName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.SpouseName))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Language
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Language, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Language))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Instant Messaging Address
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.InstantMessagingAddress, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.InstantMessagingAddress))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Personal Home Page
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.PersonalHomePage, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.PersonalHomePage))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Business Home Page
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.BusinessHomePage, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.BusinessHomePage))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Gender
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Gender, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Gender))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Referred By
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.ReferredByName, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.ReferredByName))
-        </td>
-    </tr>
-</table>
-<p>
-    <input type="submit" value="Save" />
-</p>
-}
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    Fill in the information on this page to create a new contact.  Required fields are indicated with an
-    <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span> (display name).
-    While very little information is required to create the contact, the more information provided will prove useful later.<br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    Fields marked with an <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span> are required.  Its very important that the 
-    "Our Employee" checkbox be checked if the contact is an employee of the firm or will be billing time (e.g., of counsel).
-    </p>
-</div>

@@ -41,10 +41,7 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Matters.Matter.Get(id, conn, false);
                 vm.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(matter);
             }
-
-            ViewData["MatterId"] = matter.Id.Value;
-            ViewData["Matter"] = matter.Title;
-
+            
             return View(vm);
         }
 

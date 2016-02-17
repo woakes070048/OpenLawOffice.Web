@@ -1,6 +1,6 @@
 @model IEnumerable<OpenLawOffice.Web.ViewModels.Billing.InvoiceViewModel>
 
-@{ 
+@{
     Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Billing Group Invoices";
     ViewBag.PageTitle = "Billing Group Invoices";
@@ -10,74 +10,60 @@
     <ul class="breadcrumb">
         <li><a href="/Settings">Settings</a></li>
         <li><a href="/BillingGroups" class="active">Billing Groups</a></li>
-        <li>Group: <a href="/BillingGroups/Details/@(ViewContext.RouteData.Values["Id"])">@(ViewContext.RouteData.Values["Id"])</a></li>
+        <li>Group: <a href="/BillingGroups/Details/@(ViewContext.RouteData.Values["Id"])">@(ViewBag.BillingGroup.Title)</a></li>
         <li><a href="/BillingGroups/Invoices/@(ViewContext.RouteData.Values["Id"])" class="active">Invoices</a></li>
     </ul>
 }
 
-<h2>Billing Group Invoices</h2>
-    
-<table class="listing_table">
-    <tr>
-        <th style="text-align: center;">
-            Date
-        </th>
-        <th style="text-align: center;">
-            Due
-        </th>
-        <th style="text-align: center;">
-            Ext. Id
-        </th>
-        <th style="text-align: center;">
-            Total
-        </th>
-        <th style="text-align: center; width: 25px;">
-                
-        </th>
-    </tr>
-    @{ bool altRow = true;}
-    @foreach (var item in Model)
-    {
-        altRow = !altRow;
-        if (altRow)
-        {
-            <tr class="tr_alternate">
-                <td>
-                    @(item.Date.ToShortDateString())
-                </td>
-                <td>
-                    @(item.Due.ToShortDateString())
-                </td>
-                <td>
-                    @(item.ExternalInvoiceId)
-                </td>
-                <td>
-                    @(item.Total.ToString("C"))
-                </td>
-                <td>
-                    @(Html.ActionLink("Go", "GroupDetails", "Invoices", new { id = item.Id.Value }, new { @class = "btn-money-arrow", title = "Bill" }))
-                </td>
-            </tr>
-        }
-        else
-        {
-            <tr>
-                <td>
-                    @(item.Date.ToShortDateString())
-                </td>
-                <td>
-                    @(item.Due.ToShortDateString())
-                </td>
-                <td>
-                    @(item.ExternalInvoiceId)
-                </td>
-                <td>
-                    @(item.Total.ToString("C"))
-                </td>
-                <td>
-                    @(Html.ActionLink("Go", "GroupDetails", "Invoices", new { id = item.Id.Value }, new { @class = "btn-money-arrow", title = "Bill" }))
-                </td>
-            </tr>
-        }
-    }
-</table> 
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Billing Group Invoices
+    </div>
+    <div class="panel-body">
+        <table class="table table-striped table-condensed table-hover table-text-small">
+            <thead>
+                <tr>
+                    <th style="text-align: center;">
+                        Date
+                    </th>
+                    <th style="text-align: center;">
+                        Due
+                    </th>
+                    <th style="text-align: center;">
+                        Ext. Id
+                    </th>
+                    <th style="text-align: center;">
+                        Total
+                    </th>
+                    <th style="text-align: center; width: 25px;">
+
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @(item.Date.ToShortDateString())
+                    </td>
+                    <td>
+                        @(item.Due.ToShortDateString())
+                    </td>
+                    <td>
+                        @(item.ExternalInvoiceId)
+                    </td>
+                    <td>
+                        @(item.Total.ToString("C"))
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Invoices/GroupDetails/@(item.Id.Value)')">
+                            <span class="fa fa-money"></span> View
+                        </button>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

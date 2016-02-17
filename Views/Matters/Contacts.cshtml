@@ -1,102 +1,91 @@
 @model IEnumerable<OpenLawOffice.Web.ViewModels.Matters.MatterContactViewModel>
 
-@{ 
-    ViewBag.Title = "Contacts Assigned to Matter";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
+    ViewBag.Title = "Contacts for Matter";
+    ViewBag.PageTitle = "Contacts for Matter";
 }
 
-<div id="roadmap">
-    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
-    <div id="current" class="one">Contacts Assigned to Matter<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
-</div>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(ViewBag.Matter.Id)">@(ViewBag.Matter.Title)</a></li>
+        <li><a href="/Matters/Contacts/@(ViewBag.Matter.Id)" class="active">Contacts</a></li>
+    </ul>
+}
 
-<div class="options_div" style="text-align: right;">
-    <div style="width: 200px; display: inline;">
-        <a href="../../MatterContact/AssignContact/@(ViewBag.MatterId)">
-            <input type="button" value="Assign Contact" id="AssignContact"
-                   style="background-image: url('/Content/fugue-icons-3.5.6/icons-shadowless/plus.png');
-                background-position: left center; background-repeat: no-repeat; padding-left: 20px;" />
-        </a>
+<script type="text/javascript">
+    $(function () {
+        $("#new").click(function () {
+            window.location = '/MatterContact/AssignContact/@(ViewBag.Matter.Id)';
+        })
+    })
+</script>
+
+<div class="container-fluid">
+    <div class="row text-right">
+        <div class="btn-group">
+            <button id="new" class="btn btn-sm btn-primary"><span class="fa fa-plus"></span> New Assignment</button>
+        </div>
     </div>
 </div>
 
-<table class="listing_table">
-    <tr>
-        <th>
-            Display Name
-        </th>
-        <th>
-            Flags
-        </th>
-        <th style="width: 45px;">
-        </th>
-    </tr>
-    @{ bool altRow = true;}
-    @foreach (var item in Model)
-    {
-        altRow = !altRow;
-        string flags = "";
-        if (item.IsClient) { flags += "Client, "; }
-        if (item.IsClientContact) { flags += "Client Contact, "; }
-        if (item.IsAppointed) { flags += "Appointed, "; }
-        if (item.IsParty) { flags += "Party, "; }
-        if (item.IsJudge) { flags += "Judge, "; }
-        if (item.IsWitness) { flags += "Witness, "; }
-        if (item.IsAttorney) { flags += "Attorney, "; }
-        if (item.IsLeadAttorney) { flags += "Lead Attorney, "; }
-        if (item.IsSupportStaff) { flags += "Support Staff, "; }
-        if (item.IsThirdPartyPayor) { flags += "Third Party Payor, "; }
-        if (flags.Length > 0)
-        {
-            flags = flags.Substring(0, flags.Length - 2);
-        }
-        else
-        {
-            flags = "None";
-        }
-        if (altRow)
-        {
-            <tr class="tr_alternate">
-                <td>
-                    @(Html.ActionLink(item.Contact.DisplayName, "Details", "Contacts", new { id = item.Contact.Id }, null))
-                </td>
-                <td>
-                    @(Html.ActionLink(flags, "Details", "MatterContact", new { id = item.Id }, null))
-                </td>
-                <td>
-                    @(Html.ActionLink("Edit", "Edit", "MatterContact", new { id = item.Id }, new { @class = "btn-edit", title = "Edit" }))
-                    @(Html.ActionLink("Unassign", "Delete", "MatterContact", new { id = item.Id }, new { @class = "btn-remove", title = "Unassign" }))
-                </td>
-            </tr>
-        }
-        else
-        {
-            <tr>
-                <td>
-                    @(Html.ActionLink(item.Contact.DisplayName, "Details", "Contacts", new { id = item.Contact.Id }, null))
-                </td>
-                <td>
-                    @(Html.ActionLink(flags, "Details", "MatterContact", new { id = item.Id }, null))
-                </td>
-                <td>
-                    @(Html.ActionLink("Edit", "Edit", "MatterContact", new { id = item.Id }, new { @class = "btn-edit", title = "Edit" }))
-                    @(Html.ActionLink("Unassign", "Delete", "MatterContact", new { id = item.Id }, new { @class = "btn-remove", title = "Unassign" }))
-                </td>
-            </tr>
-        }
-    }
-</table>
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    Contacts are the people (individuals or organizations) that do things or have things done to or for them. 
-    The contacts on this page are assigned to the matter with the role stated.<br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    Clicking the contact will show the details of the contact.
-    Clicking the role will show the details of the contact assignment.  Click the 
-    <img src="../../Content/fugue-icons-3.5.6/icons-shadowless/pencil.png" /> (edit icon) to make 
-    changes to the contact.  Click the 
-    <img src="../../Content/fugue-icons-3.5.6/icons-shadowless/cross.png" /> (remove icon) to 
-    unassign the contact from the matter.
-    </p>
-</div> 
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Contacts for Matter
+    </div>
+    <div class="panel-body">
+        <table class="table table-striped table-condensed table-hover table-text-small">
+            <thead>
+                <tr>
+                    <th style="text-align: center;">
+                        Display Name
+                    </th>
+                    <th style="text-align: center;">
+                        Role(s)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                string flags = "";
+                if (item.IsClient) { flags += "Client, "; }
+                if (item.IsClientContact) { flags += "Client Contact, "; }
+                if (item.IsAppointed) { flags += "Appointed, "; }
+                if (item.IsParty) { flags += "Party, "; }
+                if (item.IsJudge) { flags += "Judge, "; }
+                if (item.IsWitness) { flags += "Witness, "; }
+                if (item.IsAttorney) { flags += "Attorney, "; }
+                if (item.IsLeadAttorney) { flags += "Lead Attorney, "; }
+                if (item.IsSupportStaff) { flags += "Support Staff, "; }
+                if (item.IsThirdPartyPayor) { flags += "Third Party Payor, "; }
+                if (flags.Length > 0)
+                {
+                    flags = flags.Substring(0, flags.Length - 2);
+                }
+                else
+                {
+                    flags = "None";
+                }
+                <tr>
+                    <td>
+                        @(Html.ActionLink(item.Contact.DisplayName, "Details", "Contacts", new { id = item.Contact.Id }, null))
+                    </td>
+                    <td>
+                        @(Html.ActionLink(flags, "Details", "MatterContact", new { id = item.Id }, null))
+                    </td>
+                    <td style="text-align: right;">
+                        <button type="button" class="btn btn-xs btn-default" onclick="navTo('/MatterContact/Edit/@(item.Id)')">
+                            <span class="fa fa-pencil"></span> Edit
+                        </button>
+                        <button type="button" class="btn btn-xs btn-default" onclick="navTo('/MatterContact/Delete/@(item.Id)')">
+                            <span class="fa fa-times"></span> Remove
+                        </button>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -103,95 +103,6 @@ namespace OpenLawOffice.Web.Controllers
         }
 
         [Authorize(Roles = "Login, User")]
-        public ActionResult Timesheets(int id)
-        {
-            DateTime now = DateTime.Now;
-            DateTime? from = null, to = null;
-
-            ViewModels.Contacts.TimesheetsViewModel viewModel = new ViewModels.Contacts.TimesheetsViewModel();
-
-            using (IDbConnection conn = Data.Database.Instance.GetConnection())
-            {
-                viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
-                    Data.Contacts.Contact.Get(id, conn, false));
-            }
-
-            if (!string.IsNullOrEmpty(Request["From"]))
-                from = DateTime.Parse(Request["From"]);
-            if (!string.IsNullOrEmpty(Request["To"]))
-                to = DateTime.Parse(Request["To"]);
-
-            if (!from.HasValue)
-                from = new DateTime(now.Year, now.Month, 1);
-            if (!to.HasValue)
-                to = new DateTime(now.Year, now.Month, 1).AddMonths(1).AddDays(-1);
-
-            if (from.HasValue)
-                ViewBag.From = from.Value;
-            if (to.HasValue)
-                ViewBag.To = to.Value;
-
-            return View(viewModel);
-        }
-
-        [Authorize(Roles = "Login, User")]
-        public ActionResult Timesheets_Print3rdParty(int id)
-        {
-            DateTime now = DateTime.Now;
-            int contactId = id;
-            DateTime? from = null, to = null;
-            ViewModels.Contacts.TimesheetsViewModel viewModel = new ViewModels.Contacts.TimesheetsViewModel();
-            
-            if (!string.IsNullOrEmpty(Request["From"]))
-                from = DateTime.Parse(Request["From"]);
-            if (!string.IsNullOrEmpty(Request["To"]))
-                to = DateTime.Parse(Request["To"]);
-
-            if (!from.HasValue)
-                from = new DateTime(now.Year, now.Month, 1);
-            if (!to.HasValue)
-                to = new DateTime(now.Year, now.Month, 1).AddMonths(1).AddDays(-1);
-
-            using (IDbConnection conn = Data.Database.Instance.GetConnection())
-            {
-                viewModel.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(
-                Data.Contacts.Contact.Get(id, conn, false));
-
-                // Method to get all matters for which BillTo is set to this contact
-                Data.Contacts.Contact.ListMattersWhereContactIsBillTo(contactId, conn, false).ForEach(matter =>
-                {
-                    ViewModels.Contacts.TimesheetsViewModel.MatterTimeList mtl = new ViewModels.Contacts.TimesheetsViewModel.MatterTimeList();
-                    ViewModels.Contacts.TimesheetsViewModel.TimeItem timeItem;
-
-                    mtl.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(matter);
-                    Data.Timing.Time.ListForMatterWithinRange(matter.Id.Value, from, to, conn, false).ForEach(time =>
-                    {
-                        timeItem = new ViewModels.Contacts.TimesheetsViewModel.TimeItem();
-
-                        timeItem.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(time);
-
-                        timeItem.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(
-                            Data.Timing.Time.GetRelatedTask(timeItem.Time.Id.Value, conn, false));
-
-                        timeItem.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(
-                            Data.Tasks.Task.GetRelatedMatter(timeItem.Task.Id.Value, conn, false));
-
-                        mtl.Times.Add(timeItem);
-                    });
-
-                    viewModel.Matters.Add(mtl);
-                });
-            }
-
-            if (from.HasValue)
-                ViewBag.From = from.Value;
-            if (to.HasValue)
-                ViewBag.To = to.Value;
-
-            return View(viewModel);
-        }
-
-        [Authorize(Roles = "Login, User")]
         public ActionResult Create()
         {
             List<ViewModels.Billing.BillingRateViewModel> billingRateList;
@@ -391,6 +302,7 @@ namespace OpenLawOffice.Web.Controllers
             list = new List<ViewModels.Matters.MatterViewModel>();
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
+                ViewBag.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(Data.Contacts.Contact.Get(contactId));
                 Data.Matters.Matter.ListAllMattersForContact(contactId, conn, false).ForEach(x =>
                 {
                     list.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
@@ -416,6 +328,7 @@ namespace OpenLawOffice.Web.Controllers
 
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
+                ViewBag.Contact = Mapper.Map<ViewModels.Contacts.ContactViewModel>(Data.Contacts.Contact.Get(contactId));
                 Data.Tasks.Task.ListAllTasksForContact(contactId, conn, false).ForEach(x =>
                 {
                     viewModel = Mapper.Map<ViewModels.Tasks.TaskViewModel>(x);

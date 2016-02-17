@@ -1,15 +1,19 @@
 @model OpenLawOffice.Web.ViewModels.Matters.CreateMatterContactViewModel
 
-@{ 
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Assign Contacts to Matter";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Assign Contacts to Matter";
 }
 
-<div id="roadmap">
-    <div class="zero">Matter: [@(Html.ActionLink((string)ViewData["Matter"], "Details", "Matters", new { id = ViewData["MatterId"] }, null))]</div>
-    <div id="current" class="one">Assign Contact to Matter<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
-</div>
-     
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(Model.Matter.Id)">@(Model.Matter.Title)</a></li>
+        <li><a href="/MatterContact/AssignContact/@(Model.Matter.Id)" class="active">Assign Contacts</a></li>
+    </ul>
+}
+
 <script language="javascript">
     function assignContactBinder(id) {
         showHider('Contact' + id + '_IsParty', 'Contact' + id + '_PartyTitle_div');
@@ -60,544 +64,538 @@
 </script>
 
 @using (Html.BeginForm())
-    {
-@(Html.ValidationSummary(true))
-    <table class="detail_table">
-        <tr>
-            <td colspan="5" class="listing_table_heading">
-                Assign Contacts
-            </td>
-        </tr>
-        <tr>
-            <td class="display-label">
-                Contact
-            </td>
-            <td class="display-field">
-                @(Html.HiddenFor(model => model.Contact1.Contact.Id))
-                @(Html.TextBoxFor(model => model.Contact1.Contact.DisplayName, new { @style = "width: 300px;" }))
-                @(Html.ValidationMessageFor(model => model.Contact1.Contact))
-            </td>
-            <td style="width: 25px;"></td>
-            <td class="display-field">
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact1.IsClient)) Client
-                    @(Html.CheckBoxFor(model => model.Contact1.IsClientContact)) Client Contact
-                    @(Html.CheckBoxFor(model => model.Contact1.IsAppointed)) Appointed
-                    @(Html.CheckBoxFor(model => model.Contact1.IsParty)) Party
-                    @(Html.CheckBoxFor(model => model.Contact1.IsJudge)) Judge
-                    @(Html.CheckBoxFor(model => model.Contact1.IsWitness)) Witness
-                </div>
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact1.IsAttorney)) Attorney
-                    @(Html.CheckBoxFor(model => model.Contact1.IsLeadAttorney)) Lead Attorney
-                    @(Html.CheckBoxFor(model => model.Contact1.IsSupportStaff)) Support Staff
-                    @(Html.CheckBoxFor(model => model.Contact1.IsThirdPartyPayor)) Third Party Payor
-                </div>
-                <div id="Contact1_PartyTitle_div" style="width: 500px;">
-                    Party Title: @(Html.TextBoxFor(model => model.Contact1.PartyTitle, new { @style = "width: 300px;" }))
-                </div>
+{
+    @(Html.ValidationSummary(true))
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Assign Contacts
+        </div>
+        <div class="panel-body">
+            <table class="table table-striped table-condensed table-hover table-text-small notifications">
+                <tbody>
+                    <tr>
+                        <td class="display-label">
+                            Contact
+                        </td>
+                        <td class="display-field">
+                            @(Html.HiddenFor(model => model.Contact1.Contact.Id))
+                            @(Html.TextBoxFor(model => model.Contact1.Contact.DisplayName, new { @style = "width: 300px;" }))
+                            @(Html.ValidationMessageFor(model => model.Contact1.Contact))
+                        </td>
+                        <td style="width: 25px;"></td>
+                        <td class="display-field">
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact1.IsClient)) Client
+                                @(Html.CheckBoxFor(model => model.Contact1.IsClientContact)) Client Contact
+                                @(Html.CheckBoxFor(model => model.Contact1.IsAppointed)) Appointed
+                                @(Html.CheckBoxFor(model => model.Contact1.IsParty)) Party
+                                @(Html.CheckBoxFor(model => model.Contact1.IsJudge)) Judge
+                                @(Html.CheckBoxFor(model => model.Contact1.IsWitness)) Witness
+                            </div>
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact1.IsAttorney)) Attorney
+                                @(Html.CheckBoxFor(model => model.Contact1.IsLeadAttorney)) Lead Attorney
+                                @(Html.CheckBoxFor(model => model.Contact1.IsSupportStaff)) Support Staff
+                                @(Html.CheckBoxFor(model => model.Contact1.IsThirdPartyPayor)) Third Party Payor
+                            </div>
+                            <div id="Contact1_PartyTitle_div" style="width: 500px;">
+                                Party Title: @(Html.TextBoxFor(model => model.Contact1.PartyTitle, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact1_AttorneyFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact1.AttorneyFor.Id))
-                    Attorney For: @(Html.TextBoxFor(model => model.Contact1.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact1_AttorneyFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact1.AttorneyFor.Id))
+                                Attorney For: @(Html.TextBoxFor(model => model.Contact1.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact1_SupportStaffFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact1.SupportStaffFor.Id))
-                    Support Staff For: @(Html.TextBoxFor(model => model.Contact1.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact1_SupportStaffFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact1.SupportStaffFor.Id))
+                                Support Staff For: @(Html.TextBoxFor(model => model.Contact1.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact1_ThirdPartyPayorFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact1.ThirdPartyPayorFor.Id))
-                    Third Party Payor For: @(Html.TextBoxFor(model => model.Contact1.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact1_ThirdPartyPayorFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact1.ThirdPartyPayorFor.Id))
+                                Third Party Payor For: @(Html.TextBoxFor(model => model.Contact1.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <script language="javascript">
-                $(document).ready(function () {
-                    assignContactBinder(1);
-                });
-                </script>
-            </td>
-        </tr>
+                            <script language="javascript">
+                                $(document).ready(function () {
+                                    assignContactBinder(1);
+                                });
+                            </script>
+                        </td>
+                    </tr>
 
-        <tr class="tr_alternate">
-            <td class="display-label">
-                Contact
-            </td>
-            <td class="display-field">
-                @(Html.HiddenFor(model => model.Contact2.Contact.Id))
-                @(Html.TextBoxFor(model => model.Contact2.Contact.DisplayName, new { @style = "width: 300px;" }))
-                @(Html.ValidationMessageFor(model => model.Contact2.Contact))
-            </td>
-            <td style="width: 25px;"></td>
-            <td class="display-field">
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact2.IsClient)) Client
-                    @(Html.CheckBoxFor(model => model.Contact2.IsClientContact)) Client Contact
-                    @(Html.CheckBoxFor(model => model.Contact2.IsAppointed)) Appointed
-                    @(Html.CheckBoxFor(model => model.Contact2.IsParty)) Party
-                    @(Html.CheckBoxFor(model => model.Contact2.IsJudge)) Judge
-                    @(Html.CheckBoxFor(model => model.Contact2.IsWitness)) Witness
-                </div>
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact2.IsAttorney)) Attorney
-                    @(Html.CheckBoxFor(model => model.Contact2.IsLeadAttorney)) Lead Attorney
-                    @(Html.CheckBoxFor(model => model.Contact2.IsSupportStaff)) Support Staff
-                    @(Html.CheckBoxFor(model => model.Contact2.IsThirdPartyPayor)) Third Party Payor
-                </div>
-                <div id="Contact2_PartyTitle_div" style="width: 500px;">
-                    Party Title: @(Html.TextBoxFor(model => model.Contact2.PartyTitle, new { @style = "width: 300px;" }))
-                </div>
+                    <tr>
+                        <td class="display-label">
+                            Contact
+                        </td>
+                        <td class="display-field">
+                            @(Html.HiddenFor(model => model.Contact2.Contact.Id))
+                            @(Html.TextBoxFor(model => model.Contact2.Contact.DisplayName, new { @style = "width: 300px;" }))
+                            @(Html.ValidationMessageFor(model => model.Contact2.Contact))
+                        </td>
+                        <td style="width: 25px;"></td>
+                        <td class="display-field">
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact2.IsClient)) Client
+                                @(Html.CheckBoxFor(model => model.Contact2.IsClientContact)) Client Contact
+                                @(Html.CheckBoxFor(model => model.Contact2.IsAppointed)) Appointed
+                                @(Html.CheckBoxFor(model => model.Contact2.IsParty)) Party
+                                @(Html.CheckBoxFor(model => model.Contact2.IsJudge)) Judge
+                                @(Html.CheckBoxFor(model => model.Contact2.IsWitness)) Witness
+                            </div>
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact2.IsAttorney)) Attorney
+                                @(Html.CheckBoxFor(model => model.Contact2.IsLeadAttorney)) Lead Attorney
+                                @(Html.CheckBoxFor(model => model.Contact2.IsSupportStaff)) Support Staff
+                                @(Html.CheckBoxFor(model => model.Contact2.IsThirdPartyPayor)) Third Party Payor
+                            </div>
+                            <div id="Contact2_PartyTitle_div" style="width: 500px;">
+                                Party Title: @(Html.TextBoxFor(model => model.Contact2.PartyTitle, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact2_AttorneyFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact2.AttorneyFor.Id))
-                    Attorney For: @(Html.TextBoxFor(model => model.Contact2.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact2_AttorneyFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact2.AttorneyFor.Id))
+                                Attorney For: @(Html.TextBoxFor(model => model.Contact2.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact2_SupportStaffFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact2.SupportStaffFor.Id))
-                    Support Staff For: @(Html.TextBoxFor(model => model.Contact2.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact2_SupportStaffFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact2.SupportStaffFor.Id))
+                                Support Staff For: @(Html.TextBoxFor(model => model.Contact2.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact2_ThirdPartyPayorFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact2.ThirdPartyPayorFor.Id))
-                    Third Party Payor For: @(Html.TextBoxFor(model => model.Contact2.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact2_ThirdPartyPayorFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact2.ThirdPartyPayorFor.Id))
+                                Third Party Payor For: @(Html.TextBoxFor(model => model.Contact2.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <script language="javascript">
-                $(document).ready(function () {
-                    assignContactBinder(2);
-                });
-                </script>
-            </td>
-        </tr>
+                            <script language="javascript">
+                                $(document).ready(function () {
+                                    assignContactBinder(2);
+                                });
+                            </script>
+                        </td>
+                    </tr>
 
-        <tr>
-            <td class="display-label">
-                Contact
-            </td>
-            <td class="display-field">
-                @(Html.HiddenFor(model => model.Contact3.Contact.Id))
-                @(Html.TextBoxFor(model => model.Contact3.Contact.DisplayName, new { @style = "width: 300px;" }))
-                @(Html.ValidationMessageFor(model => model.Contact3.Contact))
-            </td>
-            <td style="width: 25px;"></td>
-            <td class="display-field">
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact3.IsClient)) Client
-                    @(Html.CheckBoxFor(model => model.Contact3.IsClientContact)) Client Contact
-                    @(Html.CheckBoxFor(model => model.Contact3.IsAppointed)) Appointed
-                    @(Html.CheckBoxFor(model => model.Contact3.IsParty)) Party
-                    @(Html.CheckBoxFor(model => model.Contact3.IsJudge)) Judge
-                    @(Html.CheckBoxFor(model => model.Contact3.IsWitness)) Witness
-                </div>
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact3.IsAttorney)) Attorney
-                    @(Html.CheckBoxFor(model => model.Contact3.IsLeadAttorney)) Lead Attorney
-                    @(Html.CheckBoxFor(model => model.Contact3.IsSupportStaff)) Support Staff
-                    @(Html.CheckBoxFor(model => model.Contact3.IsThirdPartyPayor)) Third Party Payor
-                </div>
-                <div id="Contact3_PartyTitle_div" style="width: 500px;">
-                    Party Title: @(Html.TextBoxFor(model => model.Contact3.PartyTitle, new { @style = "width: 300px;" }))
-                </div>
+                    <tr>
+                        <td class="display-label">
+                            Contact
+                        </td>
+                        <td class="display-field">
+                            @(Html.HiddenFor(model => model.Contact3.Contact.Id))
+                            @(Html.TextBoxFor(model => model.Contact3.Contact.DisplayName, new { @style = "width: 300px;" }))
+                            @(Html.ValidationMessageFor(model => model.Contact3.Contact))
+                        </td>
+                        <td style="width: 25px;"></td>
+                        <td class="display-field">
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact3.IsClient)) Client
+                                @(Html.CheckBoxFor(model => model.Contact3.IsClientContact)) Client Contact
+                                @(Html.CheckBoxFor(model => model.Contact3.IsAppointed)) Appointed
+                                @(Html.CheckBoxFor(model => model.Contact3.IsParty)) Party
+                                @(Html.CheckBoxFor(model => model.Contact3.IsJudge)) Judge
+                                @(Html.CheckBoxFor(model => model.Contact3.IsWitness)) Witness
+                            </div>
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact3.IsAttorney)) Attorney
+                                @(Html.CheckBoxFor(model => model.Contact3.IsLeadAttorney)) Lead Attorney
+                                @(Html.CheckBoxFor(model => model.Contact3.IsSupportStaff)) Support Staff
+                                @(Html.CheckBoxFor(model => model.Contact3.IsThirdPartyPayor)) Third Party Payor
+                            </div>
+                            <div id="Contact3_PartyTitle_div" style="width: 500px;">
+                                Party Title: @(Html.TextBoxFor(model => model.Contact3.PartyTitle, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact3_AttorneyFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact3.AttorneyFor.Id))
-                    Attorney For: @(Html.TextBoxFor(model => model.Contact3.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact3_AttorneyFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact3.AttorneyFor.Id))
+                                Attorney For: @(Html.TextBoxFor(model => model.Contact3.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact3_SupportStaffFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact3.SupportStaffFor.Id))
-                    Support Staff For: @(Html.TextBoxFor(model => model.Contact3.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact3_SupportStaffFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact3.SupportStaffFor.Id))
+                                Support Staff For: @(Html.TextBoxFor(model => model.Contact3.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact3_ThirdPartyPayorFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact3.ThirdPartyPayorFor.Id))
-                    Third Party Payor For: @(Html.TextBoxFor(model => model.Contact3.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact3_ThirdPartyPayorFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact3.ThirdPartyPayorFor.Id))
+                                Third Party Payor For: @(Html.TextBoxFor(model => model.Contact3.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <script language="javascript">
-                $(document).ready(function () {
-                    assignContactBinder(3);
-                });
-                </script>
-            </td>
-        </tr>
+                            <script language="javascript">
+                                $(document).ready(function () {
+                                    assignContactBinder(3);
+                                });
+                            </script>
+                        </td>
+                    </tr>
 
-        <tr class="tr_alternate">
-            <td class="display-label">
-                Contact
-            </td>
-            <td class="display-field">
-                @(Html.HiddenFor(model => model.Contact4.Contact.Id))
-                @(Html.TextBoxFor(model => model.Contact4.Contact.DisplayName, new { @style = "width: 300px;" }))
-                @(Html.ValidationMessageFor(model => model.Contact4.Contact))
-            </td>
-            <td style="width: 25px;"></td>
-            <td class="display-field">
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact4.IsClient)) Client
-                    @(Html.CheckBoxFor(model => model.Contact4.IsClientContact)) Client Contact
-                    @(Html.CheckBoxFor(model => model.Contact4.IsAppointed)) Appointed
-                    @(Html.CheckBoxFor(model => model.Contact4.IsParty)) Party
-                    @(Html.CheckBoxFor(model => model.Contact4.IsJudge)) Judge
-                    @(Html.CheckBoxFor(model => model.Contact4.IsWitness)) Witness
-                </div>
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact4.IsAttorney)) Attorney
-                    @(Html.CheckBoxFor(model => model.Contact4.IsLeadAttorney)) Lead Attorney
-                    @(Html.CheckBoxFor(model => model.Contact4.IsSupportStaff)) Support Staff
-                    @(Html.CheckBoxFor(model => model.Contact4.IsThirdPartyPayor)) Third Party Payor
-                </div>
-                <div id="Contact4_PartyTitle_div" style="width: 500px;">
-                    Party Title: @(Html.TextBoxFor(model => model.Contact4.PartyTitle, new { @style = "width: 300px;" }))
-                </div>
+                    <tr>
+                        <td class="display-label">
+                            Contact
+                        </td>
+                        <td class="display-field">
+                            @(Html.HiddenFor(model => model.Contact4.Contact.Id))
+                            @(Html.TextBoxFor(model => model.Contact4.Contact.DisplayName, new { @style = "width: 300px;" }))
+                            @(Html.ValidationMessageFor(model => model.Contact4.Contact))
+                        </td>
+                        <td style="width: 25px;"></td>
+                        <td class="display-field">
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact4.IsClient)) Client
+                                @(Html.CheckBoxFor(model => model.Contact4.IsClientContact)) Client Contact
+                                @(Html.CheckBoxFor(model => model.Contact4.IsAppointed)) Appointed
+                                @(Html.CheckBoxFor(model => model.Contact4.IsParty)) Party
+                                @(Html.CheckBoxFor(model => model.Contact4.IsJudge)) Judge
+                                @(Html.CheckBoxFor(model => model.Contact4.IsWitness)) Witness
+                            </div>
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact4.IsAttorney)) Attorney
+                                @(Html.CheckBoxFor(model => model.Contact4.IsLeadAttorney)) Lead Attorney
+                                @(Html.CheckBoxFor(model => model.Contact4.IsSupportStaff)) Support Staff
+                                @(Html.CheckBoxFor(model => model.Contact4.IsThirdPartyPayor)) Third Party Payor
+                            </div>
+                            <div id="Contact4_PartyTitle_div" style="width: 500px;">
+                                Party Title: @(Html.TextBoxFor(model => model.Contact4.PartyTitle, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact4_AttorneyFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact4.AttorneyFor.Id))
-                    Attorney For: @(Html.TextBoxFor(model => model.Contact4.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact4_AttorneyFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact4.AttorneyFor.Id))
+                                Attorney For: @(Html.TextBoxFor(model => model.Contact4.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact4_SupportStaffFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact4.SupportStaffFor.Id))
-                    Support Staff For: @(Html.TextBoxFor(model => model.Contact4.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact4_SupportStaffFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact4.SupportStaffFor.Id))
+                                Support Staff For: @(Html.TextBoxFor(model => model.Contact4.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact4_ThirdPartyPayorFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact4.ThirdPartyPayorFor.Id))
-                    Third Party Payor For: @(Html.TextBoxFor(model => model.Contact4.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact4_ThirdPartyPayorFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact4.ThirdPartyPayorFor.Id))
+                                Third Party Payor For: @(Html.TextBoxFor(model => model.Contact4.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <script language="javascript">
-                $(document).ready(function () {
-                    assignContactBinder(4);
-                });
-                </script>
-            </td>
-        </tr>
+                            <script language="javascript">
+                                $(document).ready(function () {
+                                    assignContactBinder(4);
+                                });
+                            </script>
+                        </td>
+                    </tr>
 
-        <tr>
-            <td class="display-label">
-                Contact
-            </td>
-            <td class="display-field">
-                @(Html.HiddenFor(model => model.Contact5.Contact.Id))
-                @(Html.TextBoxFor(model => model.Contact5.Contact.DisplayName, new { @style = "width: 300px;" }))
-                @(Html.ValidationMessageFor(model => model.Contact5.Contact))
-            </td>
-            <td style="width: 25px;"></td>
-            <td class="display-field">
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact5.IsClient)) Client
-                    @(Html.CheckBoxFor(model => model.Contact5.IsClientContact)) Client Contact
-                    @(Html.CheckBoxFor(model => model.Contact5.IsAppointed)) Appointed
-                    @(Html.CheckBoxFor(model => model.Contact5.IsParty)) Party
-                    @(Html.CheckBoxFor(model => model.Contact5.IsJudge)) Judge
-                    @(Html.CheckBoxFor(model => model.Contact5.IsWitness)) Witness
-                </div>
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact5.IsAttorney)) Attorney
-                    @(Html.CheckBoxFor(model => model.Contact5.IsLeadAttorney)) Lead Attorney
-                    @(Html.CheckBoxFor(model => model.Contact5.IsSupportStaff)) Support Staff
-                    @(Html.CheckBoxFor(model => model.Contact5.IsThirdPartyPayor)) Third Party Payor
-                </div>
-                <div id="Contact5_PartyTitle_div" style="width: 500px;">
-                    Party Title: @(Html.TextBoxFor(model => model.Contact5.PartyTitle, new { @style = "width: 300px;" }))
-                </div>
+                    <tr>
+                        <td class="display-label">
+                            Contact
+                        </td>
+                        <td class="display-field">
+                            @(Html.HiddenFor(model => model.Contact5.Contact.Id))
+                            @(Html.TextBoxFor(model => model.Contact5.Contact.DisplayName, new { @style = "width: 300px;" }))
+                            @(Html.ValidationMessageFor(model => model.Contact5.Contact))
+                        </td>
+                        <td style="width: 25px;"></td>
+                        <td class="display-field">
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact5.IsClient)) Client
+                                @(Html.CheckBoxFor(model => model.Contact5.IsClientContact)) Client Contact
+                                @(Html.CheckBoxFor(model => model.Contact5.IsAppointed)) Appointed
+                                @(Html.CheckBoxFor(model => model.Contact5.IsParty)) Party
+                                @(Html.CheckBoxFor(model => model.Contact5.IsJudge)) Judge
+                                @(Html.CheckBoxFor(model => model.Contact5.IsWitness)) Witness
+                            </div>
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact5.IsAttorney)) Attorney
+                                @(Html.CheckBoxFor(model => model.Contact5.IsLeadAttorney)) Lead Attorney
+                                @(Html.CheckBoxFor(model => model.Contact5.IsSupportStaff)) Support Staff
+                                @(Html.CheckBoxFor(model => model.Contact5.IsThirdPartyPayor)) Third Party Payor
+                            </div>
+                            <div id="Contact5_PartyTitle_div" style="width: 500px;">
+                                Party Title: @(Html.TextBoxFor(model => model.Contact5.PartyTitle, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact5_AttorneyFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact5.AttorneyFor.Id))
-                    Attorney For: @(Html.TextBoxFor(model => model.Contact5.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact5_AttorneyFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact5.AttorneyFor.Id))
+                                Attorney For: @(Html.TextBoxFor(model => model.Contact5.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact5_SupportStaffFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact5.SupportStaffFor.Id))
-                    Support Staff For: @(Html.TextBoxFor(model => model.Contact5.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact5_SupportStaffFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact5.SupportStaffFor.Id))
+                                Support Staff For: @(Html.TextBoxFor(model => model.Contact5.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact5_ThirdPartyPayorFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact5.ThirdPartyPayorFor.Id))
-                    Third Party Payor For: @(Html.TextBoxFor(model => model.Contact5.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact5_ThirdPartyPayorFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact5.ThirdPartyPayorFor.Id))
+                                Third Party Payor For: @(Html.TextBoxFor(model => model.Contact5.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <script language="javascript">
-                $(document).ready(function () {
-                    assignContactBinder(5);
-                });
-                </script>
-            </td>
-        </tr>
+                            <script language="javascript">
+                                $(document).ready(function () {
+                                    assignContactBinder(5);
+                                });
+                            </script>
+                        </td>
+                    </tr>
 
-        <tr class="tr_alternate">
-            <td class="display-label">
-                Contact
-            </td>
-            <td class="display-field">
-                @(Html.HiddenFor(model => model.Contact6.Contact.Id))
-                @(Html.TextBoxFor(model => model.Contact6.Contact.DisplayName, new { @style = "width: 300px;" }))
-                @(Html.ValidationMessageFor(model => model.Contact6.Contact))
-            </td>
-            <td style="width: 25px;"></td>
-            <td class="display-field">
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact6.IsClient)) Client
-                    @(Html.CheckBoxFor(model => model.Contact6.IsClientContact)) Client Contact
-                    @(Html.CheckBoxFor(model => model.Contact6.IsAppointed)) Appointed
-                    @(Html.CheckBoxFor(model => model.Contact6.IsParty)) Party
-                    @(Html.CheckBoxFor(model => model.Contact6.IsJudge)) Judge
-                    @(Html.CheckBoxFor(model => model.Contact6.IsWitness)) Witness
-                </div>
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact6.IsAttorney)) Attorney
-                    @(Html.CheckBoxFor(model => model.Contact6.IsLeadAttorney)) Lead Attorney
-                    @(Html.CheckBoxFor(model => model.Contact6.IsSupportStaff)) Support Staff
-                    @(Html.CheckBoxFor(model => model.Contact6.IsThirdPartyPayor)) Third Party Payor
-                </div>
-                <div id="Contact6_PartyTitle_div" style="width: 500px;">
-                    Party Title: @(Html.TextBoxFor(model => model.Contact6.PartyTitle, new { @style = "width: 300px;" }))
-                </div>
+                    <tr>
+                        <td class="display-label">
+                            Contact
+                        </td>
+                        <td class="display-field">
+                            @(Html.HiddenFor(model => model.Contact6.Contact.Id))
+                            @(Html.TextBoxFor(model => model.Contact6.Contact.DisplayName, new { @style = "width: 300px;" }))
+                            @(Html.ValidationMessageFor(model => model.Contact6.Contact))
+                        </td>
+                        <td style="width: 25px;"></td>
+                        <td class="display-field">
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact6.IsClient)) Client
+                                @(Html.CheckBoxFor(model => model.Contact6.IsClientContact)) Client Contact
+                                @(Html.CheckBoxFor(model => model.Contact6.IsAppointed)) Appointed
+                                @(Html.CheckBoxFor(model => model.Contact6.IsParty)) Party
+                                @(Html.CheckBoxFor(model => model.Contact6.IsJudge)) Judge
+                                @(Html.CheckBoxFor(model => model.Contact6.IsWitness)) Witness
+                            </div>
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact6.IsAttorney)) Attorney
+                                @(Html.CheckBoxFor(model => model.Contact6.IsLeadAttorney)) Lead Attorney
+                                @(Html.CheckBoxFor(model => model.Contact6.IsSupportStaff)) Support Staff
+                                @(Html.CheckBoxFor(model => model.Contact6.IsThirdPartyPayor)) Third Party Payor
+                            </div>
+                            <div id="Contact6_PartyTitle_div" style="width: 500px;">
+                                Party Title: @(Html.TextBoxFor(model => model.Contact6.PartyTitle, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact6_AttorneyFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact6.AttorneyFor.Id))
-                    Attorney For: @(Html.TextBoxFor(model => model.Contact6.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact6_AttorneyFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact6.AttorneyFor.Id))
+                                Attorney For: @(Html.TextBoxFor(model => model.Contact6.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact6_SupportStaffFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact6.SupportStaffFor.Id))
-                    Support Staff For: @(Html.TextBoxFor(model => model.Contact6.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact6_SupportStaffFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact6.SupportStaffFor.Id))
+                                Support Staff For: @(Html.TextBoxFor(model => model.Contact6.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact6_ThirdPartyPayorFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact6.ThirdPartyPayorFor.Id))
-                    Third Party Payor For: @(Html.TextBoxFor(model => model.Contact6.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact6_ThirdPartyPayorFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact6.ThirdPartyPayorFor.Id))
+                                Third Party Payor For: @(Html.TextBoxFor(model => model.Contact6.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <script language="javascript">
-                $(document).ready(function () {
-                    assignContactBinder(6);
-                });
-                </script>
-            </td>
-        </tr>
+                            <script language="javascript">
+                                $(document).ready(function () {
+                                    assignContactBinder(6);
+                                });
+                            </script>
+                        </td>
+                    </tr>
 
-        <tr>
-            <td class="display-label">
-                Contact
-            </td>
-            <td class="display-field">
-                @(Html.HiddenFor(model => model.Contact7.Contact.Id))
-                @(Html.TextBoxFor(model => model.Contact7.Contact.DisplayName, new { @style = "width: 300px;" }))
-                @(Html.ValidationMessageFor(model => model.Contact7.Contact))
-            </td>
-            <td style="width: 25px;"></td>
-            <td class="display-field">
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact7.IsClient)) Client
-                    @(Html.CheckBoxFor(model => model.Contact7.IsClientContact)) Client Contact
-                    @(Html.CheckBoxFor(model => model.Contact7.IsAppointed)) Appointed
-                    @(Html.CheckBoxFor(model => model.Contact7.IsParty)) Party
-                    @(Html.CheckBoxFor(model => model.Contact7.IsJudge)) Judge
-                    @(Html.CheckBoxFor(model => model.Contact7.IsWitness)) Witness
-                </div>
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact7.IsAttorney)) Attorney
-                    @(Html.CheckBoxFor(model => model.Contact7.IsLeadAttorney)) Lead Attorney
-                    @(Html.CheckBoxFor(model => model.Contact7.IsSupportStaff)) Support Staff
-                    @(Html.CheckBoxFor(model => model.Contact7.IsThirdPartyPayor)) Third Party Payor
-                </div>
-                <div id="Contact7_PartyTitle_div" style="width: 500px;">
-                    Party Title: @(Html.TextBoxFor(model => model.Contact7.PartyTitle, new { @style = "width: 300px;" }))
-                </div>
+                    <tr>
+                        <td class="display-label">
+                            Contact
+                        </td>
+                        <td class="display-field">
+                            @(Html.HiddenFor(model => model.Contact7.Contact.Id))
+                            @(Html.TextBoxFor(model => model.Contact7.Contact.DisplayName, new { @style = "width: 300px;" }))
+                            @(Html.ValidationMessageFor(model => model.Contact7.Contact))
+                        </td>
+                        <td style="width: 25px;"></td>
+                        <td class="display-field">
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact7.IsClient)) Client
+                                @(Html.CheckBoxFor(model => model.Contact7.IsClientContact)) Client Contact
+                                @(Html.CheckBoxFor(model => model.Contact7.IsAppointed)) Appointed
+                                @(Html.CheckBoxFor(model => model.Contact7.IsParty)) Party
+                                @(Html.CheckBoxFor(model => model.Contact7.IsJudge)) Judge
+                                @(Html.CheckBoxFor(model => model.Contact7.IsWitness)) Witness
+                            </div>
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact7.IsAttorney)) Attorney
+                                @(Html.CheckBoxFor(model => model.Contact7.IsLeadAttorney)) Lead Attorney
+                                @(Html.CheckBoxFor(model => model.Contact7.IsSupportStaff)) Support Staff
+                                @(Html.CheckBoxFor(model => model.Contact7.IsThirdPartyPayor)) Third Party Payor
+                            </div>
+                            <div id="Contact7_PartyTitle_div" style="width: 500px;">
+                                Party Title: @(Html.TextBoxFor(model => model.Contact7.PartyTitle, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact7_AttorneyFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact7.AttorneyFor.Id))
-                    Attorney For: @(Html.TextBoxFor(model => model.Contact7.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact7_AttorneyFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact7.AttorneyFor.Id))
+                                Attorney For: @(Html.TextBoxFor(model => model.Contact7.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact7_SupportStaffFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact7.SupportStaffFor.Id))
-                    Support Staff For: @(Html.TextBoxFor(model => model.Contact7.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact7_SupportStaffFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact7.SupportStaffFor.Id))
+                                Support Staff For: @(Html.TextBoxFor(model => model.Contact7.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact7_ThirdPartyPayorFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact7.ThirdPartyPayorFor.Id))
-                    Third Party Payor For: @(Html.TextBoxFor(model => model.Contact7.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact7_ThirdPartyPayorFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact7.ThirdPartyPayorFor.Id))
+                                Third Party Payor For: @(Html.TextBoxFor(model => model.Contact7.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <script language="javascript">
-                $(document).ready(function () {
-                    assignContactBinder(7);
-                });
-                </script>
-            </td>
-        </tr>
+                            <script language="javascript">
+                                $(document).ready(function () {
+                                    assignContactBinder(7);
+                                });
+                            </script>
+                        </td>
+                    </tr>
 
-        <tr class="tr_alternate">
-            <td class="display-label">
-                Contact
-            </td>
-            <td class="display-field">
-                @(Html.HiddenFor(model => model.Contact8.Contact.Id))
-                @(Html.TextBoxFor(model => model.Contact8.Contact.DisplayName, new { @style = "width: 300px;" }))
-                @(Html.ValidationMessageFor(model => model.Contact8.Contact))
-            </td>
-            <td style="width: 25px;"></td>
-            <td class="display-field">
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact8.IsClient)) Client
-                    @(Html.CheckBoxFor(model => model.Contact8.IsClientContact)) Client Contact
-                    @(Html.CheckBoxFor(model => model.Contact8.IsAppointed)) Appointed
-                    @(Html.CheckBoxFor(model => model.Contact8.IsParty)) Party
-                    @(Html.CheckBoxFor(model => model.Contact8.IsJudge)) Judge
-                    @(Html.CheckBoxFor(model => model.Contact8.IsWitness)) Witness
-                </div>
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact8.IsAttorney)) Attorney
-                    @(Html.CheckBoxFor(model => model.Contact8.IsLeadAttorney)) Lead Attorney
-                    @(Html.CheckBoxFor(model => model.Contact8.IsSupportStaff)) Support Staff
-                    @(Html.CheckBoxFor(model => model.Contact8.IsThirdPartyPayor)) Third Party Payor
-                </div>
-                <div id="Contact8_PartyTitle_div" style="width: 500px;">
-                    Party Title: @(Html.TextBoxFor(model => model.Contact8.PartyTitle, new { @style = "width: 300px;" }))
-                </div>
+                    <tr>
+                        <td class="display-label">
+                            Contact
+                        </td>
+                        <td class="display-field">
+                            @(Html.HiddenFor(model => model.Contact8.Contact.Id))
+                            @(Html.TextBoxFor(model => model.Contact8.Contact.DisplayName, new { @style = "width: 300px;" }))
+                            @(Html.ValidationMessageFor(model => model.Contact8.Contact))
+                        </td>
+                        <td style="width: 25px;"></td>
+                        <td class="display-field">
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact8.IsClient)) Client
+                                @(Html.CheckBoxFor(model => model.Contact8.IsClientContact)) Client Contact
+                                @(Html.CheckBoxFor(model => model.Contact8.IsAppointed)) Appointed
+                                @(Html.CheckBoxFor(model => model.Contact8.IsParty)) Party
+                                @(Html.CheckBoxFor(model => model.Contact8.IsJudge)) Judge
+                                @(Html.CheckBoxFor(model => model.Contact8.IsWitness)) Witness
+                            </div>
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact8.IsAttorney)) Attorney
+                                @(Html.CheckBoxFor(model => model.Contact8.IsLeadAttorney)) Lead Attorney
+                                @(Html.CheckBoxFor(model => model.Contact8.IsSupportStaff)) Support Staff
+                                @(Html.CheckBoxFor(model => model.Contact8.IsThirdPartyPayor)) Third Party Payor
+                            </div>
+                            <div id="Contact8_PartyTitle_div" style="width: 500px;">
+                                Party Title: @(Html.TextBoxFor(model => model.Contact8.PartyTitle, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact8_AttorneyFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact8.AttorneyFor.Id))
-                    Attorney For: @(Html.TextBoxFor(model => model.Contact8.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact8_AttorneyFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact8.AttorneyFor.Id))
+                                Attorney For: @(Html.TextBoxFor(model => model.Contact8.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact8_SupportStaffFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact8.SupportStaffFor.Id))
-                    Support Staff For: @(Html.TextBoxFor(model => model.Contact8.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact8_SupportStaffFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact8.SupportStaffFor.Id))
+                                Support Staff For: @(Html.TextBoxFor(model => model.Contact8.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact8_ThirdPartyPayorFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact8.ThirdPartyPayorFor.Id))
-                    Third Party Payor For: @(Html.TextBoxFor(model => model.Contact8.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact8_ThirdPartyPayorFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact8.ThirdPartyPayorFor.Id))
+                                Third Party Payor For: @(Html.TextBoxFor(model => model.Contact8.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <script language="javascript">
-                $(document).ready(function () {
-                    assignContactBinder(8);
-                });
-                </script>
-            </td>
-        </tr>
+                            <script language="javascript">
+                                $(document).ready(function () {
+                                    assignContactBinder(8);
+                                });
+                            </script>
+                        </td>
+                    </tr>
 
-        <tr>
-            <td class="display-label">
-                Contact
-            </td>
-            <td class="display-field">
-                @(Html.HiddenFor(model => model.Contact9.Contact.Id))
-                @(Html.TextBoxFor(model => model.Contact9.Contact.DisplayName, new { @style = "width: 300px;" }))
-                @(Html.ValidationMessageFor(model => model.Contact9.Contact))
-            </td>
-            <td style="width: 25px;"></td>
-            <td class="display-field">
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact9.IsClient)) Client
-                    @(Html.CheckBoxFor(model => model.Contact9.IsClientContact)) Client Contact
-                    @(Html.CheckBoxFor(model => model.Contact9.IsAppointed)) Appointed
-                    @(Html.CheckBoxFor(model => model.Contact9.IsParty)) Party
-                    @(Html.CheckBoxFor(model => model.Contact9.IsJudge)) Judge
-                    @(Html.CheckBoxFor(model => model.Contact9.IsWitness)) Witness
-                </div>
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact9.IsAttorney)) Attorney
-                    @(Html.CheckBoxFor(model => model.Contact9.IsLeadAttorney)) Lead Attorney
-                    @(Html.CheckBoxFor(model => model.Contact9.IsSupportStaff)) Support Staff
-                    @(Html.CheckBoxFor(model => model.Contact9.IsThirdPartyPayor)) Third Party Payor
-                </div>
-                <div id="Contact9_PartyTitle_div" style="width: 500px;">
-                    Party Title: @(Html.TextBoxFor(model => model.Contact9.PartyTitle, new { @style = "width: 300px;" }))
-                </div>
+                    <tr>
+                        <td class="display-label">
+                            Contact
+                        </td>
+                        <td class="display-field">
+                            @(Html.HiddenFor(model => model.Contact9.Contact.Id))
+                            @(Html.TextBoxFor(model => model.Contact9.Contact.DisplayName, new { @style = "width: 300px;" }))
+                            @(Html.ValidationMessageFor(model => model.Contact9.Contact))
+                        </td>
+                        <td style="width: 25px;"></td>
+                        <td class="display-field">
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact9.IsClient)) Client
+                                @(Html.CheckBoxFor(model => model.Contact9.IsClientContact)) Client Contact
+                                @(Html.CheckBoxFor(model => model.Contact9.IsAppointed)) Appointed
+                                @(Html.CheckBoxFor(model => model.Contact9.IsParty)) Party
+                                @(Html.CheckBoxFor(model => model.Contact9.IsJudge)) Judge
+                                @(Html.CheckBoxFor(model => model.Contact9.IsWitness)) Witness
+                            </div>
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact9.IsAttorney)) Attorney
+                                @(Html.CheckBoxFor(model => model.Contact9.IsLeadAttorney)) Lead Attorney
+                                @(Html.CheckBoxFor(model => model.Contact9.IsSupportStaff)) Support Staff
+                                @(Html.CheckBoxFor(model => model.Contact9.IsThirdPartyPayor)) Third Party Payor
+                            </div>
+                            <div id="Contact9_PartyTitle_div" style="width: 500px;">
+                                Party Title: @(Html.TextBoxFor(model => model.Contact9.PartyTitle, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact9_AttorneyFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact9.AttorneyFor.Id))
-                    Attorney For: @(Html.TextBoxFor(model => model.Contact9.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact9_AttorneyFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact9.AttorneyFor.Id))
+                                Attorney For: @(Html.TextBoxFor(model => model.Contact9.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact9_SupportStaffFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact9.SupportStaffFor.Id))
-                    Support Staff For: @(Html.TextBoxFor(model => model.Contact9.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact9_SupportStaffFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact9.SupportStaffFor.Id))
+                                Support Staff For: @(Html.TextBoxFor(model => model.Contact9.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact9_ThirdPartyPayorFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact9.ThirdPartyPayorFor.Id))
-                    Third Party Payor For: @(Html.TextBoxFor(model => model.Contact9.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact9_ThirdPartyPayorFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact9.ThirdPartyPayorFor.Id))
+                                Third Party Payor For: @(Html.TextBoxFor(model => model.Contact9.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <script language="javascript">
-                $(document).ready(function () {
-                    assignContactBinder(9);
-                });
-                </script>
-            </td>
-        </tr>
+                            <script language="javascript">
+                                $(document).ready(function () {
+                                    assignContactBinder(9);
+                                });
+                            </script>
+                        </td>
+                    </tr>
 
-        <tr class="tr_alternate">
-            <td class="display-label">
-                Contact
-            </td>
-            <td class="display-field">
-                @(Html.HiddenFor(model => model.Contact10.Contact.Id))
-                @(Html.TextBoxFor(model => model.Contact10.Contact.DisplayName, new { @style = "width: 300px;" }))
-                @(Html.ValidationMessageFor(model => model.Contact10.Contact))
-            </td>
-            <td style="width: 25px;"></td>
-            <td class="display-field">
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact10.IsClient)) Client
-                    @(Html.CheckBoxFor(model => model.Contact10.IsClientContact)) Client Contact
-                    @(Html.CheckBoxFor(model => model.Contact10.IsAppointed)) Appointed
-                    @(Html.CheckBoxFor(model => model.Contact10.IsParty)) Party
-                    @(Html.CheckBoxFor(model => model.Contact10.IsJudge)) Judge
-                    @(Html.CheckBoxFor(model => model.Contact10.IsWitness)) Witness
-                </div>
-                <div style="width: 500px;">
-                    @(Html.CheckBoxFor(model => model.Contact10.IsAttorney)) Attorney
-                    @(Html.CheckBoxFor(model => model.Contact10.IsLeadAttorney)) Lead Attorney
-                    @(Html.CheckBoxFor(model => model.Contact10.IsSupportStaff)) Support Staff
-                    @(Html.CheckBoxFor(model => model.Contact10.IsThirdPartyPayor)) Third Party Payor
-                </div>
-                <div id="Contact10_PartyTitle_div" style="width: 500px;">
-                    Party Title: @(Html.TextBoxFor(model => model.Contact10.PartyTitle, new { @style = "width: 300px;" }))
-                </div>
+                    <tr>
+                        <td class="display-label">
+                            Contact
+                        </td>
+                        <td class="display-field">
+                            @(Html.HiddenFor(model => model.Contact10.Contact.Id))
+                            @(Html.TextBoxFor(model => model.Contact10.Contact.DisplayName, new { @style = "width: 300px;" }))
+                            @(Html.ValidationMessageFor(model => model.Contact10.Contact))
+                        </td>
+                        <td style="width: 25px;"></td>
+                        <td class="display-field">
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact10.IsClient)) Client
+                                @(Html.CheckBoxFor(model => model.Contact10.IsClientContact)) Client Contact
+                                @(Html.CheckBoxFor(model => model.Contact10.IsAppointed)) Appointed
+                                @(Html.CheckBoxFor(model => model.Contact10.IsParty)) Party
+                                @(Html.CheckBoxFor(model => model.Contact10.IsJudge)) Judge
+                                @(Html.CheckBoxFor(model => model.Contact10.IsWitness)) Witness
+                            </div>
+                            <div style="width: 500px;">
+                                @(Html.CheckBoxFor(model => model.Contact10.IsAttorney)) Attorney
+                                @(Html.CheckBoxFor(model => model.Contact10.IsLeadAttorney)) Lead Attorney
+                                @(Html.CheckBoxFor(model => model.Contact10.IsSupportStaff)) Support Staff
+                                @(Html.CheckBoxFor(model => model.Contact10.IsThirdPartyPayor)) Third Party Payor
+                            </div>
+                            <div id="Contact10_PartyTitle_div" style="width: 500px;">
+                                Party Title: @(Html.TextBoxFor(model => model.Contact10.PartyTitle, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact10_AttorneyFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact10.AttorneyFor.Id))
-                    Attorney For: @(Html.TextBoxFor(model => model.Contact10.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact10_AttorneyFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact10.AttorneyFor.Id))
+                                Attorney For: @(Html.TextBoxFor(model => model.Contact10.AttorneyFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact10_SupportStaffFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact10.SupportStaffFor.Id))
-                    Support Staff For: @(Html.TextBoxFor(model => model.Contact10.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact10_SupportStaffFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact10.SupportStaffFor.Id))
+                                Support Staff For: @(Html.TextBoxFor(model => model.Contact10.SupportStaffFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <div id="Contact10_ThirdPartyPayorFor_div" style="width: 500px;">
-                    @(Html.HiddenFor(model => model.Contact10.ThirdPartyPayorFor.Id))
-                    Third Party Payor For: @(Html.TextBoxFor(model => model.Contact10.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
-                </div>
+                            <div id="Contact10_ThirdPartyPayorFor_div" style="width: 500px;">
+                                @(Html.HiddenFor(model => model.Contact10.ThirdPartyPayorFor.Id))
+                                Third Party Payor For: @(Html.TextBoxFor(model => model.Contact10.ThirdPartyPayorFor.DisplayName, new { @style = "width: 300px;" }))
+                            </div>
 
-                <script language="javascript">
-                $(document).ready(function () {
-                    assignContactBinder(10);
-                });
-                </script>
-            </td>
-        </tr>
-    </table>
-<p>
-    <input type="submit" value="Save" />
-</p>
+                            <script language="javascript">
+                                $(document).ready(function () {
+                                    assignContactBinder(10);
+                                });
+                            </script>
+                        </td>
+                    </tr>
+            </table>
+            <p>
+                <button type="submit" class="btn btn-default btn-lg">Submit</button>
+            </p>
+        </div>
+    </div>
 }
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    Fill in the information on this page to assign a contact to a matter.  Required fields are indicated with an
-    <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span>.<br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    Fields marked with an <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span> are required.
-    </p>
-</div> 

@@ -1,238 +1,228 @@
 @model OpenLawOffice.Web.ViewModels.Matters.MatterIndexViewModel
 
-@{ 
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Matters";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Matters";
 }
 
-<h2>Matters<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></h2>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+    </ul>
+}
+<script language="javascript">
+    var vars = [], hash;
+    var q = document.URL.split('?')[1];
+    if (q != undefined) {
+        q = q.split('&');
+        for (var i = 0; i < q.length; i++) {
+            hash = q[i].split('=');
+            vars.push(hash[1]);
+            vars[hash[0]] = hash[1];
+        }
+    }
+    $(document).ready(function () {
+        if (vars['active'] != null)
+            $('#activeSelector').val(vars['active']);
+        if (vars['contactFilter'] != null)
+            $('#contactFilter').val(decodeURIComponent(vars['contactFilter']));
+        if (vars['titleFilter'] != null)
+            $('#titleFilter').val(decodeURIComponent(vars['titleFilter']));
+        if (vars['caseNumberFilter'] != null)
+            $('#caseNumberFilter').val(decodeURIComponent(vars['caseNumberFilter']));
+        if (vars['courtTypeFilter'] != null)
+            $('#SelectedCourtType_Id').val(decodeURIComponent(vars['courtTypeFilter']));
+        if (vars['courtGeographicalJurisdictionFilter'] != null)
+            $('#SelectedCourtGeographicalJurisdiction_Id').val(decodeURIComponent(vars['courtGeographicalJurisdictionFilter']));
 
-    
-<div class="options_div">
-    <div style="width: 200px; display: inline;">
-        Active: 
-        <select id="activeSelector">
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="both">Both</option>
-        </select>
-
-        <script language="javascript">
-            var vars = [], hash;
-            var q = document.URL.split('?')[1];
-            if (q != undefined) {
-                q = q.split('&');
-                for (var i = 0; i < q.length; i++) {
-                    hash = q[i].split('=');
-                    vars.push(hash[1]);
-                    vars[hash[0]] = hash[1];
-                }
+        $("#activeSelector").change(function () {
+            go();
+        });
+        $('#goButton').click(function () {
+            go();
+        });
+        $('#contactFilter').focus(function () {
+            $('#contactFilter').val('');
+        });
+        $('#titleFilter').focus(function () {
+            $('#titleFilter').val('');
+        });
+        $('#caseNumberFilter').focus(function () {
+            $('#caseNumberFilter').val('');
+        });
+        $('#contactFilter').keyup(function (e) {
+            if (e.keyCode == 13) go();
+        });
+        $('#titleFilter').keyup(function (e) {
+            if (e.keyCode == 13) go();
+        });
+        $('#caseNumberFilter').keyup(function (e) {
+            if (e.keyCode == 13) go();
+        });
+        $('#SelectedCourtType_Id').change(function () {
+            go();
+        });
+        $('#SelectedCourtGeographicalJurisdiction_Id').change(function () {
+            go();
+        });
+        $('#contactFilter').autocomplete({
+            source: "/Contacts/ListDisplayNameOnly",
+            minLength: 2,
+            focus: function (event, ui) {
+                $("#contactFilter").val(ui.item.DisplayName);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#contactFilter").val(ui.item.DisplayName);
+                go();
+                return false;
             }
-            $(document).ready(function () {
-                if (vars['active'] != null)
-                    $('#activeSelector').val(vars['active']);
-                if (vars['contactFilter'] != null)
-                    $('#contactFilter').val(decodeURIComponent(vars['contactFilter']));
-                if (vars['titleFilter'] != null)
-                    $('#titleFilter').val(decodeURIComponent(vars['titleFilter']));
-                if (vars['caseNumberFilter'] != null)
-                    $('#caseNumberFilter').val(decodeURIComponent(vars['caseNumberFilter']));
-                if (vars['courtTypeFilter'] != null)
-                    $('#SelectedCourtType_Id').val(decodeURIComponent(vars['courtTypeFilter']));
-                if (vars['courtGeographicalJurisdictionFilter'] != null)
-                    $('#SelectedCourtGeographicalJurisdiction_Id').val(decodeURIComponent(vars['courtGeographicalJurisdictionFilter']));
+        }).data("ui-autocomplete")._renderItem = function (ul, item) {
+            return $("<li>")
+                .append("<a>" + item.DisplayName + "</a>")
+                .appendTo(ul);
+        };
+        $('#titleFilter').autocomplete({
+            source: "/Matters/ListTitleOnly",
+            minLength: 2,
+            focus: function (event, ui) {
+                $("#titleFilter").val(ui.item.Title);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#titleFilter").val(ui.item.Title);
+                go();
+                return false;
+            }
+        }).data("ui-autocomplete")._renderItem = function (ul, item) {
+            return $("<li>")
+                .append("<a>" + item.Title + "</a>")
+                .appendTo(ul);
+        };
+        $('#caseNumberFilter').autocomplete({
+            source: "/Matters/ListCaseNumberOnly",
+            minLength: 2,
+            focus: function (event, ui) {
+                $("#caseNumberFilter").val(ui.item.CaseNumber);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#caseNumberFilter").val(ui.item.CaseNumber);
+                go();
+                return false;
+            }
+        }).data("ui-autocomplete")._renderItem = function (ul, item) {
+            return $("<li>")
+                .append("<a>" + item.CaseNumber + "</a>")
+                .appendTo(ul);
+        };
+    });
+    function go() {
+        var href;
+        var contactFilter = $('#contactFilter').val().trim();
+        var titleFilter = $('#titleFilter').val().trim();
+        var caseNumberFilter = $('#caseNumberFilter').val().trim();
+        var courtTypeFilter = $('#SelectedCourtType_Id').val();
+        var courtGeographicalJurisdictionFilter = $('#SelectedCourtGeographicalJurisdiction_Id').val();
+        var base;
+        var qMarkAt = window.location.href.lastIndexOf('?');
+        $('#contactFilterGo').attr('disabled', 'disabled');
+        if (qMarkAt > 0)
+            base = window.location.href.substr(0, qMarkAt);
+        else
+            base = window.location.href;
 
-                $("#activeSelector").change(function () {
-                    go();
-                });
-                $('#goButton').click(function () {
-                    go();
-                });
-                $('#contactFilter').focus(function () {
-                    $('#contactFilter').val('');
-                });
-                $('#titleFilter').focus(function () {
-                    $('#titleFilter').val('');
-                });
-                $('#caseNumberFilter').focus(function () {
-                    $('#caseNumberFilter').val('');
-                });
-                $('#contactFilter').keyup(function (e) {
-                    if (e.keyCode == 13) go();
-                });
-                $('#titleFilter').keyup(function (e) {
-                    if (e.keyCode == 13) go();
-                });
-                $('#caseNumberFilter').keyup(function (e) {
-                    if (e.keyCode == 13) go();
-                });
-                $('#SelectedCourtType_Id').change(function () {
-                    go();
-                });
-                $('#SelectedCourtGeographicalJurisdiction_Id').change(function () {
-                    go();
-                });
-                $('#contactFilter').autocomplete({
-                    source: "/Contacts/ListDisplayNameOnly",
-                    minLength: 2,
-                    focus: function (event, ui) {
-                        $("#contactFilter").val(ui.item.DisplayName);
-                        return false;
-                    },
-                    select: function (event, ui) {
-                        $("#contactFilter").val(ui.item.DisplayName);
-                        go();
-                        return false;
-                    }
-                }).data("ui-autocomplete")._renderItem = function (ul, item) {
-                    return $("<li>")
-                        .append("<a>" + item.DisplayName + "</a>")
-                        .appendTo(ul);
-                };
-                $('#titleFilter').autocomplete({
-                    source: "/Matters/ListTitleOnly",
-                    minLength: 2,
-                    focus: function (event, ui) {
-                        $("#titleFilter").val(ui.item.Title);
-                        return false;
-                    },
-                    select: function (event, ui) {
-                        $("#titleFilter").val(ui.item.Title);
-                        go();
-                        return false;
-                    }
-                }).data("ui-autocomplete")._renderItem = function (ul, item) {
-                    return $("<li>")
-                        .append("<a>" + item.Title + "</a>")
-                        .appendTo(ul);
-                };
-                $('#caseNumberFilter').autocomplete({
-                    source: "/Matters/ListCaseNumberOnly",
-                    minLength: 2,
-                    focus: function (event, ui) {
-                        $("#caseNumberFilter").val(ui.item.CaseNumber);
-                        return false;
-                    },
-                    select: function (event, ui) {
-                        $("#caseNumberFilter").val(ui.item.CaseNumber);
-                        go();
-                        return false;
-                    }
-                }).data("ui-autocomplete")._renderItem = function (ul, item) {
-                    return $("<li>")
-                        .append("<a>" + item.CaseNumber + "</a>")
-                        .appendTo(ul);
-                };
-            });
-            function go() {
-                var href;
-                var contactFilter = $('#contactFilter').val().trim();
-                var titleFilter = $('#titleFilter').val().trim();
-                var caseNumberFilter = $('#caseNumberFilter').val().trim();
-                var courtTypeFilter = $('#SelectedCourtType_Id').val();
-                var courtGeographicalJurisdictionFilter = $('#SelectedCourtGeographicalJurisdiction_Id').val();
-                var base;
-                var qMarkAt = window.location.href.lastIndexOf('?');
-                $('#contactFilterGo').attr('disabled', 'disabled');
-                if (qMarkAt > 0)
-                    base = window.location.href.substr(0, qMarkAt);
-                else
-                    base = window.location.href;
+        href = base + '?active=' + $("#activeSelector").val();
 
-                href = base + '?active=' + $("#activeSelector").val();
+        if (contactFilter.length > 0)
+            href += '&contactFilter=' + contactFilter;
+        if (titleFilter.length > 0)
+            href += '&titleFilter=' + titleFilter;
+        if (caseNumberFilter.length > 0)
+            href += '&caseNumberFilter=' + caseNumberFilter;
+        if (courtTypeFilter.length > 0)
+            href += '&courtTypeFilter=' + courtTypeFilter;
+        if (courtGeographicalJurisdictionFilter.length > 0)
+            href += '&courtGeographicalJurisdictionFilter=' + courtGeographicalJurisdictionFilter;
 
-                if (contactFilter.length > 0)
-                    href += '&contactFilter=' + contactFilter;
-                if (titleFilter.length > 0)
-                    href += '&titleFilter=' + titleFilter;
-                if (caseNumberFilter.length > 0)
-                    href += '&caseNumberFilter=' + caseNumberFilter;
-                if (courtTypeFilter.length > 0)
-                    href += '&courtTypeFilter=' + courtTypeFilter;
-                if (courtGeographicalJurisdictionFilter.length > 0)
-                    href += '&courtGeographicalJurisdictionFilter=' + courtGeographicalJurisdictionFilter;
+        window.location.href = href;
+    };
+</script>
 
-                window.location.href = href;
-            };
-        </script>
-    </div>
-    <div style="width: 200px; display: inline;">
-        Contact: <input type="text" id="contactFilter" name="contactFilter" value="" />
-    </div>
-    <div style="width: 200px; display: inline;">
-        Title: <input type="text" id="titleFilter" name="titleFilter" value="" />
-    </div>
-    <div style="width: 200px; display: inline;">
-        Case No: <input type="text" id="caseNumberFilter" name="caseNumberFilter" value="" />
-    </div>
-    <div style="width: 200px; display: inline;">
-        Court Type: @(Html.DropDownListFor(x => x.SelectedCourtType.Id,
+<div class="form-inline text-center">
+    <div class="form-group">
+        <div class="input-group input-group-sm">
+            <div class="input-group-addon">Active</div>
+            <select id="activeSelector" class="form-control">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="both">Both</option>
+            </select>
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-addon">Contact</div>
+            <input type="text" class="form-control" id="contactFilter" placeholder="Contact Name" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-addon">Title</div>
+            <input type="text" class="form-control" id="titleFilter" placeholder="Title" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-addon">Case No.</div>
+            <input type="text" class="form-control" id="caseNumberFilter" placeholder="Case Number" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-addon">Court Type</div>
+            @(Html.DropDownListFor(x => x.SelectedCourtType.Id,
             new SelectList(Model.CourtTypes, "Id", "Title"), "< Select >",
-            new { @style = "width: 150px;" }))
-    </div>
-    <div style="width: 200px; display: inline;">
-        Geo. Juris.: @(Html.DropDownListFor(x => x.SelectedCourtGeographicalJurisdiction.Id,
+            new { @class = "form-control" }))
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-addon">Geo. Juris.</div>
+            @(Html.DropDownListFor(x => x.SelectedCourtGeographicalJurisdiction.Id,
             new SelectList(Model.CourtGeographicalJurisdictions, "Id", "Title"), "< Select >",
-            new { @style = "width: 150px;" }))
-    </div>
-    <div style="width: 200px; display: inline;">
-        <input id="goButton" type="button" value="Go" />
+            new { @class = "form-control" }))
+        </div>
+        <button type="button" id="goButton" class="btn btn-sm btn-default"><span class="fa fa-search"></span> Lookup</button>
     </div>
 </div>
 
-<table class="listing_table">
-    <tr>
-        <th style="text-align: center;">
-            Title
-        </th>
-        <th style="text-align: center;">
-            Synopsis
-        </th>
-        <th style="text-align: center; width: 25px;">
-                
-        </th>
-    </tr>
-    @{ bool altRow = true;}
-@foreach (var item in Model.Matters)
-{
-    altRow = !altRow;
-    if (altRow)
-    {
-        <tr class="tr_alternate">
-            <td>
-                @(Html.ActionLink(item.Title, "Details", "Matters", new { id = item.Id.Value }, null))
-            </td>
-            <td>
-                @(item.Synopsis)
-            </td>
-            <td>
-                @(Html.ActionLink("Edit", "Edit", "Matters", new { id = item.Id.Value }, new { @class = "btn-edit", title = "Edit" }))
-            </td>
-        </tr>
-    }
-    else
-    { <tr>
-        <td>
-            @(Html.ActionLink(item.Title, "Details", "Matters", new { id = item.Id.Value }, null))
-        </td>
-        <td>
-            @(item.Synopsis)
-        </td>
-        <td>
-            @(Html.ActionLink("Edit", "Edit", "Matters", new { id = item.Id.Value }, new { @class = "btn-edit", title = "Edit" }))
-        </td>
-    </tr>
-    }
-}
-</table>
-    
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    A matter is a substantial or essential thing.  They contain documents, notes, time entries and more.<br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span> 
-    The arrow to the left of the title allows for expanding to view submatters (matters within matters).  
-    Clicking the title will show the details of the matter including access to documents, tasks, notes and more.  
-    Click the <img src="../../Content/fugue-icons-3.5.6/icons-shadowless/pencil.png" /> (edit icon) to make changes to the matter.
-    </p>
-</div> 
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Matters
+    </div>
+    <div class="panel-body">
+        <table class="table table-striped table-condensed table-hover table-text-small">
+            <thead>
+                <tr>
+                    <th style="text-align: center; min-width: 400px;">
+                        Title
+                    </th>
+                    <th style="text-align: center;">
+                        Synopsis
+                    </th>
+                    <th style="text-align: center; width: 25px;">
+
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.Matters)
+            {
+                <tr>
+                    <td>
+                        @(Html.ActionLink(item.Title, "Details", "Matters", new { id = item.Id.Value }, null))
+                    </td>
+                    <td>
+                        @(item.Synopsis)
+                    </td>
+                    <td>
+                        <button type="button" id="edit" class="btn btn-xs btn-default" onclick="navTo('/Matters/Edit/@(item.Id)''"><span class="fa fa-pencil"></span> Edit</button>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

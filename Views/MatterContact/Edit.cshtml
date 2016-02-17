@@ -1,13 +1,51 @@
 @model OpenLawOffice.Web.ViewModels.Matters.MatterContactViewModel
 
 @{ 
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Edit Contact Assignment to Matter";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Edit Contact Assignment to Matter";
 }
 
-<div id="roadmap">
-    <div class="zero">Matter: [@(Html.ActionLink((string)ViewData["Matter"], "Details", "Matters", new { id = ViewData["MatterId"] }, null))]</div>
-    <div id="current" class="one">Edit Contact Assignment to Matter<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(Model.Matter.Id)">@(Model.Matter.Title)</a></li>
+        <li>Contact: <a href="/Contacts/Details/@(Model.Contact.Id)">@(Model.Contact.DisplayName)</a></li>
+        <li><a href="/MatterContact/Details/@(Model.Matter.Id)" class="active">Contacts of Matter</a></li>
+        <li><a href="/MatterContact/Delete/@(Model.Matter.Id)" class="active">Delete</a></li>
+    </ul>
+}
+
+<script type="text/javascript">
+    $(function () {
+        $("#new").click(function () {
+            window.location = '/MatterContact/AssignContact/@(Model.Matter.Id)';
+        })
+        $("#list").click(function () {
+            window.location = '/Matters/Contacts/@(Model.Matter.Id)';
+        })
+        $("#details").click(function () {
+            window.location = '/MatterContact/Details/@(Model.Id)';
+        })
+        $("#edit").click(function () {
+            window.location = '/MatterContact/Edit/@(Model.Id)';
+        })
+        $("#delete").click(function () {
+            window.location = '/MatterContact/Delete/@(Model.Id)';
+        })
+    })
+</script>
+
+<div class="container-fluid">
+    <div class="row text-right">
+        <div class="btn-group">
+            <button id="new" class="btn btn-sm btn-primary"><span class="fa fa-plus"></span> New Associations</button>
+            <button id="list" class="btn btn-sm btn-primary"><span class="fa fa-list"></span> List</button>
+            <button id="details" class="btn btn-sm btn-primary"><span class="fa fa-info"></span> Detail</button>
+            <button id="edit" class="btn btn-sm btn-primary"><span class="fa fa-pencil"></span> Edit</button>
+            <button id="delete" class="btn btn-sm btn-primary"><span class="fa fa-times"></span> Delete</button>
+        </div>
+    </div>
 </div>
      
 <script language="javascript">

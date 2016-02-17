@@ -318,6 +318,84 @@ namespace OpenLawOffice.Web.Controllers
         }
 
         [Authorize(Roles = "Login, User")]
+        public ActionResult MatterDelete(Guid id)
+        {
+            Common.Models.Billing.Invoice invoice = null;
+            ViewModels.Billing.InvoiceViewModel viewModel = new ViewModels.Billing.InvoiceViewModel();
+
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                invoice = Data.Billing.Invoice.Get(id, conn, false);
+                viewModel = Mapper.Map<ViewModels.Billing.InvoiceViewModel>(invoice);
+
+                if (invoice.Matter != null)
+                    viewModel.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(
+                        Data.Matters.Matter.Get(invoice.Matter.Id.Value, conn, false));
+
+                Data.Billing.Invoice.ListInvoiceExpensesForInvoice(invoice.Id.Value, conn, false).ForEach(x =>
+                {
+                    ViewModels.Billing.InvoiceExpenseViewModel vm = Mapper.Map<ViewModels.Billing.InvoiceExpenseViewModel>(x);
+                    vm.Expense = Mapper.Map<ViewModels.Billing.ExpenseViewModel>(
+                        Data.Billing.Expense.Get(vm.Expense.Id.Value, conn, false));
+                    viewModel.Expenses.Add(vm);
+                });
+
+                Data.Billing.Invoice.ListInvoiceFeesForInvoice(invoice.Id.Value, conn, false).ForEach(x =>
+                {
+                    ViewModels.Billing.InvoiceFeeViewModel vm = Mapper.Map<ViewModels.Billing.InvoiceFeeViewModel>(x);
+                    vm.Fee = Mapper.Map<ViewModels.Billing.FeeViewModel>(
+                        Data.Billing.Fee.Get(vm.Fee.Id.Value, conn, false));
+                    viewModel.Fees.Add(vm);
+                });
+
+                Data.Billing.Invoice.ListInvoiceTimesForInvoice(invoice.Id.Value, conn, false).ForEach(x =>
+                {
+                    ViewModels.Billing.InvoiceTimeViewModel vm = Mapper.Map<ViewModels.Billing.InvoiceTimeViewModel>(x);
+                    vm.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(
+                        Data.Timing.Time.Get(vm.Time.Id.Value, conn, false));
+                    viewModel.Times.Add(vm);
+                });
+            }
+
+            ViewData["FirmName"] = Common.Settings.Manager.Instance.System.BillingFirmName;
+            ViewData["FirmAddress"] = Common.Settings.Manager.Instance.System.BillingFirmAddress;
+            ViewData["FirmCity"] = Common.Settings.Manager.Instance.System.BillingFirmCity;
+            ViewData["FirmState"] = Common.Settings.Manager.Instance.System.BillingFirmState;
+            ViewData["FirmZip"] = Common.Settings.Manager.Instance.System.BillingFirmZip;
+            ViewData["FirmPhone"] = Common.Settings.Manager.Instance.System.BillingFirmPhone;
+            ViewData["FirmWeb"] = Common.Settings.Manager.Instance.System.BillingFirmWeb;
+
+            return View(viewModel);
+        }
+
+        [Authorize(Roles = "Login, User")]
+        [HttpPost]
+        public ActionResult MatterDelete(Guid id, ViewModels.Billing.InvoiceViewModel viewModel)
+        {
+            Common.Models.Account.Users currentUser;
+            Common.Models.Billing.Invoice invoice = null;
+
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    invoice = Mapper.Map<Common.Models.Billing.Invoice>(viewModel);
+                    invoice = Data.Billing.Invoice.Get(trans, invoice.Id.Value);
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
+                    Data.Billing.Invoice.Delete(trans, invoice, currentUser);
+                    trans.Commit();
+                }
+                catch
+                {
+                    trans.Rollback();
+                    throw;
+                }
+            }
+
+            return RedirectToAction("Invoices", "Matters", new { id = invoice.Matter.Id });
+        }
+
+        [Authorize(Roles = "Login, User")]
         public ActionResult MatterPrint(Guid id)
         {
             return MatterDetails(id);
@@ -398,6 +476,8 @@ namespace OpenLawOffice.Web.Controllers
                 }
             }
 
+            ViewBag.Invoice = Mapper.Map<ViewModels.Billing.InvoiceViewModel>(invoice);
+            ViewBag.BillingGroup = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(billingGroup);
             ViewData["FirmName"] = Common.Settings.Manager.Instance.System.BillingFirmName;
             ViewData["FirmAddress"] = Common.Settings.Manager.Instance.System.BillingFirmAddress;
             ViewData["FirmCity"] = Common.Settings.Manager.Instance.System.BillingFirmCity;

@@ -956,8 +956,7 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Matters.Matter.Get(id, conn, false);
             }
 
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Matter = matter;
 
             return View(viewModelList);
         }
@@ -1146,8 +1145,7 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Matters.Matter.Get(id, conn, false);
             }
 
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Matter = matter;
 
             return View(viewModelList);
         }
@@ -1173,8 +1171,7 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Matters.Matter.Get(id, conn, false);
             }
 
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Matter = matter;
 
             return View(viewModelList);
         }

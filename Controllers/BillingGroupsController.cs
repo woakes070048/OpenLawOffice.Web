@@ -51,16 +51,19 @@ namespace OpenLawOffice.Web.Controllers
         [Authorize(Roles = "Login, User")]
         public ActionResult Invoices(int id)
         {
+            ViewModels.Billing.BillingGroupViewModel bgvm;
             List<ViewModels.Billing.InvoiceViewModel> list = new List<ViewModels.Billing.InvoiceViewModel>();
 
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
+                bgvm = Mapper.Map<ViewModels.Billing.BillingGroupViewModel>(Data.Billing.BillingGroup.Get(id, conn, false));
                 Data.Billing.BillingGroup.ListInvoicesForGroup(id, conn, false).ForEach(x =>
                 {
                     list.Add(Mapper.Map<ViewModels.Billing.InvoiceViewModel>(x));
                 });
             }
 
+            ViewBag.BillingGroup = bgvm;
             return View(list);
         }
 

@@ -94,8 +94,7 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Matters.Matter.Get(Guid.Parse(Request["MatterId"]), conn, false);
             }
 
-            ViewData["MatterId"] = matter.Id.Value;
-            ViewData["Matter"] = matter.Title;
+            ViewBag.Matter = Mapper.Map<ViewModels.Matters.MatterViewModel>(matter);
 
             return View(new ViewModels.Billing.ExpenseViewModel() 
                 { 

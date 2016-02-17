@@ -1,54 +1,103 @@
 @model IEnumerable<OpenLawOffice.Web.ViewModels.Matters.MatterViewModel>
 
-@{ 
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Matters of Contact";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Matters of Contact";
 }
 
-<h2>Matters of Contact<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></h2>
-        
-<table class="listing_table">
-    <tr>
-        <th>
-            Title
-        </th>
-        <th>
-            Synopsis
-        </th>
-        <th style="width: 20px;">
-        </th>
-    </tr>
-    @foreach (var item in Model)
-        {
-    <tr>
-        <td>
-            @(Html.ActionLink(item.Title, "Details", "Matters", new { id = item.Id }, null))
-        </td>
-        <td>
-            @if (item.Synopsis.Length > 100)
-                {
-            <text>@(item.Synopsis.Substring(0, 100))...</text>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Contacts">Contacts</a></li>
+        <li>Contact: <a href="/Contacts/Details/@(ViewBag.Contact.Id)">@(ViewBag.Contact.DisplayName)</a></li>
+        <li><a href="/Contacts/Matters/@(ViewBag.Contact.Id)" class="active">Matters</a></li>
+    </ul>
 }
-else
-{
-            @(item.Synopsis)
+
+<script type="text/javascript">
+    $(function () {
+        $("#new").click(function () {
+            window.location = '/Contacts/Create';
+        })
+        $("#details").click(function () {
+            window.location = '/Contacts/Details/@(ViewBag.Contact.Id)';
+        })
+        $("#edit").click(function () {
+            window.location = '/Contacts/Edit/@(ViewBag.Contact.Id)';
+        })
+        $("#list").click(function () {
+            window.location = '/Contacts';
+        })
+        $("#conflicts").click(function () {
+            window.location = '/Contacts/Conflicts/@(ViewBag.Contact.Id)';
+        })
+        $("#matters").click(function () {
+            window.location = '/Contacts/Matters/@(ViewBag.Contact.Id)';
+        })
+        $("#tasks").click(function () {
+            window.location = '/Contacts/Tasks/@(ViewBag.Contact.Id)';
+        })
+    })
+</script>
+
+<div class="container-fluid">
+    <div class="row text-right">
+        <div class="btn-group">
+            <button id="new" class="btn btn-sm btn-primary"><span class="fa fa-plus"></span> New Contact</button>
+            <button id="details" class="btn btn-sm btn-primary"><span class="fa fa-info"></span> Detail</button>
+            <button id="edit" class="btn btn-sm btn-primary"><span class="fa fa-pencil"></span> Edit</button>
+            <button id="list" class="btn btn-sm btn-primary"><span class="fa fa-list"></span> List</button>
+            <button id="conflicts" class="btn btn-sm btn-primary"><span class="fa fa-shield"></span> Conflicts</button>
+            <button id="matters" class="btn btn-sm btn-primary"><span class="fa fa-briefcase"></span> Matters</button>
+            <button id="tasks" class="btn btn-sm btn-primary"><span class="fa fa-tasks"></span> Tasks</button>
+        </div>
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Matters
+    </div>
+    <div class="panel-body">
+        <table class="table table-striped table-condensed table-hover table-text-small">
+            <thead>
+                <tr>
+                    <th style="text-align: center;">
+                        Title
+                    </th>
+                    <th style="text-align: center;">
+                        Synopsis
+                    </th>
+                    <th>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @(Html.ActionLink(item.Title, "Details", "Matters", new { id = item.Id }, null))
+                    </td>
+                    <td>
+                        @if (item.Synopsis.Length > 100)
+                        {
+                            <text>@(item.Synopsis.Substring(0, 100))...</text>
+                        }
+                        else
+                        {
+                            @(item.Synopsis)
+                        }
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Matters/Edit/@(item.Id)')">
+                            <span class="fa fa-pencil"></span> Edit
+                        </button>
+                    </td>
+                </tr>
             }
-        </td>
-        <td>
-            @(Html.ActionLink("Edit", "Edit", "Matters", new { id = item.Id }, new { @class = "btn-edit", title = "Edit" }))
-        </td>
-    </tr>
-    }
-</table>
-
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    This page shows a list of all matters in which the contact is involved.<br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    Clicking the title will show the details of the matter.
-    Click the 
-    <img src="../../Content/fugue-icons-3.5.6/icons-shadowless/pencil.png" /> (edit icon) to make 
-    changes to the matter.
-    </p>
-</div> 
+            </tbody>
+        </table>
+    </div>
+</div>
+}

@@ -157,28 +157,17 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
-    <Compile Include="Controllers\AzureController.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\BillingController.cs" />
     <Compile Include="Controllers\BillingGroupsController.cs" />
     <Compile Include="Controllers\BillingRatesController.cs" />
-    <Compile Include="Controllers\CalendarController.cs" />
     <Compile Include="Controllers\ContactsController.cs" />
     <Compile Include="Controllers\CourtGeographicalJurisdictionsController.cs" />
     <Compile Include="Controllers\CourtSittingInCitiesController.cs" />
     <Compile Include="Controllers\CourtTypesController.cs" />
-    <Compile Include="Controllers\DeletingFileResult.cs" />
-    <Compile Include="Controllers\DocumentsController.cs" />
     <Compile Include="Controllers\ErrorsController.cs" />
-    <Compile Include="Controllers\EventAssignedContactController.cs" />
-    <Compile Include="Controllers\EventMatterController.cs" />
-    <Compile Include="Controllers\EventsController.cs" />
-    <Compile Include="Controllers\EventTagsController.cs" />
-    <Compile Include="Controllers\EventTaskController.cs" />
     <Compile Include="Controllers\ExpensesController.cs" />
     <Compile Include="Controllers\FeesController.cs" />
-    <Compile Include="Controllers\FormFieldsController.cs" />
-    <Compile Include="Controllers\FormsController.cs" />
     <Compile Include="Controllers\HandleErrorAttribute.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\InstallationController.cs" />
@@ -199,7 +188,6 @@
     <Compile Include="Controllers\TaskTimeController.cs" />
     <Compile Include="Controllers\TimingController.cs" />
     <Compile Include="Controllers\UserTaskSettingsController.cs" />
-    <Compile Include="Controllers\VersionsController.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FormsAuthenticationService.cs" />
     <Compile Include="Global.asax.cs">
@@ -632,7 +620,6 @@
     <Content Include="Views\Matters\Events.cshtml" />
     <Content Include="Views\Matters\Expenses.cshtml" />
     <Content Include="Views\Matters\Fees.cshtml" />
-    <Content Include="Views\Matters\FormFields.cshtml" />
     <Content Include="Views\Matters\Index.cshtml" />
     <Content Include="Views\Matters\Invoices.cshtml" />
     <Content Include="Views\Matters\Notes.cshtml" />
@@ -666,31 +653,12 @@
     <Content Include="Views\Home\About.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Forms\Create.cshtml" />
-    <Content Include="Views\Forms\Delete.cshtml" />
-    <Content Include="Views\Forms\Details.cshtml" />
-    <Content Include="Views\Forms\Edit.cshtml" />
-    <Content Include="Views\Forms\Index.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\FormFields\Create.cshtml" />
-    <Content Include="Views\FormFields\Delete.cshtml" />
-    <Content Include="Views\FormFields\Details.cshtml" />
-    <Content Include="Views\FormFields\Edit.cshtml" />
-    <Content Include="Views\FormFields\Index.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Views\Fees\Create.cshtml" />
     <Content Include="Views\Fees\Edit.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Expenses\Create.cshtml" />
     <Content Include="Views\Expenses\Edit.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Documents\Create.cshtml" />
-    <Content Include="Views\Documents\Details.cshtml" />
-    <Content Include="Views\Documents\Edit.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Contacts\Conflicts.cshtml" />
@@ -700,8 +668,6 @@
     <Content Include="Views\Contacts\Index.cshtml" />
     <Content Include="Views\Contacts\Matters.cshtml" />
     <Content Include="Views\Contacts\Tasks.cshtml" />
-    <Content Include="Views\Contacts\Timesheets.cshtml" />
-    <Content Include="Views\Contacts\Timesheets_Print3rdParty.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\BillingRates\Create.cshtml" />

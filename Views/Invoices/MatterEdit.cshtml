@@ -2,8 +2,19 @@
 @using OpenLawOffice.Web.Helpers
 
 @{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Edit Invoice";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Edit Invoice";
+}
+
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(Model.Matter.Id)">@(Model.Matter.Title)</a></li>
+        <li><a href="/Matters/Invoices/@(Model.Matter.Id)">Invoices</a></li>
+        <li>Invoice: <a href="/Invoices/MatterDetails/@(Model.Id)">@(Model.Id)</a></li>
+        <li><a href="/Invoices/MatterEdit/@(Model.Id)">Edit</a></li>
+    </ul>
 }
 
 <script type="text/javascript" src="/Scripts/moment.min.js"></script>
@@ -144,7 +155,32 @@
         $("#subtotal").text(+subtotal.toFixed(2));
         $("#total").text(+(subtotal + taxAmount).toFixed(2));
     }
+    $(function () {
+        $("#edit").click(function () {
+            window.location = '/Invoices/MatterEdit/@(Model.Id)';
+        })
+        $("#details").click(function () {
+            window.location = '/Invoices/MatterDetails/@(Model.Id)';
+        })
+        $("#delete").click(function () {
+            window.location = '/Invoices/MatterDelete/@(Model.Id)';
+        })
+        $("#print").click(function () {
+            window.open('/Invoices/MatterPrint/@(Model.Id)', 'PrintWindow', 'width=1024,height=768,scrollbars=yes');
+        })
+    })
 </script>
+
+<div class="container-fluid">
+    <div class="row text-right">
+        <div class="btn-group">
+            <button id="details" class="btn btn-sm btn-primary"><span class="fa fa-info"></span> Detail</button>
+            <button id="edit" class="btn btn-sm btn-primary"><span class="fa fa-pencil"></span> Edit</button>
+            <button id="delete" class="btn btn-sm btn-primary"><span class="fa fa-times"></span> Delete</button>
+            <button id="print" class="btn btn-sm btn-primary"><span class="fa fa-print"></span> Print</button>
+        </div>
+    </div>
+</div>
 
 @using (Html.BeginForm())
 {
@@ -155,7 +191,7 @@
         <br />
     }
 
-    <div style="width: 1200px; border: 1px solid black; color: Black; padding: 5px;">
+    <div style="min-width: 1200px; border: 1px solid black; color: Black; padding: 5px; font-size: 12px;">
         <div style="height: 75px; display: inline-block;">
             <span style="font-weight: bold;">@(ViewData["FirmName"])</span><br />
             @(ViewData["FirmAddress"])<br />
@@ -295,7 +331,7 @@
                         expSum += item.Amount;
                         if (altRow)
                         {
-                            <tr class="tr_alternate">
+                            <tr style="background-color: #f5f5f5;">
                                 <td>@(Html.HiddenFor(x => x.Expenses[i].Id))@(item.Expense.Incurred.ToShortDateString())</td>
                                 <td>@(item.Expense.Vendor)</td>
                                 <td>@(Html.TextBoxFor(x => x.Expenses[i].Details, new { @style = "width: 100%; font-size: 11px;" }))</td>
@@ -317,7 +353,7 @@
                         altRow = !altRow;
                         if (altRow)
                         {
-                            <tr class="tr_alternate">
+                            <tr style="background-color: #f5f5f5;">
                                 <td colspan="4" style="text-align: center;">
                                     No Expenses
                                 </td>
@@ -337,7 +373,7 @@
                         altRow = !altRow;
                         if (altRow)
                         {
-                            <tr class="tr_alternate">
+                            <tr style="background-color: #f5f5f5;">
                                 <td colspan="3" style="text-align: right; font-weight: bold;">
                                     Total:
                                 </td>
@@ -394,7 +430,7 @@
                         feeSum += item.Amount;
                         if (altRow)
                         {
-                            <tr class="tr_alternate">
+                            <tr style="background-color: #f5f5f5;">
                                 <td>@(Html.HiddenFor(x => x.Fees[i].Id))@(item.Fee.Incurred.ToShortDateString())</td>
                                 <td>@(Html.TextBoxFor(x => x.Fees[i].Details, new { @style = "width: 100%; font-size: 11px;" }))</td>
                                 <td style="text-align: center;">$@(Html.TextBoxFor(x => x.Fees[i].Amount, new { @style = "width: 75px; font-size: 11px;" }))@(Html.HiddenFor(x => x.Fees[i].Fee.Id))</td>
@@ -414,7 +450,7 @@
                         altRow = !altRow;
                         if (altRow)
                         {
-                            <tr class="tr_alternate">
+                            <tr style="background-color: #f5f5f5;">
                                 <td colspan="3" style="text-align: center;">
                                     No Fees
                                 </td>
@@ -434,7 +470,7 @@
                         altRow = !altRow;
                         if (altRow)
                         {
-                            <tr class="tr_alternate">
+                            <tr style="background-color: #f5f5f5;">
                                 <td colspan="2" style="text-align: right; font-weight: bold;">
                                     Total:
                                 </td>
@@ -496,7 +532,7 @@
                         timeSum += (decimal)item.Duration.TotalHours * item.PricePerHour;
                         if (altRow)
                         {
-                            <tr class="tr_alternate">
+                            <tr style="background-color: #f5f5f5;">
                                 <td>@(Html.HiddenFor(x => x.Times[i].Id))@(item.Time.Start.ToShortDateString())</td>
                                 <td>@(Html.TextBoxFor(x => x.Times[i].Details, new { @style = "width: 100%; font-size: 11px;" }))</td>
                                 <td style="text-align: center;">@(TimeSpanHelper.TimeSpan(item.Time.Duration, false))@(Html.HiddenFor(x => x.Times[i].Duration))</td>
@@ -518,7 +554,7 @@
                         altRow = !altRow;
                         if (altRow)
                         {
-                            <tr class="tr_alternate">
+                            <tr style="background-color: #f5f5f5;">
                                 <td colspan="4" style="text-align: center;">
                                     No Time
                                 </td>
@@ -538,7 +574,7 @@
                         altRow = !altRow;
                         if (altRow)
                         {
-                            <tr class="tr_alternate">
+                            <tr style="background-color: #f5f5f5;">
                                 <td colspan="3" style="text-align: right; font-weight: bold;">
                                     Total:
                                 </td>

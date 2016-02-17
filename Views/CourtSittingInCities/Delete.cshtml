@@ -1,38 +1,41 @@
 @model OpenLawOffice.Web.ViewModels.Matters.CourtSittingInCityViewModel
 
 @{ 
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Delete Court Sitting in City";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Delete Court Sitting in City";
 }
 
-
-<h2>
-    Delete Court Sitting In City<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></h2>
-    
-@using (Html.BeginForm())
-    {
-@(Html.ValidationSummary(true))
-<h3>
-    Are you sure you want to disable this?</h3>
-<table class="detail_table">
-    <tr>
-        <td class="display-label">
-            Title<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Model.Title)
-        </td>
-    </tr>
-</table>
-<p>
-    <input type="submit" value="Delete" />
-</p>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Settings">Settings</a></li>
+        <li><a href="/CourtSittingInCities">Court Cities</a></li>
+        <li>Court City: <a href="/CourtSittingInCities/Details/@(Model.Id)">@(Model.Title)</a></li>
+        <li><a href="/CourtSittingInCities/Delete/@(Model.Id)" class="active">Delete</a></li>
+    </ul>
 }
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    This page allows a court sitting in city to be disabled.<br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    To disable the form field, click the Delete button.
-    </p>
-</div> 
+
+@using (Html.BeginForm("Delete", "CourtSittingInCities", FormMethod.Post, new { @class = "form-horizontal", @role = "form" }))
+{
+    @(Html.ValidationSummary(true))
+    <h3>
+        Are you sure you want to disable this?
+    </h3>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">Court City Information</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">Title<span class="required-field" title="Required Field">*</span></span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Model.Title)
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
