@@ -1,110 +1,86 @@
 @model OpenLawOffice.Web.ViewModels.Matters.MatterTimeViewModel
 
-@{ 
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Time Entries within Matter";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Time Entries within Matter";
 }
 
-<div id="roadmap">
-    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
-    <div id="current" class="one">Time Entries within Matter<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
-</div>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(ViewBag.Matter.Id)">@(ViewBag.Matter.Title)</a></li>
+        <li><a href="/Matters/Time/@(ViewBag.Matter.Id)" class="active">Time Entries</a></li>
+    </ul>
+}
 
 @foreach (var task in Model.Tasks)
-    {
-<h4>
-    @(Html.ActionLink(task.Title, "Details", "Tasks", new { id = task.Id }, null))</h4>
-
+{
     double totalMinutes = 0;
 
-<table class="listing_table">
-    <tr>
-        <th style="text-align: center;">
-            Start
-        </th>
-        <th style="text-align: center;">
-            Stop
-        </th>
-        <th style="text-align: center;">
-            Duration
-        </th>
-        <th style="text-align: center;">
-            Worker
-        </th>
-        <th style="width: 45px;">
-        </th>
-    </tr>
-    @{ bool altRow = true;}
-    @foreach (var item in task.Times)
-    {
-        totalMinutes += item.Duration.TotalMinutes;
-        altRow = !altRow;
-        if (altRow)
-        {
-        <tr class="tr_alternate">
-            <td>
-                @(item.Start)
-            </td>
-            <td>
-                @(item.Stop)
-            </td>
-            <td>
-                @(Math.Round(item.Duration.TotalMinutes, 0))
-                min.
-            </td>
-            <td>
-                @(Html.ActionLink(item.Worker.DisplayName, "Details", "Contacts", new { id = item.Worker.Id.Value }, null))
-            </td>
-            <td>
-                @(Html.ActionLink("Edit", "Edit", "Timing", new { id = item.Id.Value }, new { @class = "btn-edit", title = "Edit" }))
-                @(Html.ActionLink("Details", "Details", "Timing", new { id = item.Id.Value }, new { @class = "btn-timeentry", title = "Time Entry" }))
-            </td>
-        </tr> }
-        else
-        { <tr>
-            <td>
-                @(item.Start)
-            </td>
-            <td>
-                @(item.Stop)
-            </td>
-            <td>
-                @(Math.Round(item.Duration.TotalMinutes, 0))
-                min.
-            </td>
-            <td>
-                @(Html.ActionLink(item.Worker.DisplayName, "Details", "Contacts", new { id = item.Worker.Id.Value }, null))
-            </td>
-            <td>
-                @(Html.ActionLink("Edit", "Edit", "Timing", new { id = item.Id.Value }, new { @class = "btn-edit", title = "Edit" }))
-                @(Html.ActionLink("Details", "Details", "Timing", new { id = item.Id.Value }, new { @class = "btn-timeentry", title = "Time Entry" }))
-            </td>
-        </tr>
-        }
-    }
-        <tr>
-            <td colspan="2" style="text-align: right; font-weight: bold;">
-                Total Time:
-            </td>
-            <td style="text-align: center; font-weight: bold;">
-                @(Math.Round(totalMinutes, 0))
-                min.
-            </td>
-            <td colspan="2">
-            </td>
-        </tr>
-    </table>
-}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            @(Html.ActionLink(task.Title, "Details", "Tasks", new { id = task.Id }, null))
+        </div>
+        <div class="panel-body">
+            <table class="table table-striped table-condensed table-hover table-text-small">
+                <thead>
+                    <tr>
+                        <th style="text-align: center;">
+                            Start
+                        </th>
+                        <th style="text-align: center;">
+                            Stop
+                        </th>
+                        <th style="text-align: center;">
+                            Duration
+                        </th>
+                        <th style="text-align: center;">
+                            Worker
+                        </th>
+                        <th>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in task.Times)
+                {
+                    totalMinutes += item.Duration.TotalMinutes;
 
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    Time entries express durations of time spent on a particular task of a matter.  This page shows all the
-    tasks of this matter and the time entries for each of those tasks.<br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span> 
-    Clicking the Worker will show the details of the contact that did the work.
-    Clicking the <img src="../../Content/fugue-icons-3.5.6/icons-shadowless/alarm-clock-select.png" /> (time entry icon) 
-    will show the details of the time entry.  Click the 
-    <img src="../../Content/fugue-icons-3.5.6/icons-shadowless/pencil.png" /> (edit icon) to make changes to the time entry.
-    </p>
-</div>
+                    <tr>
+                        <td>
+                            @(item.Start)
+                        </td>
+                        <td>
+                            @(item.Stop)
+                        </td>
+                        <td>
+                            @(Math.Round(item.Duration.TotalMinutes, 0))
+                            min.
+                        </td>
+                        <td>
+                            @(Html.ActionLink(item.Worker.DisplayName, "Details", "Contacts", new { id = item.Worker.Id.Value }, null))
+                        </td>
+                        <td style="text-align: right;">
+                            <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Timing/Edit/@(item.Id)')"><span class="fa fa-pencil"></span> Edit</button>
+                            <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Timing/Details/@(item.Id)')"><span class="fa fa-clock-o"></span> View</button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2" style="text-align: right; font-weight: bold;">
+                            Total Time:
+                        </td>
+                        <td style="text-align: center; font-weight: bold;">
+                            @(Math.Round(totalMinutes, 0))
+                            min.
+                        </td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+}

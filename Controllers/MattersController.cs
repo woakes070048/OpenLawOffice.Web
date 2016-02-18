@@ -984,8 +984,7 @@ namespace OpenLawOffice.Web.Controllers
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
                 matter = Data.Matters.Matter.Get(id, conn, false);
-                ViewBag.Matter = matter.Title;
-                ViewBag.MatterId = matter.Id;
+                ViewBag.Matter = matter;
 
                 return View(TasksController.GetListForMatter(id, active, conn));
             }
@@ -1089,8 +1088,7 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Matters.Matter.Get(id, conn, false);
             }
 
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Matter = matter;
 
             return View(list);
         }
@@ -1118,8 +1116,7 @@ namespace OpenLawOffice.Web.Controllers
                 });
             }
 
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Matter = matter;
 
             return View(viewModelList);
         }
@@ -1330,8 +1327,7 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Matters.Matter.Get(id, conn, false);
             }
 
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Matter = matter;
 
             return View(viewModel);
         }
@@ -1382,8 +1378,7 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Matters.Matter.Get(id, conn, false);
             }
 
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Matter = matter;
             ViewBag.EmployeeContactList = employeeContactList;
             return View(viewModel);
         }

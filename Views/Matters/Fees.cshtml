@@ -16,8 +16,8 @@
 
 <script language="javascript">
     $(function () {
-        $("#add").click(function () {
-            window.location = "/Fees/Create?MatterId=@(ViewBag.MatterId)";
+        $("#new").click(function () {
+            window.location = "/Fees/Create?MatterId=@(ViewBag.Matter.Id)";
         });
     });
 </script>
@@ -25,14 +25,14 @@
 <div class="container-fluid">
     <div class="row text-right">
         <div class="btn-group">
-            <button id="new" class="btn btn-sm btn-primary"><span class="fa fa-plus"></span> New Fees</button>
+            <button id="new" type="button" class="btn btn-sm btn-primary"><span class="fa fa-plus"></span> New Fees</button>
         </div>
     </div>
 </div>
 
 <div class="panel panel-default">
     <div class="panel-heading">
-        Contacts for Matter
+        Fees for Matter
     </div>
     <div class="panel-body">
         <table class="table table-striped table-condensed table-hover table-text-small">
@@ -64,7 +64,7 @@
                         <td>
                             @(item.Details)
                         </td>
-                        <td>
+                        <td style="text-align: right;">
                             <button type="button" id="edit" class="btn btn-xs btn-default" onclick="navTo('/Fees/Edit/@(item.Id)''"><span class="fa fa-pencil"></span> Edit</button>
                         </td>
                     </tr>

@@ -1,13 +1,33 @@
 @model IEnumerable<OpenLawOffice.Web.ViewModels.Notes.NoteTaskViewModel>
 
 @{ 
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Matter Notes";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Matter Notes";
 }
 
-<div id="roadmap">
-    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
-    <div id="current" class="one">Matter Notes<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(ViewBag.Matter.Id)">@(ViewBag.Matter.Title)</a></li>
+        <li><a href="/Matters/Notes/@(ViewBag.Matter.Id)" class="active">Notes</a></li>
+    </ul>
+}
+
+<script language="javascript">
+    $(function () {
+        $("#new").click(function () {
+            window.location = "/Notes/Create?MatterId=@(ViewBag.Matter.Id)";
+        });
+    });
+</script>
+
+<div class="container-fluid">
+    <div class="row text-right">
+        <div class="btn-group">
+            <button id="new" type="button" class="btn btn-sm btn-primary"><span class="fa fa-plus"></span> New Invoice</button>
+        </div>
+    </div>
 </div>
 
 @foreach (var item in Model)
@@ -21,14 +41,3 @@
     <div>@(item.Note.Body)</div>
 </p><hr />
 }
-        
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    Notes allow users to make comments or record information on matters.<br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    Clicking the title will show the details of the note.  Click the 
-    <img src="../../Content/fugue-icons-3.5.6/icons-shadowless/pencil.png" /> (edit icon) to make 
-    changes to the note.
-    </p>
-</div> 
