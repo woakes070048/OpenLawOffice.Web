@@ -1,9 +1,9 @@
 @model OpenLawOffice.Web.ViewModels.Tasks.CreateTaskViewModel
 
-
 @{ 
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Create Task";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Create Task";
 }
 
 <script type="text/javascript" src="/Scripts/moment.min.js"></script>
@@ -50,120 +50,91 @@
     });
 </script>
             
-<div id="roadmap">
-    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
-    <div id="current" class="one">Create Task<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
-</div>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(ViewBag.Matter.Id)">@(ViewBag.Matter.Title)</a></li>
+        <li><a href="/Matters/Tasks/@(ViewBag.Matter.Id)">Tasks</a></li>
+        <li><a href="/Tasks/Create/@(ViewBag.Matter.Id)">Create</a></li>
+    </ul>
+}
     
 @using (Html.BeginForm())
     {
 @(Html.ValidationSummary(true))
 <input type="hidden" id="MatterId" value="@(Request["MatterId"].ToString())" />
-<table class="detail_table">
-    <tr>
-        <td class="display-label">
-            Title<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Task.Title, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Task.Title))
-        </td>
-    </tr>
-    <tr>
-        <td></td>
-        <td>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Task Assignment Details
+    </div>
+    <div class="panel-body">
+        <div class="form-group">
+            <span class="control-label col-sm-2">
+                Title<span class="required-field" title="Required Field">*</span>
+            </span>
+            <div class="col-sm-10">
+                @(Html.TextBoxFor(m => m.Task.Title, new { @class = "form-control" }))
+            </div>
+        </div>
+        <div class="form-group">
+            <span class="control-label col-sm-2">
+            </span>
+            <div class="col-sm-10">                
             @*// Needs to build to the json being built to hold values*@
-            @foreach(var x in Model.TaskTemplates)
-            { 
+            @foreach (var x in Model.TaskTemplates)
+            {
                 <text>[<a href="javascript:taskTemplateClick('@(x.Id.Value)')">@(x.TaskTemplateTitle)</a>]</text>
             }
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Description<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.TextAreaFor(model => model.Task.Description, new { style = "height: 300px; width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Task.Description))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Active<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.CheckBoxFor(model => model.Task.Active, new { Checked = true }))
-            Uncheck if the task is already completed
-        </td>
-    </tr>
-    @*<tr>
-        <td class="display-label">
-            Projected Start
-        </td>
-        <td class="display-field">
-            @(Html.EditorFor(model => model.Task.ProjectedStart))
-            @(Html.ValidationMessageFor(model => model.Task.ProjectedStart))
-        </td>
-    </tr>*@
-    <tr>
-        <td class="display-label">
-            Due Date
-        </td>
-        <td class="display-field">
-            @(Html.EditorFor(model => model.Task.DueDate))
-            @(Html.ValidationMessageFor(model => model.Task.DueDate))
-        </td>
-    </tr>
-    @*<tr>
-        <td class="display-label">
-            Projected End
-        </td>
-        <td class="display-field">
-            @(Html.EditorFor(model => model.Task.ProjectedEnd))
-            @(Html.ValidationMessageFor(model => model.Task.ProjectedEnd))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Actual End
-        </td>
-        <td class="display-field">
-            @(Html.EditorFor(model => model.Task.ActualEnd))
-            @(Html.ValidationMessageFor(model => model.Task.ActualEnd))
-        </td>
-    </tr>*@
-    <tr>
-        <td class="display-label">
-            Assigned Contact
-        </td>
-        <td class="display-field">
-            @(Html.DropDownListFor(x => x.TaskContact.Contact.Id,
+            </div>
+        </div>
+        <div class="form-group">
+            <span class="control-label col-sm-2">
+                Synopsis<span class="required-field" title="Required Field">*</span>
+            </span>
+            <div class="col-sm-10">
+                @(Html.TextAreaFor(m => m.Task.Description, new { @class = "form-control", @style = "height: 300px;" }))
+            </div>
+        </div>
+        <div class="form-group">
+            <span class="control-label col-sm-2">                
+                Active<span class="required-field" title="Required Field">*</span>
+            </span>
+            <div class="col-sm-10">
+                @(Html.CheckBoxFor(model => model.Task.Active, new { @Checked = true, @class = "form-control", @style = "width: 50px; display: inline;" }))
+                Uncheck if the matter is already completed
+            </div>
+        </div>
+        <div class="form-group">
+            <span class="control-label col-sm-2">
+                Due Date
+            </span>
+            <div class="col-sm-10">
+                @(Html.EditorFor(model => model.Task.DueDate, new { @class = "form-control" }))
+            </div>
+        </div>
+        <div class="form-group">
+            <span class="control-label col-sm-2">
+                Assigned Contact
+            </span>
+            <div class="col-sm-10">
+                @(Html.DropDownListFor(x => x.TaskContact.Contact.Id,
                     new SelectList(ViewBag.EmployeeContactList, "Id", "DisplayName"),
-                    new { @size = 5, @style = "width: 100%" }))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Assignment<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.EnumDropDownListFor(model => model.TaskContact.AssignmentType))
-        </td>
-    </tr>
-        
-</table>
+                    new { @size = 5, @class = "form-control", @style = "width: 100%" }))
+            </div>
+        </div>
+        <div class="form-group">
+            <span class="control-label col-sm-2">
+                Assignment<span class="required-field" title="Required Field">*</span>
+            </span>
+            <div class="col-sm-10">
+                @(Html.EnumDropDownListFor(model => model.TaskContact.AssignmentType, new { @class = "form-control" }))
+            </div>
+        </div>
+    </div>
+</div>
+
 <p>
-    <input type="submit" value="Save" />
+    <button type="submit" class="btn btn-lg btn-default">Submit</button>
 </p>
 }
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    Fill in the information on this page to create a new task.  Required fields are indicated with an
-    <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span><br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    Select a "parent" task to make this task be a "subtask" of another task.  To deselect a parent task, click "clear". 
-    Fields marked with an <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span> are required.
-    </p>
-</div> 

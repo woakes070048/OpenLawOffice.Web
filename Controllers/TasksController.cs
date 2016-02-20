@@ -245,9 +245,8 @@ namespace OpenLawOffice.Web.Controllers
 
                 matter = Data.Tasks.Task.GetRelatedMatter(model.Id.Value, conn, false);
             }
-
-            ViewBag.MatterId = matter.Id.Value;
-            ViewBag.Matter = matter.Title;
+            
+            ViewBag.Matter = matter;
 
             return View(viewModel);
         }
@@ -340,6 +339,36 @@ namespace OpenLawOffice.Web.Controllers
         public ActionResult Close(long id)
         {
             return Close(id, null);
+        }
+
+        [Authorize(Roles = "Login, User")]
+        public ActionResult CloseWithNewTask(long id)
+        {
+            Common.Models.Account.Users currentUser;
+            Common.Models.Tasks.Task model;
+
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
+
+                    model = Data.Tasks.Task.Get(trans, id);
+                    model.Active = false;
+                    model.ActualEnd = DateTime.Now;
+
+                    model = Data.Tasks.Task.Edit(trans, model, currentUser);
+                    Common.Models.Matters.Matter matter = Data.Tasks.Task.GetRelatedMatter(trans, id);
+
+                    trans.Commit();
+                    return RedirectToAction("Create", "Tasks", new { MatterId = matter.Id });
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return Close(id);
+                }
+            }
         }
 
         [HttpPost]
@@ -441,8 +470,7 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Matters.Matter.Get(Guid.Parse(Request["MatterId"]), conn, false);
             }
 
-            ViewBag.MatterId = matter.Id.Value;
-            ViewBag.Matter = matter.Title;
+            ViewBag.Matter = matter;
             ViewBag.UserList = userList;
             ViewBag.EmployeeContactList = employeeContactList;
             ViewBag.TemplateJson = taskTemplates.ToString();
@@ -859,10 +887,8 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Tasks.Task.GetRelatedMatter(id, conn, false);
             }
 
-            ViewBag.Task = task.Title;
-            ViewBag.TaskId = task.Id;
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Task = task;
+            ViewBag.Matter = matter;
 
             return View(viewModelList);
         }
@@ -895,10 +921,8 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Tasks.Task.GetRelatedMatter(id, conn, false);
             }
 
-            ViewBag.Task = task.Title;
-            ViewBag.TaskId = task.Id;
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Task = task;
+            ViewBag.Matter = matter;
 
             return View(viewModelList);
         }
@@ -923,10 +947,8 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Tasks.Task.GetRelatedMatter(id, conn, false);
             }
 
-            ViewBag.Task = task.Title;
-            ViewBag.TaskId = task.Id;
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Task = task;
+            ViewBag.Matter = matter;
 
             return View(viewModelList);
         }
@@ -954,258 +976,10 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Tasks.Task.GetRelatedMatter(id, conn, false);
             }
 
-            ViewBag.Task = task.Title;
-            ViewBag.TaskId = task.Id;
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Task = task;
+            ViewBag.Matter = matter;
 
             return View(viewModelList);
         }
-
-        [Authorize(Roles = "Login, User")]
-        public ActionResult Documents(long id)
-        {
-            Common.Models.Tasks.Task task;
-            Common.Models.Matters.Matter matter;
-            Common.Models.Documents.Version version;
-            List<ViewModels.Documents.DocumentViewModel> viewModelList;
-            ViewModels.Documents.DocumentViewModel viewModel;
-
-            viewModelList = new List<ViewModels.Documents.DocumentViewModel>();
-
-            using (IDbConnection conn = Data.Database.Instance.GetConnection())
-            {
-                Data.Documents.Document.ListForTask(id, conn, false).ForEach(x =>
-                {
-                    version = Data.Documents.Document.GetCurrentVersion(x.Id.Value, conn, false);
-                    viewModel = Mapper.Map<ViewModels.Documents.DocumentViewModel>(x);
-                    viewModel.Extension = version.Extension;
-
-                    viewModelList.Add(viewModel);
-                });
-
-                task = Data.Tasks.Task.Get(id, conn, false);
-                matter = Data.Tasks.Task.GetRelatedMatter(id, conn, false);
-            }
-
-            ViewBag.Task = task.Title;
-            ViewBag.TaskId = task.Id;
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
-
-            return View(viewModelList);
-        }
-
-        [Authorize(Roles = "Login, User")]
-        public ActionResult Events(long id)
-        {
-            Common.Models.Tasks.Task task;
-            Common.Models.Matters.Matter matter;
-            ViewModels.Events.EventViewModel viewModel;
-            List<ViewModels.Events.EventViewModel> viewModelList;
-
-            viewModelList = new List<ViewModels.Events.EventViewModel>();
-
-            using (IDbConnection conn = Data.Database.Instance.GetConnection())
-            {
-                Data.Events.Event.ListForTask(id, conn, false).ForEach(x =>
-                {
-                    viewModel = Mapper.Map<ViewModels.Events.EventViewModel>(x);
-
-                    viewModelList.Add(viewModel);
-                });
-
-                task = Data.Tasks.Task.Get(id, conn, false);
-                matter = Data.Tasks.Task.GetRelatedMatter(id, conn, false);
-            }
-
-            ViewBag.Task = task.Title;
-            ViewBag.TaskId = task.Id;
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
-
-            return View(viewModelList);
-        }
-
-        #region Commented Out Sequential Predecessor Code
-
-        //public static DBOs.Tasks.Task GetSequentialPredecessor(DBOs.Tasks.Task taskDbo, IDbConnection db)
-        //{
-        //    return db.Single<DBOs.Tasks.Task>(
-        //        "SELECT * FROM \"task\" WHERE \"id\"=@SeqPredId AND \"utc_disabled\" is null",
-        //        new { SeqPredId = taskDbo.SequentialPredecessorId });
-        //}
-
-        //public static string InsertTaskIntoSequence(DBOs.Tasks.Task taskToInsertDbo, long idOfPredecessor, IDbConnection db)
-        //{
-        //    DBOs.Tasks.Task nextTask = null, lastTask = null;
-
-        //    // This handles if a member is selected
-        //    DBOs.Tasks.Task groupingTaskDbo = GetParentTask(idOfPredecessor, db);
-
-        //    // What if a member is not selected, but the sequential grouping task itself is selected?
-        //    if (groupingTaskDbo == null)
-        //    {
-        //        groupingTaskDbo = db.SingleById<DBOs.Tasks.Task>(idOfPredecessor);
-        //        if (!groupingTaskDbo.IsGroupingTask)
-        //            return "Predecessor must be either a sequence member or grouping sequence.";
-        //    }
-
-        //    // Update the edited dbo
-        //    taskToInsertDbo.SequentialPredecessorId = idOfPredecessor;
-        //    taskToInsertDbo.ParentId = groupingTaskDbo.Id;
-        //    db.UpdateOnly(taskToInsertDbo,
-        //        fields => new
-        //        {
-        //            fields.Title,
-        //            fields.Description,
-        //            fields.ProjectedStart,
-        //            fields.DueDate,
-        //            fields.ProjectedEnd,
-        //            fields.ActualEnd,
-        //            fields.ParentId,
-        //            fields.ModifiedByUserId,
-        //            fields.UtcModified
-        //        },
-        //        where => where.Id == taskToInsertDbo.Id);
-
-        //    DBOs.Tasks.Task tempTask;
-
-        //    // Load task currently in the position
-        //    tempTask = db.Single<DBOs.Tasks.Task>(
-        //        "SELECT * FROM \"task\" WHERE \"sequential_predecessor_id\"=@Id AND \"utc_disabled\" is null",
-        //        new { Id = idOfPredecessor });
-
-        //    // We can improve this later - this layout helps with debugging
-        //    if (tempTask != null)
-        //    {
-        //        // Update the seqpredid of taskToInsert
-        //        db.UpdateOnly(new DBOs.Tasks.Task()
-        //            {
-        //                SequentialPredecessorId = idOfPredecessor
-        //            },
-        //            fields => new
-        //            {
-        //                fields.SequentialPredecessorId
-        //            },
-        //            where => where.Id == taskToInsertDbo.Id);
-
-        //        // Load the next task to update into memory
-        //        nextTask = db.Single<DBOs.Tasks.Task>(
-        //            "SELECT * FROM \"task\" WHERE \"sequential_predecessor_id\"=@Id AND \"utc_disabled\" is null",
-        //            new { Id = tempTask.Id });
-
-        //        // Update tempTask's seqpred
-        //        db.UpdateOnly(new DBOs.Tasks.Task()
-        //            {
-        //                SequentialPredecessorId = taskToInsertDbo.Id
-        //            },
-        //            fields => new
-        //            {
-        //                fields.SequentialPredecessorId
-        //            },
-        //            where => where.Id == tempTask.Id);
-
-        //        while (nextTask != null)
-        //        {
-        //            // Make next task be temp task
-        //            tempTask = nextTask;
-
-        //            // Load new next task
-        //            nextTask = db.Single<DBOs.Tasks.Task>(
-        //                "SELECT * FROM \"task\" WHERE \"sequential_predecessor_id\"=@Id AND \"utc_disabled\" is null",
-        //                new { Id = tempTask.Id });
-
-        //            // Update tempTask's seqpred
-        //            db.UpdateOnly(new DBOs.Tasks.Task()
-        //                {
-        //                    SequentialPredecessorId = taskToInsertDbo.Id
-        //                },
-        //                fields => new
-        //                {
-        //                    fields.SequentialPredecessorId
-        //                },
-        //                where => where.Id == tempTask.Id);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        db.UpdateOnly(new DBOs.Tasks.Task()
-        //            {
-        //                SequentialPredecessorId = idOfPredecessor
-        //            },
-        //            fields => new
-        //            {
-        //                fields.SequentialPredecessorId
-        //            },
-        //            where => where.Id == taskToInsertDbo.Id);
-        //    }
-
-        //    // Update group properties
-        //    UpdateGroupingTaskProperties(groupingTaskDbo, db);
-        //}
-
-        //public static void RelocateTaskInSequence(DBOs.Tasks.Task taskToRelocate, long idOfPredecessor, IDbConnection db)
-        //{
-        //    // Below can be improved, but it will work for the time being.
-        //    RemoveTaskFromSequence(taskToRelocate, db);
-        //    InsertTaskIntoSequence(taskToRelocate, idOfPredecessor, db);
-        //}
-
-        //public static void RemoveTaskFromSequence(DBOs.Tasks.Task taskToRemove, IDbConnection db)
-        //{
-        //    // Remove taskToRelocate from its current sequence
-        //    //   Set taskToRelocate.ParentId to null (yes, this must push to the db so the query will work right)
-        //    //   Query for nextTask (being the task with taskToRelocate as its sequential predecessor)
-        //    //   Update it to taskToRelocate's sequential predecessor
-        //    //   Cascade this query and update down the chain to move all tasks after taskToRelocate up one position
-
-        //    DBOs.Tasks.Task nextTask = null, lastTask = null;
-
-        //    DBOs.Tasks.Task groupingTaskDbo = null;
-        //    long? parentIdHolder = taskToRemove.ParentId;
-
-        //    taskToRemove.ParentId = null;
-        //    db.UpdateOnly(taskToRemove,
-        //        fields => new
-        //        {
-        //            fields.ParentId
-        //        },
-        //        where => where.Id == taskToRemove.Id);
-
-        //    nextTask = db.Single<DBOs.Tasks.Task>(
-        //        "SELECT * FROM \"task\" WHERE \"sequential_predecessor_id\"=@Id AND \"utc_disabled\" is null",
-        //        new { Id = taskToRemove.Id });
-
-        //    lastTask = taskToRemove;
-
-        //    while (nextTask != null)
-        //    {
-        //        nextTask.SequentialPredecessorId = lastTask.SequentialPredecessorId;
-
-        //        db.UpdateOnly(nextTask,
-        //            fields => new
-        //            {
-        //                fields.SequentialPredecessorId
-        //            },
-        //            where => where.Id == nextTask.Id);
-
-        //        lastTask = nextTask;
-        //        nextTask = db.Single<DBOs.Tasks.Task>(
-        //            "SELECT * FROM \"task\" WHERE \"sequential_predecessor_id\"=@Id AND \"utc_disabled\" is null",
-        //            new { Id = nextTask.Id });
-        //    }
-
-        //    db.Delete<DBOs.Tasks.Task>(taskToRemove);
-
-        //    // Update group properties
-        //    if (parentIdHolder.HasValue)
-        //    {
-        //        if ((groupingTaskDbo = GetParentTask(parentIdHolder.Value, db)) != null)
-        //            UpdateGroupingTaskProperties(groupingTaskDbo, db);
-        //    }
-        //}
-
-        #endregion Commented Out Sequential Predecessor Code
     }
 }
