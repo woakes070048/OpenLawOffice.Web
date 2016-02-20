@@ -1,56 +1,58 @@
 @model OpenLawOffice.Web.ViewModels.Tasks.TaskAssignedContactViewModel
-
-@{ 
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Edit Contact Assignment to Task";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Edit Contact Assignment to Task";
 }
 
-<div id="roadmap">
-    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
-    <div class="one">Task: [@(Html.ActionLink((string)ViewBag.Task, "Details", "Tasks", new { id = ViewBag.TaskId }, null))]</div>
-    <div id="current" class="two">Edit Contact Assignment to Task<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
-</div>
-    
-@using (Html.BeginForm())
-    {
-@(Html.ValidationSummary(true))
-<table class="detail_table">
-    <tr>
-        <td class="display-label">
-            Task
-        </td>
-        <td class="display-field">
-            @(Html.ActionLink(Model.Task.Title, "Details", "Tasks", new { id = Model.Task.Id }, null))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            User
-        </td>
-        <td class="display-field">
-            @(Html.ActionLink(Model.Contact.DisplayName, "Details", "Contacts", new { id = Model.Contact.Id }, null))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Assignment<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.EnumDropDownListFor(model => model.AssignmentType))
-            @(Html.ValidationMessageFor(model => model.AssignmentType))
-        </td>
-    </tr>
-</table>
-<p>
-    <input type="submit" value="Save" />
-</p>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(ViewBag.Matter.Id)">@(ViewBag.Matter.Title)</a></li>
+        <li><a href="/Matters/Tasks/@(ViewBag.Matter.Id)">Tasks</a></li>
+        <li>Task: <a href="/Tasks/Details/@(ViewBag.Task.Id)">@(ViewBag.Task.Title)</a></li>
+        <li><a href="/Tasks/Contacts/@(ViewBag.Task.Id)">Contacts</a></li>
+        <li>Contact: <a href="/TaskAssignedContacts/Details/@(Model.Id)">@(Model.Contact.DisplayName)</a></li>
+        <li><a href="/TaskAssignedContacts/Edit/@(Model.Id)">Edit</a></li>
+    </ul>
 }
-<div id="pageInfoDialog" title="Help">
+
+@using (Html.BeginForm())
+{
+    @(Html.ValidationSummary(true))
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Task Assignment Details
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">
+                    Task
+                </span>
+                <div class="col-sm-10">
+                    @(Html.HiddenFor(model => model.Task.Id))
+                    @(Html.ActionLink(Model.Task.Title, "Details", "Tasks", new { id = Model.Task.Id }, null))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">
+                    Contact:
+                </span>
+                <div class="col-sm-10">
+                    @(Html.HiddenFor(model => model.Contact.Id))
+                    @(Html.ActionLink(Model.Contact.DisplayName, "Details", "Contacts", new { id = Model.Contact.Id }, null))
+                </div>
+            </div>
+            <span class="control-label col-sm-2">
+                Assignment<span class="required-field" title="Required Field">*</span>
+            </span>
+            <div class="col-sm-10">
+                @(Html.EnumDropDownListFor(model => model.AssignmentType, new { @class = "form-control" }))
+            </div>
+        </div>
+    </div>
     <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    Modify the information on this page to make changes to the assignmnet of a contact to a task.  Required fields are indicated with an
-    <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span>.<br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    Fields marked with an <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span> are required.
+        <button type="submit" class="btn btn-lg btn-default">Submit</button>
     </p>
-</div> 
+}

@@ -1,59 +1,65 @@
 @model OpenLawOffice.Web.ViewModels.Tasks.TaskAssignedContactViewModel
 
 @{ 
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Unassign Contact from Task";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Unassign Contact from Task";
 }
 
-<div id="roadmap">
-    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
-    <div class="one">Task: [@(Html.ActionLink((string)ViewBag.Task, "Details", "Tasks", new { id = ViewBag.TaskId }, null))]</div>
-    <div id="current" class="two">Unassign Contact from Task<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
-</div>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(ViewBag.Matter.Id)">@(ViewBag.Matter.Title)</a></li>
+        <li><a href="/Matters/Tasks/@(ViewBag.Matter.Id)">Tasks</a></li>
+        <li>Task: <a href="/Tasks/Details/@(ViewBag.Task.Id)">@(ViewBag.Task.Title)</a></li>
+        <li><a href="/Tasks/Contacts/@(ViewBag.Task.Id)">Contacts</a></li>
+        <li>Contact: <a href="/TaskAssignedContacts/Details/@(Model.Id)">@(Model.Contact.DisplayName)</a></li>
+        <li><a href="/TaskAssignedContacts/Delete/@(Model.Id)">Unassign Contact</a></li>
+    </ul>
+}
     
 @using (Html.BeginForm())
-    {
+{
 @(Html.ValidationSummary(true))
 <h3>
     Are you sure you want to unlink the contact from the task?</h3>
-<table class="detail_table">
-    <tr>
-        <td class="display-label">
-            Task
-        </td>
-        <td class="display-field">
-            @(Html.ActionLink(Model.Task.Title, "Details", "Tasks", new { id = Model.Task.Id }, null))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            User
-        </td>
-        <td class="display-field">
-            @(Html.ActionLink(Model.Contact.DisplayName, "Details", "Contacts", new { id = Model.Contact.Id }, null))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Assignment
-        </td>
-        <td class="display-field">
-            @(Model.AssignmentType)
-        </td>
-    </tr>
-</table>
 
-Html.RenderPartial("_CoreDetails");
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Task Assignment Details
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">
+                    Task
+                </span>
+                <div class="col-sm-10">
+                    @(Html.HiddenFor(model => model.Task.Id))
+                    @(Html.ActionLink(Model.Task.Title, "Details", "Tasks", new { id = Model.Task.Id }, null))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">
+                    Contact:
+                </span>
+                <div class="col-sm-10">
+                    @(Html.HiddenFor(model => model.Contact.Id))
+                    @(Html.ActionLink(Model.Contact.DisplayName, "Details", "Contacts", new { id = Model.Contact.Id }, null))
+                </div>
+            </div>
+            <span class="control-label col-sm-2">
+                Assignment
+            </span>
+            <div class="col-sm-10">
+                @(Model.AssignmentType)
+            </div>
+        </div>
+    </div>
 
-<p>
-    <input type="submit" value="Delete" />
-</p>
-}
-<div id="pageInfoDialog" title="Help">
+    Html.RenderPartial("_CoreDetails");
+
+
     <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    This page allows a contact to be removed from a task by "unassigning" that contact.<br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    To unassign the contact from the task, click the unassign button.
+        <button type="submit" class="btn btn-lg btn-default">Submit</button>
     </p>
-</div> 
+}

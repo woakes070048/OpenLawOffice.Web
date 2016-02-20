@@ -1,38 +1,44 @@
 @model OpenLawOffice.Web.ViewModels.Matters.MatterTypeViewModel
 
 @{ 
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Delete Matter Type";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Delete Matter Type";
 }
 
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Settings">Settings</a></li>
+        <li><a href="/MatterTypes">Matter Types</a></li>
+        <li>Matter Type: <a href="/MatterTypes/Details/@(Model.Id)">@(Model.Title)</a></li>
+        <li><a href="/MatterTypes/Delete/@(Model.Id)" class="active">Delete</a></li>
+    </ul>
+}
 
-<h2>
-    Delete Matter Type<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></h2>
-    
 @using (Html.BeginForm())
     {
 @(Html.ValidationSummary(true))
 <h3>
     Are you sure you want to disable this?</h3>
-<table class="detail_table">
-    <tr>
-        <td class="display-label">
-            Title<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Model.Title)
-        </td>
-    </tr>
-</table>
-<p>
-    <input type="submit" value="Delete" />
-</p>
+
+    <h3>
+        Are you sure you want to disable this?
+    </h3>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">Matter Type Information</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">Title<span class="required-field" title="Required Field">*</span></span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Model.Title)
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
 }
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    This page allows a matter type to be disabled.<br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    To disable the form field, click the Delete button.
-    </p>
-</div> 

@@ -1,8 +1,9 @@
 @model OpenLawOffice.Web.ViewModels.Notes.NoteViewModel
 
 @{ 
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Edit Note";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Edit Note";
 }
 
 <script type="text/javascript" src="/Scripts/tinymce/tinymce.min.js"></script>
@@ -19,84 +20,83 @@
     });
 </script>
 
-<div id="roadmap">
-    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
-    @if (ViewBag.Task != null)
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(ViewBag.Matter.Id)">@(ViewBag.Matter.Title)</a></li>
+        @if (ViewBag.Task != null)
         {
-    <div class="one">Task: [@(Html.ActionLink((string)ViewBag.Task, "Details", "Tasks", new { id = ViewBag.TaskId }, null))]</div>
-    <div id="current" class="two">Edit Note<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
-    }
+            <li><a href="/Matters/Tasks/@(ViewBag.Matter.Id)">Tasks</a></li>
+            <li>Task: <a href="/Tasks/Details/@(ViewBag.Task.Id)">@(ViewBag.Task.Title)</a></li>
+            <li><a href="/Tasks/Notes/@(ViewBag.Task.Id)">Notes</a></li>
+            <li>Note: <a href="/Notes/Details/@(Model.Id)">@(Model.Title)</a></li>
+            <li><a href="/Notes/Edit/@(Model.Id)">Edit</a></li>
+        }
         else
-        {           
-    <div id="current" class="one">Edit Note<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
-    }
+        {
+            <li><a href="/Matters/Notes/@(ViewBag.Matter.Id)">Notes</a></li>
+            <li>Note: <a href="/Notes/Details/@(Model.Id)">@(Model.Title)</a></li>
+            <li><a href="/Notes/Edit/@(Model.Id)">Edit</a></li>
+        }
+    </ul>
+}
+
+<div class="container-fluid">
+    <div class="row text-right">
+        <div class="btn-group">
+            <button type="button" id="details" class="btn btn-sm btn-primary" onclick="navTo('/Notes/Details/@(Model.Id)')"><span class="fa fa-info"></span> Detail</button>
+            <button type="button" id="edit" class="btn btn-sm btn-primary" onclick="navTo('/Notes/Edit/@(Model.Id)')"><span class="fa fa-pencil"></span> Edit</button>
+        </div>
+    </div>
 </div>
+
 @using (Html.BeginForm())
     {
 @(Html.ValidationSummary(true))
-<table class="detail_table">
-    <tr>
-        <td class="display-label">
-            Id
-        </td>
-        <td class="display-field">
-            @(Model.Id)
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Date/Time<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Timestamp))
-            @(Html.ValidationMessageFor(model => model.Timestamp))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Title<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Title))
-            @(Html.ValidationMessageFor(model => model.Title))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Send Notice To<br />
-            <input type="button" value="Clear Notices" name="ClearNoticeButton" id="ClearNoticeButton" />
-        </td>
-        <td class="display-field">
-            <div style="font-size: 7pt; font-style: italic; padding-bottom: 3px;">Hold ctrl while clicking to select multiple items.</div>
-            @(Html.ListBoxFor(x => x.NotifyContactIds, 
+
+    <div class="panel panel-default">
+        <div class="panel-heading">Note Information</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">Date/Time<span class="required-field" title="Required Field">*</span></span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Timestamp, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Title<span class="required-field" title="Required Field">*</span></span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextBoxFor(m => m.Title, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">
+                    Send Notice To<br />
+                    <button type="button" name="ClearNoticeButton" id="ClearNoticeButton" class="btn btn-default">Clear Notices</button>
+                </span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    <div style="font-size: 7pt; font-style: italic; padding-bottom: 3px;">Hold ctrl while clicking to select multiple items.</div>
+                    @(Html.ListBoxFor(x => x.NotifyContactIds,
                     new SelectList(ViewBag.EmployeeContactList, "Id", "DisplayName"),
-                    new { @size = 5, @style = "width: 100%" }))
-            <div style="font-size: 7pt; font-style: italic; padding-bottom: 3px;">
-                Deselecting a contact will not 'unsend' or delete the notice, once a notice 
-                is sent it cannot be undone.  Selecting a contact which has already cleared the 
-                notice will renotify the contact.</div>                
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Description<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.TextAreaFor(model => model.Body, new { @style = "width: 100%; height: 300px;" }))
-            @(Html.ValidationMessageFor(model => model.Body))
-        </td>
-    </tr>
-</table>
-<p>
-    <input type="submit" value="Save" />
-</p>
+                    new { @size = 5, @class = "form-control", @style = "width: 100%" }))
+                    <div style="font-size: 7pt; font-style: italic; padding-bottom: 3px;">
+                        Deselecting a contact will not 'unsend' or delete the notice, once a notice
+                        is sent it cannot be undone.  Selecting a contact which has already cleared the
+                        notice will renotify the contact.
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Description<span class="required-field" title="Required Field">*</span></span>
+                <div class="col-sm-10" style="padding-top: 7px;">
+                    @(Html.TextAreaFor(m => m.Body, new { @class = "form-control", @style = "width: 100%; height: 300px;" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
 }
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    Modify the information on this page to make changes to the note.  Required fields are indicated with an
-    <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span>.<br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    Fields marked with an <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span> are required.
-    </p>
-</div>

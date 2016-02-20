@@ -50,10 +50,8 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value, conn, false);
             }
 
-            ViewBag.Task = task.Title;
-            ViewBag.TaskId = task.Id;
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Task = task;
+            ViewBag.Matter = matter;
 
             return View(modelList);
         }
@@ -84,10 +82,8 @@ namespace OpenLawOffice.Web.Controllers
                 vm.AssignmentType = ViewModels.AssignmentTypeViewModel.Delegated;
             }
 
-            ViewBag.Task = task.Title;
-            ViewBag.TaskId = task.Id;
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Task = task;
+            ViewBag.Matter = matter;
 
             return View(vm);
         }
@@ -118,7 +114,9 @@ namespace OpenLawOffice.Web.Controllers
                     }
                     else
                     { // Enable
+                        Guid id = taskContact.Id.Value;
                         taskContact = Mapper.Map<Common.Models.Tasks.TaskAssignedContact>(model);
+                        taskContact.Id = id;
                         taskContact = Data.Tasks.TaskAssignedContact.Enable(trans, taskContact, currentUser);
                     }
 
@@ -127,7 +125,7 @@ namespace OpenLawOffice.Web.Controllers
                     return RedirectToAction("Contacts", "Tasks",
                         new { id = taskContact.Task.Id.Value.ToString() });
                 }
-                catch
+                catch(Exception e)
                 {
                     trans.Rollback();
                     return AssignContact(model.Contact.Id.Value);
@@ -155,10 +153,8 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Tasks.Task.GetRelatedMatter(model.Task.Id.Value, conn, false);
             }
 
-            ViewBag.Task = model.Task.Title;
-            ViewBag.TaskId = model.Task.Id;
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Task = model.Task;
+            ViewBag.Matter = matter;
 
             return View(viewModel);
         }
@@ -220,10 +216,8 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Tasks.Task.GetRelatedMatter(model.Task.Id.Value, conn, false);
             }
 
-            ViewBag.Task = model.Task.Title;
-            ViewBag.TaskId = model.Task.Id;
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Task = model.Task;
+            ViewBag.Matter = matter;
 
             return View(viewModel);
         }

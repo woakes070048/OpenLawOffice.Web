@@ -1,114 +1,91 @@
 @model OpenLawOffice.Web.ViewModels.Notes.NoteViewModel
 
-@{ 
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Note Details";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Note Details";
 }
 
-<div id="roadmap">
-    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
-    @if (ViewBag.Task != null)
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(ViewBag.Matter.Id)">@(ViewBag.Matter.Title)</a></li>
+        @if (ViewBag.Task != null)
         {
-    <div class="one">Task: [@(Html.ActionLink((string)ViewBag.Task, "Details", "Tasks", new { id = ViewBag.TaskId }, null))]</div>
-    <div id="current" class="two">Note Details<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
-    }
+            <li><a href="/Matters/Tasks/@(ViewBag.Matter.Id)">Tasks</a></li>
+            <li>Task: <a href="/Tasks/Details/@(ViewBag.Task.Id)">@(ViewBag.Task.Title)</a></li>
+            <li><a href="/Tasks/Notes/@(ViewBag.Task.Id)">Notes</a></li>
+            <li>Note: <a href="/Notes/Details/@(Model.Id)">@(Model.Title)</a></li>
+        }
         else
-        {           
-    <div id="current" class="one">Note Details<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
-    }
-</div>
-    
-<div class="options_div" style="text-align: right;">
-    <div style="width: 200px; display: inline;">
-        <a href="../Edit/@(ViewContext.RouteData.Values["Id"])">
-            <input type="button" value="Edit" id="Edit"
-                   style="background-image: url('/Content/fugue-icons-3.5.6/icons-shadowless/pencil.png');
-                background-position: left center; background-repeat: no-repeat; padding-left: 20px;" />
-        </a>
+        {
+            <li><a href="/Matters/Notes/@(ViewBag.Matter.Id)">Notes</a></li>
+            <li>Note: <a href="/Notes/Details/@(Model.Id)">@(Model.Title)</a></li>
+        }
+    </ul>
+}
+
+<div class="container-fluid">
+    <div class="row text-right">
+        <div class="btn-group">
+            <button type="button" id="details" class="btn btn-sm btn-primary" onclick="navTo('/Notes/Details/@(Model.Id)')"><span class="fa fa-info"></span> Detail</button>
+            <button type="button" id="edit" class="btn btn-sm btn-primary" onclick="navTo('/Notes/Edit/@(Model.Id)')"><span class="fa fa-pencil"></span> Edit</button>
+        </div>
     </div>
 </div>
 
-<table class="detail_table">
-    <tr>
-        <td class="display-label">
-            Id
-        </td>
-        <td class="display-field">
-            @(Model.Id)
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Date/Time
-        </td>
-        <td class="display-field">
-            @(Model.Timestamp)
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Title
-        </td>
-        <td class="display-field">
-            @(Model.Title)
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label" style="vertical-align: top;">
-            Body
-        </td>
-        <td class="display-field" style="vertical-align: top;">
-            @Html.Raw(Model.Body)
-        </td>
-    </tr>
-</table>
-    
-<table class="listing_table">    
-    <tr>
-        <td colspan="3" class="listing_table_heading">
-            Notifications
-        </td>
-    </tr>
-    <tr>
-        <th style="text-align: center;">
-            Contact
-        </th>
-        <th style="text-align: center; width: 170px; padding-right: 10px;">
-            Cleared At
-        </th>
-    </tr>
-    @{ bool altRow = true;}
-@foreach (var item in Model.NoteNotifications)
-{
-    altRow = !altRow;
-    if (altRow)
-    {
-    <tr class="tr_alternate">
-        <td>
-            @(Html.ActionLink(item.Contact.DisplayName, "Details", "Contacts", new { id = item.Contact.Id.Value }, null))
-        </td>
-        <td>
-            @(item.Cleared)
-        </td>
-    </tr> }
-    else
-    { <tr>
-        <td>
-            @(Html.ActionLink(item.Contact.DisplayName, "Details", "Contacts", new { id = item.Contact.Id.Value }, null))
-        </td>
-        <td>
-            @(item.Cleared)
-        </td>
-    </tr>
-    }
-}
-</table>
-<br />
-@{ Html.RenderPartial("_CoreDetails");}
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Note Details
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-sm-2">Date/Time:</div>
+            <div class="col-sm-3">@(Model.Timestamp)</div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2">Title:</div>
+            <div class="col-sm-3">@(Model.Title)</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Body:</div>
+            <div class="col-sm-10">@Html.Raw(Model.Body)</div>
+        </div>
+    </div>
+</div>
 
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    Displays detailed information of the note.
-    </p>
-</div> 
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Notifications
+    </div>
+    <div class="panel-body">
+        <table class="table table-striped table-condensed table-hover table-text-small">
+            <thead>
+                <tr>
+                    <th style="text-align: center;">
+                        Contact
+                    </th>
+                    <th style="text-align: center; width: 170px;">
+                        Cleared At
+                    </th>
+                    <th style="text-align: center;">
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.NoteNotifications)
+            {
+                    <tr>
+                        <td>
+                            @(Html.ActionLink(item.Contact.DisplayName, "Details", "Contacts", new { id = item.Contact.Id.Value }, null))
+                        </td>
+                        <td>
+                            @(item.Cleared)
+                        </td>
+                    </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@{ Html.RenderPartial("_CoreDetails");}
