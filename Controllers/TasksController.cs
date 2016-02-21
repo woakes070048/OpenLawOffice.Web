@@ -229,6 +229,15 @@ namespace OpenLawOffice.Web.Controllers
                     viewModel.Notes.Add(Mapper.Map<ViewModels.Notes.NoteViewModel>(x));
                 });
 
+                viewModel.Times = new List<ViewModels.Timing.TimeViewModel>();
+                Data.Timing.Time.ListForTask(id, conn, false).ForEach(x =>
+                {
+                    x.Worker = Data.Contacts.Contact.Get(x.Worker.Id.Value, conn, false);
+                    ViewModels.Timing.TimeViewModel vm = Mapper.Map<ViewModels.Timing.TimeViewModel>(x);
+                    vm.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(x.Worker);
+                    viewModel.Times.Add(vm);
+                });
+
                 PopulateCoreDetails(viewModel, conn);
 
                 if (model.Parent != null && model.Parent.Id.HasValue)
@@ -278,8 +287,7 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Tasks.Task.GetRelatedMatter(model.Id.Value, conn, false);
             }
 
-            ViewBag.MatterId = matter.Id.Value;
-            ViewBag.Matter = matter.Title;
+            ViewBag.Matter = matter;
 
             return View(viewModel);
         }

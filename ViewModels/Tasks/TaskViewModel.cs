@@ -55,6 +55,8 @@ namespace OpenLawOffice.Web.ViewModels.Tasks
 
         public List<ViewModels.Notes.NoteViewModel> Notes { get; set; }
 
+        public List<ViewModels.Timing.TimeViewModel> Times { get; set; }
+
         public void BuildMappings()
         {
             Mapper.CreateMap<Common.Models.Tasks.Task, TaskViewModel>()
@@ -117,7 +119,8 @@ namespace OpenLawOffice.Web.ViewModels.Tasks
                     };
                 }))
                 .ForMember(dst => dst.Active, opt => opt.MapFrom(src => src.Active))
-                .ForMember(dst => dst.Notes, opt => opt.Ignore());
+                .ForMember(dst => dst.Notes, opt => opt.Ignore())
+                .ForMember(dst => dst.Times, opt => opt.Ignore());
 
             Mapper.CreateMap<TaskViewModel, Common.Models.Tasks.Task>()
                 .ForMember(dst => dst.Created, opt => opt.MapFrom(src => src.Created))

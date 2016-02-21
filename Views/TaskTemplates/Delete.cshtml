@@ -1,83 +1,72 @@
 @model OpenLawOffice.Web.ViewModels.Tasks.TaskTemplateViewModel
+@using OpenLawOffice.Web.Helpers
 
 @{ 
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Delete Task Template";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Delete Task Template";
 }
 
-<h2>
-    Delete Task Template<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></h2>
-    
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Settings">Settings</a></li>
+        <li><a href="/TaskTemplates">Task Templates</a></li>
+        <li>Template: <a href="/TaskTemplates/Details/@(Model.Id)">@(Model.TaskTemplateTitle)</a></li>
+        <li><a href="/TaskTemplates/Delete/@(Model.Id)" class="active">Delete</a></li>
+    </ul>
+}
+
+<div class="container-fluid">
+    <div class="row text-right">
+        <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-primary" onclick="navTo('/TaskTemplates/Create')"><span class="fa fa-plus"></span> New Template</button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="navTo('/TaskTemplates/Details/@(Model.Id)')"><span class="fa fa-info"></span> Detail</button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="navTo('/TaskTemplates/Edit/@(Model.Id)')"><span class="fa fa-pencil"></span> Edit</button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="navTo('/TaskTemplates/Delete/@(Model.Id)')"><span class="fa fa-times"></span> Delete</button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="navTo('/TaskTemplates')"><span class="fa fa-list"></span> List</button>
+        </div>
+    </div>
+</div>
+
 @using (Html.BeginForm())
     {
 @(Html.ValidationSummary(true))
 <h3>
     Are you sure you want to disable this?</h3>
-<table class="detail_table">
-    <tr>
-        <td class="display-label">
-            Title
-        </td>
-        <td class="display-field">
-            @(Model.Title)
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label" style="width: 125px;">
-            Projected Start
-        </td>
-        <td class="display-field">
-            @(Model.ProjectedStart)
-        </td>            
-        <td></td>
-        <td class="display-label" style="width: 125px;">
-            Projected End
-        </td>
-        <td class="display-field">
-            @(Model.ProjectedEnd)
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label" style="width: 125px;">
-            Due Date
-        </td>
-        <td class="display-field">
-            @(Model.DueDate)
-        </td>      
-        <td></td>
-        <td class="display-label" style="width: 125px;">
-            Actual End
-        </td>
-        <td class="display-field">
-            @(Model.ActualEnd)
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label" style="width: 125px;">
-            Active
-        </td>
-        <td class="display-field">
-            @(Html.CheckBoxFor(model => model.Active, new { disabled = true }))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label" style="width: 125px;">
-            Description
-        </td>
-        <td class="display-field" colspan="4">
-            @(Model.Description)
-        </td>
-    </tr>
-</table>
-<p>
-    <input type="submit" value="Delete" />
-</p>
-}
-<div id="pageInfoDialog" title="Help">
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Task Template Details
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-2">Title:</div>
+                <div class="col-sm-3">@(Model.Title)</div>
+                <div class="col-sm-2"></div>
+                <div class="col-sm-2">Active:</div>
+                <div class="col-sm-3">
+                    @BooleanHelper.YesNo(Model.Active)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2">Due Date:</div>
+                <div class="col-sm-3">
+                    @(Model.DueDate)
+                </div>
+                <div class="col-sm-2"></div>
+                <div class="col-sm-2"></div>
+                <div class="col-sm-3">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2">Description:</div>
+                <div class="col-sm-10">
+                    @Html.Raw(Model.Description)
+                </div>
+            </div>
+        </div>
+    </div>
     <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    This page allows a task template to be disabled.<br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    To disable the task template, click the Delete button.
+        <button type="submit" class="btn btn-default">Submit</button>
     </p>
-</div> 
+}

@@ -35,7 +35,7 @@
                         <td>
                             @(Html.ActionLink(item.Title, "Details", new { id = item.Id }))
                         </td>
-                        <td style="text-align: right;">
+                        <td class="text-right">
                             <button type="button" class="btn btn-xs btn-default" onclick="navTo('/MatterTypes/Edit/@(item.Id.Value)')">
                                 <span class="fa fa-pencil"></span> Edit
                             </button>

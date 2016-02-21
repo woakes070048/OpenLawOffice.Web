@@ -51,10 +51,8 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value, conn, false);
             }
 
-            ViewBag.Task = task.Title;
-            ViewBag.TaskId = task.Id;
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Task = task;
+            ViewBag.Matter = matter;
 
             return View(modelList);
         }
@@ -94,10 +92,8 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value, conn, false);
             }
 
-            ViewBag.Task = task.Title;
-            ViewBag.TaskId = task.Id;
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Task = task;
+            ViewBag.Matter = matter;
 
             return View(viewModel);
         }
@@ -186,57 +182,5 @@ namespace OpenLawOffice.Web.Controllers
         {
             return View();
         }
-
-        //[Authorize(Roles = "Login, User")]
-        //public ActionResult AssignFastTime(Guid id)
-        //{
-        //    // Id is TimeId
-        //    long taskId;
-        //    Common.Models.Tasks.TaskTime model;
-        //    ViewModels.Tasks.TaskTimeViewModel viewModel;
-        //    Common.Models.Account.Users currentUser;
-
-        //    currentUser = Data.Account.Users.Get((Guid)Membership.GetUser().ProviderUserKey);
-
-        //    taskId = long.Parse(Request["TaskId"]);
-
-        //    model = new Common.Models.Tasks.TaskTime()
-        //    {
-        //        Created = DateTime.Now,
-        //        Modified = DateTime.Now,
-        //        CreatedBy = currentUser,
-        //        ModifiedBy = currentUser
-        //    };
-        //    model.Task = Data.Tasks.Task.Get(taskId);
-        //    model.Time = Data.Timing.Time.Get(id);
-        //    model.Time.Worker = Data.Contacts.Contact.Get(model.Time.Worker.Id.Value);
-
-        //    viewModel = Mapper.Map<ViewModels.Tasks.TaskTimeViewModel>(model);
-        //    viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(model.Task);
-        //    viewModel.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(model.Time);
-        //    viewModel.Time.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(model.Time.Worker);
-
-        //    return View(viewModel);
-        //}
-
-        //[HttpPost]
-        //[Authorize(Roles = "Login, User")]
-        //public ActionResult AssignFastTime(Guid id, ViewModels.Tasks.TaskTimeViewModel viewModel)
-        //{
-        //    // Id is TimeId
-        //    long taskId;
-        //    Common.Models.Timing.Time model;
-        //    Common.Models.Account.Users currentUser;
-
-        //    currentUser = Data.Account.Users.Get((Guid)Membership.GetUser().ProviderUserKey);
-
-        //    taskId = long.Parse(Request["TaskId"]);
-
-        //    model = Data.Timing.Time.Get(id);
-
-        //    Data.Timing.Time.RelateTask(model, taskId, currentUser);
-
-        //    return RedirectToAction("FastTimeList", "Timing");
-        //}
     }
 }

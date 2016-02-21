@@ -1,44 +1,20 @@
 @model OpenLawOffice.Web.ViewModels.Tasks.TaskViewModel
 
 @{ 
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Edit Task";
-    Layout = "~/Views/Shared/_LayoutWithContextMenu.cshtml";
+    ViewBag.PageTitle = "Edit Task";
 }
 
-@section ContextMenu {
-    <li>Actions</li>
-    <ul style="list-style: none outside none; padding-left: 1em;">
-        <li>
-            @(Html.ActionLink("New Task", "Create", new { MatterId = ViewBag.MatterId }))
-        </li>
-        <li>
-            @(Html.ActionLink("Details", "Details", new { id = Model.Id }))
-        </li>
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(Model.Id)">@(Model.Title)</a></li>
+        <li><a href="/Matters/Tasks/@(ViewBag.Matter.Id)">Matters</a></li>
+        <li>Task: <a href="/Tasks/Details/@(Model.Id)">@(Model.Title)</a></li>
+        <li><a href="/Tasks/Edit/@(Model.Id)">Edit</a></li>
     </ul>
-    <li>
-        @(Html.ActionLink("Matter", "Details", "Matters", new { id = ViewBag.MatterId }, null))
-    </li>
-    <li>
-        @(Html.ActionLink("Tags", "Tags", "Tasks", new { id = Model.Id }, null))
-    </li>
-    <li>
-        @(Html.ActionLink("Contacts", "Contacts", "Tasks", new { id = Model.Id }, null))
-    </li>
-    <li>
-        @(Html.ActionLink("Notes", "Notes", "Tasks", new { id = Model.Id }, null))
-        (@(Html.ActionLink("Add", "Create", "Notes", new { controller = "Tasks", TaskId = Model.Id }, null)))
-    </li>
-    <li>
-        @(Html.ActionLink("Documents", "Documents", "Tasks", new { id = Model.Id }, null))
-        (@(Html.ActionLink("Add", "Create", "Documents", new { controller = "Tasks", TaskId = Model.Id }, null)))
-    </li>
-    <li>
-        @(Html.ActionLink("Time", "Time", "Tasks", new { id = Model.Id }, null))
-        (@(Html.ActionLink("Add", "SelectContactToAssign", "TaskTime", new { TaskId = Model.Id }, null)))
-    </li>
 }
-
-
 <script type="text/javascript" src="/Scripts/tinymce/tinymce.min.js"></script>
     
 <script language="javascript">
@@ -50,99 +26,82 @@
         });
     });
 </script>
-<div id="roadmap">
-    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
-    <div id="current" class="one">Edit Task<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
+
+<div class="container-fluid">
+    <div class="row text-right">
+        @if (Model.Active)
+        {
+            <div class="btn-group">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Close <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li><a href="/Tasks/CloseWithNewTask/@(Model.Id)">Create New Task</a></li>
+                        <li><a href="/Tasks/Close/@(Model.Id)">No New Task</a></li>
+                    </ul>
+                </div>
+            </div>
+        }
+        <div class="btn-group">
+            <button type="button" id="new" class="btn btn-sm btn-primary" onclick="navTo('/Tasks/Create?MatterId=@(ViewBag.Matter.Id)')"><span class="fa fa-plus"></span> New Task</button>
+            <button type="button" id="details" class="btn btn-sm btn-primary" onclick="navTo('/Tasks/Details/@(Model.Id)')"><span class="fa fa-info"></span> Detail</button>
+            <button type="button" id="edit" class="btn btn-sm btn-primary" onclick="navTo('/Tasks/Edit/@(Model.Id)')"><span class="fa fa-pencil"></span> Edit</button>
+            <button type="button" id="list" class="btn btn-sm btn-primary" onclick="navTo('/Matters/Tasks/@(ViewBag.Matter.Id)')"><span class="fa fa-list"></span> List</button>
+        </div>
+        <div class="btn-group">
+            <button type="button" id="contacts" class="btn btn-sm btn-primary" onclick="navTo('/Tasks/Contacts/@(Model.Id)')"><span class="fa fa-user"></span> Contacts</button>
+            <button type="button" id="notes" class="btn btn-sm btn-primary" onclick="navTo('/Tasks/Notes/@(Model.Id)')"><span class="fa fa-sticky-note-o"></span> Notes</button>
+            <button type="button" id="time" class="btn btn-sm btn-primary" onclick="navTo('/Tasks/Time/@(Model.Id)')"><span class="fa fa-clock-o"></span> Time</button>
+        </div>
+    </div>
 </div>
             
 @using (Html.BeginForm())
     {
 @(Html.ValidationSummary(true))
-<table class="detail_table">
-    <tr>
-        <td class="display-label">
-            Id
-        </td>
-        <td class="display-field">
-            @(Model.Id)
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Title<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Title, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Title))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Description<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.TextAreaFor(model => model.Description, new { style = "height: 300px; width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Description))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Active<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.CheckBoxFor(model => model.Active))
-            A check indicates there is something left to complete.  Once completed, uncheck.
-        </td>
-    </tr>
-    @*<tr>
-        <td class="display-label">
-            Projected Start
-        </td>
-        <td class="display-field">
-            @(Html.EditorFor(model => model.ProjectedStart))
-            @(Html.ValidationMessageFor(model => model.ProjectedStart))
-        </td>
-    </tr>*@
-    <tr>
-        <td class="display-label">
-            Due Date
-        </td>
-        <td class="display-field">
-            @(Html.EditorFor(model => model.DueDate))
-            @(Html.ValidationMessageFor(model => model.DueDate))
-        </td>
-    </tr>
-    @*<tr>
-        <td class="display-label">
-            Projected End
-        </td>
-        <td class="display-field">
-            @(Html.EditorFor(model => model.ProjectedEnd))
-            @(Html.ValidationMessageFor(model => model.ProjectedEnd))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Actual End
-        </td>
-        <td class="display-field">
-            @(Html.EditorFor(model => model.ActualEnd))
-            @(Html.ValidationMessageFor(model => model.ActualEnd))
-        </td>
-    </tr>*@
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Task Assignment Details
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">
+                    Title<span class="required-field" title="Required Field">*</span>
+                </span>
+                <div class="col-sm-10">
+                    @(Html.TextBoxFor(m => m.Title, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">
+                    Description<span class="required-field" title="Required Field">*</span>
+                </span>
+                <div class="col-sm-10">
+                    @(Html.TextAreaFor(m => m.Description, new { @class = "form-control", @style = "height: 300px;" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">
+                    Active<span class="required-field" title="Required Field">*</span>
+                </span>
+                <div class="col-sm-10">
+                    @(Html.CheckBoxFor(model => model.Active, new { @Checked = true, @class = "form-control", @style = "width: 50px; display: inline;" }))
+                    A check indicates there is something left to complete.  Once completed, uncheck.
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">
+                    Due Date
+                </span>
+                <div class="col-sm-10">
+                    @(Html.EditorFor(model => model.DueDate, new { @class = "form-control" }))
+                </div>
+            </div>
+        </div>
+    </div>
 
-</table>
-<p>
-    <input type="submit" value="Save" />
-</p>
-}
-<div id="pageInfoDialog" title="Help">
     <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    Fill in the information on this page to modify the task.  Required fields are indicated with an
-    <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span><br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    Select a "parent" task to make this task be a "subtask" of another task.  To deselect a parent task, click "clear". 
-    Fields marked with an <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span> are required.
+        <button type="submit" class="btn btn-lg btn-default">Submit</button>
     </p>
-</div> 
+}

@@ -1,4 +1,28 @@
-﻿1/1/2016
+﻿2/21/2016
+-- Events are no longer supported - May look to Office 365 in the future
+DROP TABLE event_assigned_contact;
+DROP TABLE event_matter;
+DROP TABLE event_note;
+DROP TABLE event_tag;
+DROP TABLE event_task;
+DROP TABLE event;
+-- Forms are no longer supported - HotDocs can access the database
+DROP TABLE form_field_matter;
+DROP TABLE form_field;
+DROP TABLE form;
+-- Tags are no longer supported - in use they were useless - waste of time
+DROP TABLE matter_tag;
+DROP TABLE task_tag;
+DROP TABLE tag_category;
+DROP TABLE tag_filter;
+-- Documents are no longer supported - needs redesigned for better OS integration - may be impelemented in the future
+DROP TABLE document_task;
+DROP TABLE document_matter;
+DROP TABLE version;
+DROP TABLE document;
+
+
+1/1/2016
 
 ALTER TABLE matter
   DROP COLUMN lead_attorney_contact_id;

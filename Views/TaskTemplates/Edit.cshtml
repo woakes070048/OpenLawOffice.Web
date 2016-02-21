@@ -1,108 +1,86 @@
 @model OpenLawOffice.Web.ViewModels.Tasks.TaskTemplateViewModel
 
 @{ 
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Edit Task Template";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PageTitle = "Edit Task Template";
 }
 
-<h2>
-    Edit Task Template<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></h2>
-    
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Settings">Settings</a></li>
+        <li><a href="/TaskTemplates">Task Templates</a></li>
+        <li>Template: <a href="/TaskTemplates/Details/@(Model.Id)">@(Model.TaskTemplateTitle)</a></li>
+        <li><a href="/TaskTemplates/Delete/@(Model.Id)" class="active">Delete</a></li>
+    </ul>
+}
+
+<div class="container-fluid">
+    <div class="row text-right">
+        <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-primary" onclick="navTo('/TaskTemplates/Create')"><span class="fa fa-plus"></span> New Template</button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="navTo('/TaskTemplates/Details/@(Model.Id)')"><span class="fa fa-info"></span> Detail</button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="navTo('/TaskTemplates/Edit/@(Model.Id)')"><span class="fa fa-pencil"></span> Edit</button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="navTo('/TaskTemplates/Delete/@(Model.Id)')"><span class="fa fa-times"></span> Delete</button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="navTo('/TaskTemplates')"><span class="fa fa-list"></span> List</button>
+        </div>
+    </div>
+</div>
+
 @using (Html.BeginForm())
     {
 @(Html.ValidationSummary(true))
-<table class="detail_table">
-    <tr>
-        <td class="display-label">
-            Title of Template<span class="required-field" title="Required Field">*</span>
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.TaskTemplateTitle, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.TaskTemplateTitle))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Title of Task
-        </td>
-        <td class="display-field">
-            @(Html.TextBoxFor(model => model.Title, new { @style = "width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Title))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Description
-        </td>
-        <td class="display-field">
-            @(Html.TextAreaFor(model => model.Description, new { style = "height: 50px; width: 100%;" }))
-            @(Html.ValidationMessageFor(model => model.Description))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Active
-        </td>
-        <td class="display-field">
-            @(Html.CheckBoxFor(model => model.Active, new { Checked = true }))
-            Uncheck if the task is already completed
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Projected Start
-        </td>
-        <td class="display-field">
-            @(Html.EditorFor(model => model.ProjectedStart))
-            @(Html.ValidationMessageFor(model => model.ProjectedStart))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Due Date
-        </td>
-        <td class="display-field">
-            @(Html.EditorFor(model => model.DueDate))
-            @(Html.ValidationMessageFor(model => model.DueDate))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Projected End
-        </td>
-        <td class="display-field">
-            @(Html.EditorFor(model => model.ProjectedEnd))
-            @(Html.ValidationMessageFor(model => model.ProjectedEnd))
-        </td>
-    </tr>
-    <tr>
-        <td class="display-label">
-            Actual End
-        </td>
-        <td class="display-field">
-            @(Html.EditorFor(model => model.ActualEnd))
-            @(Html.ValidationMessageFor(model => model.ActualEnd))
-        </td>
-    </tr>
-</table>
-<div>
-    <div style="font-weight:bold;">Use Tools</div>
-    The following may be used in the above fields.<br />
-    [NOW] - Insert the current date and time (@(DateTime.Now.ToString("G"))).<br />
-    [DATE] - Insert the current date (@(DateTime.Now.ToString("d"))).<br />
-    [DATE+X] where X is a number - Insert the current date plus the given value of X ([DATE+5]=@(DateTime.Now.AddDays(5).ToString("d"))).
+    <div class="panel panel-default">
+        <div class="panel-heading">Task Template Information</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-2">Title of Template<span class="required-field" title="Required Field">*</span></span>
+                <div class="col-sm-10">
+                    @(Html.TextBoxFor(m => m.TaskTemplateTitle, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Title of Task<span class="required-field" title="Required Field">*</span></span>
+                <div class="col-sm-10">
+                    @(Html.TextBoxFor(m => m.Title, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Description</span>
+                <div class="col-sm-10">
+                    @(Html.TextAreaFor(m => m.Description, new { @class = "form-control", @style = "height: 100px;" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Active</span>
+                <div class="col-sm-10">
+                    @(Html.CheckBoxFor(model => model.Active, new { @Checked = true, @class = "form-control", @style = "width: 50px; display: inline;" }))
+                    Uncheck if the task is already completed
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-2">Due Date</span>
+                <div class="col-sm-10">
+                    @(Html.EditorFor(model => model.DueDate, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-</div>
-<p>
-    <input type="submit" value="Save" />
-</p>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Use Tools
+        </div>
+        <div class="panel-body">
+            The following may be used in the above fields.<br />
+            [NOW] - Insert the current date and time (@(DateTime.Now.ToString("G"))).<br />
+            [DATE] - Insert the current date (@(DateTime.Now.ToString("d"))).<br />
+            [DATE+X] where X is a number - Insert the current date plus the given value of X ([DATE+5]=@(DateTime.Now.AddDays(5).ToString("d"))).
+        </div>
+    </div>
 }
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    Fill in the information on this page to modify a task template.  Required fields are indicated with an
-    <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span><br /><br />
-    <span style="font-weight: bold; text-decoration: underline;">Usage:</span>
-    Fields marked with an <span style="color: #ee0000;font-size: 12px;cursor:help;" title="Required Field">*</span> are required.
-    </p>
-</div> 

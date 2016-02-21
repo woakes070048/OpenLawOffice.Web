@@ -60,10 +60,8 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value, conn, false);
             }
 
-            ViewBag.Task = task.Title;
-            ViewBag.TaskId = task.Id;
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Task = task;
+            ViewBag.Matter = matter;
             return View(viewModel);
         }
 
@@ -101,10 +99,8 @@ namespace OpenLawOffice.Web.Controllers
                 matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value, conn, false);
             }
 
-            ViewBag.Task = task.Title;
-            ViewBag.TaskId = task.Id;
-            ViewBag.Matter = matter.Title;
-            ViewBag.MatterId = matter.Id;
+            ViewBag.Task = task;
+            ViewBag.Matter = matter;
             ViewBag.EmployeeContactList = employeeContactList;
 
             return View(viewModel);
@@ -145,10 +141,8 @@ namespace OpenLawOffice.Web.Controllers
                             ModelState.AddModelError(String.Empty, "Time conflicts with other time entries.");
 
                             matter = Data.Tasks.Task.GetRelatedMatter(trans, task.Id.Value);
-                            ViewBag.Task = task.Title;
-                            ViewBag.TaskId = task.Id;
-                            ViewBag.Matter = matter.Title;
-                            ViewBag.MatterId = matter.Id;
+                            ViewBag.Task = task;
+                            ViewBag.Matter = matter;
                             return View(viewModel);
                         }
                     }
