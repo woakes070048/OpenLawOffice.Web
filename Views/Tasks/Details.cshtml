@@ -1,6 +1,6 @@
 @model OpenLawOffice.Web.ViewModels.Tasks.TaskViewModel
 
-@{ 
+@{
     Layout = "~/Views/Shared/_NewLayout.cshtml";
     ViewBag.Title = "Task Details";
     ViewBag.PageTitle = "Task Details";
@@ -35,47 +35,17 @@
             <button type="button" id="new" class="btn btn-sm btn-primary" onclick="navTo('/Tasks/Create?MatterId=@(ViewBag.Matter.Id)')"><span class="fa fa-plus"></span> New Task</button>
             <button type="button" id="details" class="btn btn-sm btn-primary" onclick="navTo('/Tasks/Details/@(Model.Id)')"><span class="fa fa-info"></span> Detail</button>
             <button type="button" id="edit" class="btn btn-sm btn-primary" onclick="navTo('/Tasks/Edit/@(Model.Id)')"><span class="fa fa-pencil"></span> Edit</button>
-            <button type="button" id="list" class="btn btn-sm btn-primary" onclick="navTo('/Matters/Tasks/@(ViewBag.Matter.Id)')"><span class="fa fa-list"></span> List</button>            
+            <button type="button" id="list" class="btn btn-sm btn-primary" onclick="navTo('/Matters/Tasks/@(ViewBag.Matter.Id)')"><span class="fa fa-list"></span> List</button>
         </div>
         <div class="btn-group">
             <button type="button" id="contacts" class="btn btn-sm btn-primary" onclick="navTo('/Tasks/Contacts/@(Model.Id)')"><span class="fa fa-user"></span> Contacts</button>
             <button type="button" id="notes" class="btn btn-sm btn-primary" onclick="navTo('/Tasks/Notes/@(Model.Id)')"><span class="fa fa-sticky-note-o"></span> Notes</button>
+            <button type="button" id="time" class="btn btn-sm btn-primary" onclick="navTo('/Tasks/Time/@(Model.Id)')"><span class="fa fa-clock-o"></span> Time</button>
         </div>
     </div>
 </div>
 
 @section ContextMenu {
-    <li>Actions</li>
-    <ul style="list-style: none outside none; padding-left: 1em;">
-        <li>
-            @(Html.ActionLink("New Task", "Create", new { MatterId = ViewBag.MatterId }))
-        </li>
-        <li>
-            @(Html.ActionLink("Edit", "Edit", new { id = Model.Id }))
-        </li>
-    </ul>
-    <li>
-        @(Html.ActionLink("Matter", "Details", "Matters", new { id = ViewBag.MatterId }, null))
-    </li>
-    <li>
-        @(Html.ActionLink("Tags", "Tags", "Tasks", new { id = Model.Id }, null))
-        (@(Html.ActionLink("Add", "Create", "TaskTags", new { id = Model.Id }, null)))
-    </li>
-    <li>
-        @(Html.ActionLink("Contacts", "Contacts", "Tasks", new { id = Model.Id }, null))
-    </li>
-    <li>
-        @(Html.ActionLink("Events", "Events", "Tasks", new { id = Model.Id }, null))
-        (@(Html.ActionLink("Add", "Create", "Events", new { controller = "Tasks", TaskId = Model.Id }, null)))
-    </li>
-    <li>
-        @(Html.ActionLink("Notes", "Notes", "Tasks", new { id = Model.Id }, null))
-        (@(Html.ActionLink("Add", "Create", "Notes", new { controller = "Tasks", TaskId = Model.Id }, null)))
-    </li>
-    <li>
-        @(Html.ActionLink("Documents", "Documents", "Tasks", new { id = Model.Id }, null))
-        (@(Html.ActionLink("Add", "Create", "Documents", new { controller = "Tasks", TaskId = Model.Id }, null)))
-    </li>
     <li>
         @(Html.ActionLink("Time", "Time", "Tasks", new { id = Model.Id }, null))
         (@(Html.ActionLink("Add", "SelectContactToAssign", "TaskTime", new { TaskId = Model.Id }, null)))
@@ -104,169 +74,153 @@
     });
 </script>
 
-<div id="roadmap">
-    <div class="zero">Matter: [@(Html.ActionLink((string)ViewBag.Matter, "Details", "Matters", new { id = ViewBag.MatterId }, null))]</div>
-    <div id="current" class="one">Task: @(Model.Title)<a id="pageInfo" class="btn-question" style="padding-left: 15px;">Help</a></div>
-</div>
-            
-@if (Model.Active)
-{
-<div class="options_div" style="text-align: right;">        
-@using (Html.BeginForm("Close", "Tasks", new { Id = ViewContext.RouteData.Values["Id"] }, FormMethod.Post, new { id = "CloseForm" }))
-    {
-@(Html.ValidationSummary(true))
-    <div style="padding-right: 10px; display:inline;">
-        <a id="newTaskHelp" class="btn-question" style="padding-left: 15px;"></a>
-        <input type="checkbox" id="NewTask" name="NewTask" checked="checked" /> Create Follow-up Task 
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Task Details
     </div>
-        
-    <input type="submit" value="Close" 
-        style="background-image: url('/Content/fugue-icons-3.5.6/icons-shadowless/cross.png'); 
-        background-position: left center; background-repeat: no-repeat; padding-left: 20px;" />
-}
-
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-sm-2">Due Date:</div>
+            <div class="col-sm-3">
+                @if (Model.DueDate.HasValue)
+                {
+                    @(String.Format("{0:g}", Model.DueDate.Value))
+                }
+            </div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2">Active:</div>
+            <div class="col-sm-3">
+                @if (Model.Active)
+                {
+                    <text>Yes</text>
+                }
+                else
+                {
+                    <text>No</text>
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Description:</div>
+            <div class="col-sm-10">
+                @Html.Raw(Model.Description)
+            </div>
+        </div>
+    </div>
 </div>
-}
 
-<table class="detail_table">
-    <tr>
-        <td colspan="5" class="detail_table_heading">
-            Task Details
-        </td>
-    </tr>
-    @*<tr>
-        <td class="display-label" style="width: 125px;">
-            Projected Start
-        </td>
-        <td class="display-field">
-            @if (Model.ProjectedStart.HasValue)
-                {
-            @(String.Format("{0:g}", Model.ProjectedStart.Value))
-            }
-        </td>            
-        <td></td>
-        <td class="display-label" style="width: 125px;">
-            Projected End
-        </td>
-        <td class="display-field">
-            @if (Model.ProjectedEnd.HasValue)
-                {
-            @(String.Format("{0:g}", Model.ProjectedEnd.Value))
-            }
-        </td>
-    </tr>*@
-    <tr>
-        <td class="display-label" style="width: 125px;">
-            Due Date
-        </td>
-        <td class="display-field">
-            @if (Model.DueDate.HasValue)
-                {
-            @(String.Format("{0:g}", Model.DueDate.Value))
-            }
-        </td>      
-        <td></td>
 
-        <td class="display-label" style="width: 125px;">
-            Active
-        </td>
-        <td class="display-field">
-            @(Html.CheckBoxFor(model => model.Active, new { disabled = true }))
-        </td>
-        @*<td class="display-label" style="width: 125px;">
-            Actual End
-        </td>
-        <td class="display-field">
-            @if (Model.ActualEnd.HasValue)
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Notes
+        <div style="float: right;">
+            <div class="btn-group">
+                <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Notes/Create?TaskId=@(Model.Id)')"><span class="fa fa-plus"></span> New Note</button>
+                <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Tasks/Notes/@(Model.Id)')"><span class="fa fa-list"></span> List Notes</button>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body">
+        <table class="table table-striped table-condensed table-hover table-text-small">
+            <thead>
+                <tr>
+                    <th style="text-align: center;">
+                        Date/Time
+                    </th>
+                    <th style="text-align: center;">
+                        Title
+                    </th>
+                    <th style="text-align: right;">
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var note in Model.Notes)
                 {
-            @(String.Format("{0:g}", Model.ActualEnd.Value))
-            }
-        </td>*@
-    </tr>
-    @*<tr>
-        <td class="display-label" style="width: 125px;">
-            Active
-        </td>
-        <td class="display-field">
-            @(Html.CheckBoxFor(model => model.Active, new { disabled = true }))
-        </td>
-    </tr>*@
-    <tr>
-        <td class="display-label" style="width: 125px; vertical-align: top;">
-            Description
-        </td>
-        <td class="display-field" colspan="4">
-            @Html.Raw(Model.Description)
-        </td>
-    </tr>
-</table>
-    
-<table class="listing_table">    
-    <tr>
-        <td colspan="4" class="listing_table_heading">
-            Notes
-        </td>
-    </tr>
-    <tr>
-        <th style="text-align: center; width: 170px;">
-            Date/Time
-        </th>
-        <th style="text-align: center;">
-            Title
-        </th>
-        <th style="text-align: center; width: 20px;">
-                
-        </th>
-    </tr>
-    @{ bool altRow = true;}
-@foreach (var note in Model.Notes)
-{
-    altRow = !altRow;
-    if (altRow)
-    {
-    <tr class="tr_alternate">
-        <td>
-            @(note.Timestamp)
-        </td>
-        <td>
-            @(Html.ActionLink(note.Title, "Details", "Notes", new { id = note.Id.Value }, null))
-        </td>
-        <td>
-            @(Html.ActionLink("Edit", "Edit", "Notes", new { id = note.Id.Value }, new { @class = "btn-edit", title = "Edit" }))
-        </td>
-    </tr> }
-    else
-    { <tr>
-        <td>
-            @(note.Timestamp)
-        </td>
-        <td>
-            @(Html.ActionLink(note.Title, "Details", "Notes", new { id = note.Id.Value }, null))
-        </td>
-        <td>
-            @(Html.ActionLink("Edit", "Edit", "Notes", new { id = note.Id.Value }, new { @class = "btn-edit", title = "Edit" }))
-        </td>
-    </tr>
-    }
-}
-</table>
-    
-<br />
+                    <tr>
+                        <td>
+                            @(note.Timestamp)
+                        </td>
+                        <td>
+                            @(Html.ActionLink(note.Title, "Details", "Notes", new { id = note.Id.Value }, null))
+                        </td>
+                        <td style="text-align: right;">
+                            <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Notes/Edit/@(note.Id.Value)')">
+                                <span class="fa fa-pencil"></span> Edit
+                            </button>
+                        </td>
+                    </tr>
+                }}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Time
+        <div style="float: right;">
+            <div class="btn-group">
+                <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Time/Create?TaskId=@(Model.Id)')"><span class="fa fa-plus"></span> New Entry</button>
+                <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Tasks/Time/@(Model.Id)')"><span class="fa fa-list"></span> List Entries</button>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body">
+        <table class="table table-striped table-condensed table-hover table-text-small">
+            <thead>
+                <tr>
+                    <th class="text-center">
+                        Start
+                    </th>
+                    <th class="text-center">
+                        Stop
+                    </th>
+                    <th class="text-center">
+                        Duration
+                    </th>
+                    <th class="text-center">
+                        Worker
+                    </th>
+                    <th style="text-align: right;">
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Times)
+                {
+                    <tr>
+                        <td>
+                            @(item.Start)
+                        </td>
+                        <td>
+                            @(item.Stop)
+                        </td>
+                        <td>
+                            @(Math.Round(item.Duration.TotalMinutes, 0))
+                            min.
+                        </td>
+                        <td>
+                            @(Html.ActionLink(item.Worker.DisplayName, "Details", "Contacts", new { id = item.Worker.Id }, null))
+                        </td>
+                        <td style="text-align: right;">
+                            <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Notes/Edit/@(item.Id.Value)')">
+                                <span class="fa fa-pencil"></span> Edit
+                            </button>
+                            <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Notes/Edit/@(item.Id.Value)')">
+                                <span class="fa fa-pencil"></span> Edit
+                            </button>
+                        </td>
+                        <td>
+                            @(Html.ActionLink("Edit", "Edit", "Timing", new { id = item.Id.Value }, new { @class = "btn-edit", title = "Edit" }))
+                            @(Html.ActionLink("Details", "Details", "Timing", new { id = item.Id.Value }, new { @class = "btn-timeentry", title = "Time Entry" }))
+                        </td>
+                    </tr>
+                }}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 @{ Html.RenderPartial("_CoreDetails");}
-
-
-<div id="pageInfoDialog" title="Help">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Info:</span>
-    Displays detailed information about the task.
-    </p>
-</div>
-<div id="closeTaskDialog" title="Close Task">
-    <p>
-    <span style="font-weight: bold; text-decoration: underline;">Create Follow-Up Task:</span>
-    <br />
-    In most situations, a task being closed should be followed by another task.  For example:
-    Completing a task to send a client an request for information should have a task to follow-up
-    created, or completing a task to draft a motion should be followed by a task to file the motion.
-    </p>
-</div> 
+@{ Html.RenderPartial("_CoreDetails");}
