@@ -87,10 +87,8 @@ namespace OpenLawOffice.Web.Controllers
                     viewModel.Employee = Mapper.Map<ViewModels.Contacts.ContactViewModel>(employee);
 
                     viewModel.MyTodoList = new List<Tuple<ViewModels.Matters.MatterViewModel, ViewModels.Tasks.TaskViewModel>>();
-
-                    tagFilter = Data.Settings.UserTaskSettings.ListTagFiltersFor(currentUser, conn, false);
-
-                    Data.Tasks.Task.GetTodoListFor(employee, tagFilter, null, null, conn, false).ForEach(x =>
+                    
+                    Data.Tasks.Task.GetTodoListFor(employee, null, null, conn, false).ForEach(x =>
                     {
                         matter = Data.Tasks.Task.GetRelatedMatter(x.Id.Value, conn, false);
                         viewModel.MyTodoList.Add(

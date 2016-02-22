@@ -24,21 +24,13 @@ namespace OpenLawOffice.Web.Controllers
     using System.Collections.Generic;
     using System.Web.Mvc;
     using AutoMapper;
+    using System.Data;
 
     // NOT MAINTAINED
     [HandleError(View = "Errors/Index", Order = 10)]
     [Authorize]
     public class SearchController : Controller
     {
-        [Authorize(Roles = "Login, User")]
-        public ActionResult Tags()
-        {
-            return View(new ViewModels.Search.TagSearchViewModel()
-                {
-                    SearchMatters = true,
-                    SearchTasks = true
-                });
-        }
 
         [HttpPost]
         [Authorize(Roles = "Login, User")]

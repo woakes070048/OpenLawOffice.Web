@@ -573,13 +573,9 @@
     <Content Include="Views\Timing\DayView.cshtml" />
     <Content Include="Views\Timing\Details.cshtml" />
     <Content Include="Views\Timing\Edit.cshtml" />
-    <Content Include="Views\Timing\FastTime.cshtml" />
-    <Content Include="Views\Timing\FastTimeList.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\TaskTime\AssignFastTime.cshtml" />
     <Content Include="Views\TaskTime\Create.cshtml" />
-    <Content Include="Views\TaskTime\RelateTask.cshtml" />
     <Content Include="Views\TaskTime\SelectContactToAssign.cshtml" />
   </ItemGroup>
   <ItemGroup>

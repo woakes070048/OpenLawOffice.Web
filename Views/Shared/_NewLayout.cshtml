@@ -9,10 +9,10 @@
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" type="text/css" href="~/Content/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="~/Content/font-awesome.min.css">
-    <link rel="stylesheet" type="text/css" href="~/Content/dashboard.css">
     <link rel="stylesheet" type="text/css" href="~/Content/jquery-ui-1.10.4.custom.css" />
     <link rel="stylesheet" type="text/css" href="~/Scripts/jui_dropdown-1.0.4/jquery.jui_dropdown.css" />
     <link rel="stylesheet" type="text/css" href="~/Content/bootstrap-datetimepicker.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/dashboard.css">
 
     <script type="text/javascript" src="~/Scripts/jquery-1.10.2.js"></script>
     <script type="text/javascript" src="~/Scripts/jquery-ui-1.10.4.custom.js"></script>
@@ -22,7 +22,39 @@
     <script type="text/javascript" src="~/Scripts/bootstrap-datetimepicker.min.js"></script>
 
     <script type="text/javascript">
-        function navTo(url) { window.location.href = url; }
+        
+        $(document).ready(function () {
+            function navTo(url) { window.location.href = url; }
+            function searchGo() {
+                var searchText = $('#searchText').val().trim();
+                var base;
+                var qMarkAt = window.location.href.lastIndexOf('?');
+                if (qMarkAt > 0)
+                    base = window.location.href.substr(0, qMarkAt);
+                else
+                    base = window.location.href;
+
+                window.location.href = '/Matters?active=both&contactFilter=' + searchText;
+            };
+            $('#searchText').autocomplete({
+                source: "/Contacts/ListDisplayNameOnly",
+                minLength: 2,
+                position: { my: "right top", at: "right bottom" },
+                focus: function (event, ui) {
+                    $("#searchText").val(ui.item.DisplayName);
+                    return false;
+                },
+                select: function (event, ui) {
+                    $("#searchText").val(ui.item.DisplayName);
+                    searchGo();
+                    return false;
+                }
+            }).data("ui-autocomplete")._renderItem = function (ul, item) {
+                return $("<li>")
+                    .append("<a>" + item.DisplayName + "</a>")
+                    .appendTo(ul);
+            };
+        });
     </script>
 </head>
 
@@ -53,7 +85,7 @@
                     <li><a href="/Help"><span class="fa fa-question"></span> Help</a></li>
                 </ul>
                 <form class="navbar-form navbar-right">
-                    <input type="text" class="form-control" placeholder="Search...">
+                    <input id="searchText" type="text" class="form-control" placeholder="Search...">
                 </form>
             </div>
         </div>

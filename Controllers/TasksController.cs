@@ -728,19 +728,17 @@ namespace OpenLawOffice.Web.Controllers
             DateTime? start = null;
             DateTime? stop = null;
             List<dynamic> jsonList;
-            List<Common.Models.Settings.TagFilter> tagFilters;
+
             if (Request["start"] != null)
                 start = Common.Utilities.UnixTimeStampToDateTime(double.Parse(Request["start"]));
             if (Request["stop"] != null)
                 stop = Common.Utilities.UnixTimeStampToDateTime(double.Parse(Request["stop"]));
 
-            tagFilters = Common.Settings.Manager.Instance.System.GlobalTaskTagFilters.ToUserSettingsModel();
-
             jsonList = new List<dynamic>();
 
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
-                Data.Tasks.Task.GetTodoListForAll(tagFilters, start, stop, conn, false).ForEach(x =>
+                Data.Tasks.Task.GetTodoListForAll(start, stop, conn, false).ForEach(x =>
                 {
                     if (x.DueDate.HasValue)
                     {
@@ -790,12 +788,12 @@ namespace OpenLawOffice.Web.Controllers
                 jsonList = new List<dynamic>();
 
                 if (Request["ContactId"] == null || string.IsNullOrEmpty(Request["ContactId"]))
-                    taskList = Data.Tasks.Task.GetTodoListFor(user, tagFilter, start, stop, conn, false);
+                    taskList = Data.Tasks.Task.GetTodoListFor(user, start, stop, conn, false);
                 else
                 {
                     int contactId = int.Parse(Request["ContactId"]);
                     taskList = Data.Tasks.Task.GetTodoListFor(user,
-                        new Common.Models.Contacts.Contact() { Id = contactId }, tagFilter, 
+                        new Common.Models.Contacts.Contact() { Id = contactId }, 
                         start, stop, conn, false);
                 }
 
@@ -843,11 +841,9 @@ namespace OpenLawOffice.Web.Controllers
             {
                 contact = Data.Contacts.Contact.Get(id.Value, conn, false);
 
-                tagFilters = Common.Settings.Manager.Instance.System.GlobalTaskTagFilters.ToUserSettingsModel();
-
                 jsonList = new List<dynamic>();
 
-                Data.Tasks.Task.GetTodoListFor(contact, tagFilters, start, stop, conn, false).ForEach(x =>
+                Data.Tasks.Task.GetTodoListFor(contact, start, stop, conn, false).ForEach(x =>
                 {
                     if (x.DueDate.HasValue)
                     {
