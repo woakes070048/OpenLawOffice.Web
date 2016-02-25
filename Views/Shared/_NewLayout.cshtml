@@ -20,11 +20,12 @@
     <script type="text/javascript" src="~/Scripts/jui_dropdown-1.0.4/jquery.jui_dropdown.js"></script>
     <script type="text/javascript" src="~/Scripts/moment.min.js"></script>
     <script type="text/javascript" src="~/Scripts/bootstrap-datetimepicker.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/Chart.min.js"></script>
 
     <script type="text/javascript">
-        
+
+        function navTo(url) { window.location.href = url; }
         $(document).ready(function () {
-            function navTo(url) { window.location.href = url; }
             function searchGo() {
                 var searchText = $('#searchText').val().trim();
                 var base;

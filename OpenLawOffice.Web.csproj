@@ -240,6 +240,7 @@
     <Compile Include="ViewModels\Forms\FormFieldMatterViewModel.cs" />
     <Compile Include="ViewModels\Forms\FormFieldViewModel.cs" />
     <Compile Include="ViewModels\Forms\FormViewModel.cs" />
+    <Compile Include="ViewModels\Home\DashboardGraphDataViewModel.cs" />
     <Compile Include="ViewModels\Home\DashboardViewModel.cs" />
     <Compile Include="ViewModels\Installation\InstallationViewModel.cs" />
     <Compile Include="ViewModels\JqGridObject.cs" />
@@ -322,6 +323,8 @@
     <Content Include="Scripts\bootstrap-datetimepicker.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Scripts\Chart.js" />
+    <Content Include="Scripts\Chart.min.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-ui-1.10.4.custom.js" />
     <Content Include="Scripts\jquery-ui-1.10.4.custom.min.js" />

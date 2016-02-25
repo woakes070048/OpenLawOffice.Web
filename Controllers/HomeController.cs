@@ -109,6 +109,33 @@ namespace OpenLawOffice.Web.Controllers
                     {
                         employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
                     });
+
+                    viewModel.TasklessActiveMatters = new List<ViewModels.Matters.MatterViewModel>();
+                    Data.Matters.Matter.ListMattersWithoutActiveTasks(5, conn, false).ForEach(x =>
+                    {
+                        viewModel.TasklessActiveMatters.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
+                    });
+
+                    Random rnd = new Random();
+                    int activeMatters = Data.Matters.Matter.CountAllActiveMatters(conn, false);
+                    int activeMattersWithoutTasks = Data.Matters.Matter.CountAllMattersWithoutActiveTasks(conn, false);
+
+                    ViewModels.Home.DashboardGraphDataViewModel graphs = new ViewModels.Home.DashboardGraphDataViewModel();
+
+                    graphs.TasksInActiveMatters.Add(new ViewModels.Home.DashboardGraphDataViewModel.ChartItem()
+                    {
+                        value = activeMattersWithoutTasks,
+                        color = "#F7464A",
+                        label = "Without Tasks"
+                    });
+                    graphs.TasksInActiveMatters.Add(new ViewModels.Home.DashboardGraphDataViewModel.ChartItem()
+                    {
+                        value = activeMatters - activeMattersWithoutTasks,
+                        color = "#00cc66",
+                        label = "With Tasks"
+                    });
+
+                    ViewBag.MatterData = Newtonsoft.Json.JsonConvert.SerializeObject(graphs);
                 }
             }
 
@@ -122,10 +149,18 @@ namespace OpenLawOffice.Web.Controllers
         {
             return View();
         }
-        
-        public ActionResult Test()
+
+        private System.Drawing.Color RandomPastelColor(Random rnd)
         {
-            return View();
+            int r = (int)(Math.Round(rnd.NextDouble() * 127) + 127);
+            int g = (int)(Math.Round(rnd.NextDouble() * 127) + 127);
+            int b = (int)(Math.Round(rnd.NextDouble() * 127) + 127);
+            return System.Drawing.Color.FromArgb(1, r, g, b);
+        }
+
+        private string HexColor(System.Drawing.Color color)
+        {
+            return "#" + color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
         }
     }
 }

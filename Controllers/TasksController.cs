@@ -609,7 +609,7 @@ namespace OpenLawOffice.Web.Controllers
                 title = "Phone call with " + phoneCallWith;
             }
 
-            ViewBag.Matter = matter.Title;
+            ViewBag.Matter = matter;
 
             return View(new ViewModels.Tasks.PhoneCallViewModel()
             {
