@@ -296,7 +296,7 @@
             <div class="col-sm-3" style="font-weight: bold;">
                 Expenses
                 <button class="btn btn-xs btn-default"><span class="fa fa-list" onclick="navTo('/Matters/Expenses/@(Model.Id)')"></span></button>
-                <button class="btn btn-xs btn-default"><span class="fa fa-plus" onclick="navTo('/Expenses/Create/@(Model.Id)')"></span></button>
+                <button class="btn btn-xs btn-default"><span class="fa fa-plus" onclick="navTo('/Expenses/Create?MatterId=@(Model.Id)')"></span></button>
             </div>
             <div class="col-sm-3">
                 @(string.Format("{0:C}", ViewBag.ExpensesBilled))
@@ -312,7 +312,7 @@
             <div class="col-sm-3" style="font-weight: bold;">
                 Fees
                 <button class="btn btn-xs btn-default"><span class="fa fa-list" onclick="navTo('/Matters/Fees/@(Model.Id)')"></span></button>
-                <button class="btn btn-xs btn-default"><span class="fa fa-plus" onclick="navTo('/Fees/Create/@(Model.Id)')"></span></button>
+                <button class="btn btn-xs btn-default"><span class="fa fa-plus" onclick="navTo('/Fees/Create?MatterId=@(Model.Id)')"></span></button>
             </div>
             <div class="col-sm-3">
                 @(string.Format("{0:C}", ViewBag.FeesBilled))

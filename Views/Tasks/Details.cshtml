@@ -10,8 +10,8 @@
 @section Breadcrumb {
     <ul class="breadcrumb">
         <li><a href="/Matters">Matters</a></li>
-        <li>Matter: <a href="/Matters/Details/@(Model.Id)">@(Model.Title)</a></li>
-        <li><a href="/Matters/Tasks/@(ViewBag.Matter.Id)">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(ViewBag.Matter.Id)">@ViewBag.Matter.Title)</a></li>
+        <li><a href="/Matters/Tasks/@(ViewBag.Matter.Id)">Tasks</a></li>
         <li>Task: <a href="/Tasks/Details/@(Model.Id)">@(Model.Title)</a></li>
     </ul>
 }

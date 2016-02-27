@@ -87,10 +87,10 @@
                             @(item.DueDate)
                         </td>
                         <td style="text-align: right;">
-                            <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Tasks/Edit/@(item.Id)''"><span class="fa fa-pencil"></span> Edit</button>
+                            <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Tasks/Edit/@(item.Id)')"><span class="fa fa-pencil"></span> Edit</button>
                             @if (item.Active)
                             {
-                                <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Tasks/Close/@(item.Id)''"><span class="fa fa-times"></span> Close</button>
+                                <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Tasks/Close/@(item.Id)')"><span class="fa fa-times"></span> Close</button>
                             }
                         </td>
                     </tr>

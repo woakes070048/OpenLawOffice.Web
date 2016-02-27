@@ -37,6 +37,9 @@
 
                 window.location.href = '/Matters?active=both&contactFilter=' + searchText;
             };
+            $('#searchText').keyup(function (e) {
+                if (e.keyCode == 13) searchGo();
+            });
             $('#searchText').autocomplete({
                 source: "/Contacts/ListDisplayNameOnly",
                 minLength: 2,
