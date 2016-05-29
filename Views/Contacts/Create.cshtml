@@ -23,16 +23,7 @@
                 $("#BillingRate_Id").val([]);
             }
         });
-        @if (Model.IsOurEmployee)
-        {
-            <text>
-                $("#BillingPane").show();
-            </text>
-        } else {
-            <text>
-                $("#BillingPane").hide();
-            </text>
-        }
+        $("#BillingPane").hide();
     });
 </script>
 
