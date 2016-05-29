@@ -1,4 +1,185 @@
-﻿2/21/2016
+﻿4/10/2016
+-- Table: asset
+
+-- DROP TABLE asset;
+
+CREATE TABLE asset
+(
+-- Inherited from table core:  created_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  modified_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  disabled_by_user_pid uuid,
+-- Inherited from table core:  utc_created timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_modified timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_disabled timestamp without time zone,
+  id uuid NOT NULL,
+  id_int bigserial NOT NULL,
+  date timestamp without time zone NOT NULL,
+  title text NOT NULL,
+  is_final boolean NOT NULL,
+  is_court_filed boolean NOT NULL,
+  is_attorney_work_product boolean NOT NULL,
+  is_privileged boolean NOT NULL,
+  is_discoverable boolean NOT NULL,
+  provided_in_discovery_at timestamp without time zone,
+  checked_out_by_id uuid,
+  checked_out_at timestamp without time zone,
+  CONSTRAINT assets_pkey PRIMARY KEY (id),
+  CONSTRAINT "FK_asset_checked_out_by_users_id" FOREIGN KEY (checked_out_by_id)
+      REFERENCES "Users" ("pId") MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+INHERITS (core)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE asset
+  OWNER TO postgres;
+
+-- Table: version
+
+-- DROP TABLE version;
+
+CREATE TABLE version
+(
+-- Inherited from table core:  created_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  modified_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  disabled_by_user_pid uuid,
+-- Inherited from table core:  utc_created timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_modified timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_disabled timestamp without time zone,
+  id uuid NOT NULL,
+  sequence_number integer NOT NULL,
+  change_details text,
+  asset_id uuid NOT NULL,
+  CONSTRAINT version_pkey PRIMARY KEY (id),
+  CONSTRAINT "FK_version_asset_id_asset_id" FOREIGN KEY (asset_id)
+      REFERENCES asset (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+INHERITS (core)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE version
+  OWNER TO postgres;
+
+-- Table: file
+
+-- DROP TABLE file;
+
+CREATE TABLE file
+(
+-- Inherited from table core:  created_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  modified_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  disabled_by_user_pid uuid,
+-- Inherited from table core:  utc_created timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_modified timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_disabled timestamp without time zone,
+  id uuid NOT NULL,
+  version_id uuid NOT NULL,
+  is_source boolean NOT NULL,
+  content_length bigint NOT NULL,
+  content_type text NOT NULL,
+  extension text,
+  CONSTRAINT file_pkey PRIMARY KEY (id),
+  CONSTRAINT "FK_file_version_id_version_id" FOREIGN KEY (version_id)
+      REFERENCES version (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+INHERITS (core)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE file
+  OWNER TO postgres;
+
+-- Table: asset_matter
+
+-- DROP TABLE asset_matter;
+
+CREATE TABLE asset_matter
+(
+-- Inherited from table core:  created_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  modified_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  disabled_by_user_pid uuid,
+-- Inherited from table core:  utc_created timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_modified timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_disabled timestamp without time zone,
+  id uuid NOT NULL,
+  asset_id uuid NOT NULL,
+  matter_id uuid NOT NULL,
+  CONSTRAINT pkey_asset_matter PRIMARY KEY (id),
+  CONSTRAINT "FK_asset_matter_asset_id_asset_id" FOREIGN KEY (asset_id)
+      REFERENCES asset (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT "FK_asset_matter_matter_id_matter_id" FOREIGN KEY (matter_id)
+      REFERENCES matter (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+INHERITS (core)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE asset_matter
+  OWNER TO postgres;
+
+
+-- Table: asset_tag
+
+-- DROP TABLE asset_tag;
+
+CREATE TABLE asset_tag
+(
+-- Inherited from table core:  created_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  modified_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  disabled_by_user_pid uuid,
+-- Inherited from table core:  utc_created timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_modified timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_disabled timestamp without time zone,
+  id serial NOT NULL,
+  name text NOT NULL,
+  CONSTRAINT asset_tag_pkey PRIMARY KEY (id),
+  CONSTRAINT asset_tag_name_unique UNIQUE (name)
+)
+INHERITS (core)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE asset_tag
+  OWNER TO postgres;
+
+-- Table: asset_asset_tag
+
+-- DROP TABLE asset_asset_tag;
+
+CREATE TABLE asset_asset_tag
+(
+-- Inherited from table core:  created_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  modified_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  disabled_by_user_pid uuid,
+-- Inherited from table core:  utc_created timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_modified timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_disabled timestamp without time zone,
+  id uuid NOT NULL,
+  asset_id uuid NOT NULL,
+  asset_tag_id integer NOT NULL,
+  CONSTRAINT asset_asset_tag_pkey PRIMARY KEY (id),
+  CONSTRAINT "FK_asset_asset_tag_asset_id" FOREIGN KEY (asset_id)
+      REFERENCES asset (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT "FK_asset_asset_tag_asset_tag_id" FOREIGN KEY (asset_tag_id)
+      REFERENCES asset_tag (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+INHERITS (core)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE asset_asset_tag
+  OWNER TO postgres;
+
+
+2/21/2016
 -- Events are no longer supported - May look to Office 365 in the future
 DROP TABLE event_assigned_contact;
 DROP TABLE event_matter;

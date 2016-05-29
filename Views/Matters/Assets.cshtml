@@ -1,0 +1,266 @@
+﻿@model OpenLawOffice.Web.ViewModels.Assets.AssetsOfMatterViewModel
+
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
+    ViewBag.Title = "Assets of Matter";
+    ViewBag.PageTitle = "Assets of Matter";
+}
+
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(ViewBag.Matter.Id)">@(ViewBag.Matter.Title)</a></li>
+        <li><a href="/Matters/Assets/@(ViewBag.Matter.Id)" class="active">Assets</a></li>
+    </ul>
+}
+
+<script type="text/javascript" src="/Scripts/moment.min.js"></script>
+
+<script language="javascript">    
+    function loadDdmFlag(value) {
+        $('#ddmFlag_title').html(value);
+        $('input[name="FlagFilter"]').val(value);
+    }
+    $(document).ready(function () {
+        $('#dateFromPicker').datetimepicker({
+            format: 'l'
+        });
+        $('#dateToPicker').datetimepicker({
+            format: 'l'
+        });
+        $('#ddmFlagNotifications li').on('click', function () {
+            var ddmFlagVal = $(this).find('a').html();
+            if (ddmFlagVal == 'Clear Selection') {
+                $('#ddmFlag_title').html('Flag');
+                $('input[name="FlagFilter"]').val('');
+            }
+            else {
+                $('#ddmFlag_title').html($(this).find('a').html());
+                $('input[name="FlagFilter"]').val(ddmFlagVal);
+            }
+        });
+        @if (!string.IsNullOrEmpty(Model.FlagFilter))
+        {
+            <text>loadDdmFlag('@(Model.FlagFilter)');</text>
+        }
+    });
+    function submitFunc(func) {
+        $('input[name="BulkFunction"]').val(func);
+        $('form').submit();
+    }
+</script>
+
+@using (Html.BeginForm())
+{
+<div class="form-inline text-center">
+    <div class="form-group">
+        <div class="input-group input-group-sm">
+            <div class='input-group date' id='dateFromPicker'>
+                <div class="input-group-addon">Date</div>
+                <input type="text" class="form-control" id="DateFromFilter" 
+                       name="DateFromFilter" value="@(Model.DateFromFilter)" placeholder="From" style="width: 100px;" />
+                <span class="input-group-addon">
+                    <span class="fa fa-calendar"></span>
+                </span>
+            </div>
+        </div>
+        <div class="input-group input-group-sm">
+            <div class='input-group date' id='dateToPicker'>
+                <div class="input-group-addon">Date</div>
+                <input type="text" class="form-control" id="DateToFilter" 
+                       name="DateToFilter" value="@(Model.DateToFilter)" placeholder="To" style="width: 100px;" />
+                <span class="input-group-addon">
+                    <span class="fa fa-calendar"></span>
+                </span>
+            </div>
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-addon">Title</div>
+            <input type="text" class="form-control" id="TitleFilter" name="TitleFilter" value="@(Model.TitleFilter)" placeholder="Title" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-addon">Tag</div>
+            <input type="text" class="form-control" id="TagFilter" name="TagFilter" value="@(Model.TagFilter)" placeholder="Tag" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-addon">Flag</div>
+            <div class="dropdown input-group-btn">
+                <button class="btn btn-default dropdown-toggle" type="button" id="ddmFlag" 
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"
+                        style="width: 160px;">
+                    <span id="ddmFlag_title">Flag</span>
+                    <span class="caret" style="position: absolute; left: 145px; top: 12px;"></span>
+                </button>
+                <ul id="ddmFlagNotifications" class="dropdown-menu" aria-labelledby="ddmFlag">
+                    <li><a>Court Filed</a></li>
+                    <li><a>Attorney Work Product</a></li>
+                    <li><a>Privileged</a></li>
+                    <li><a>Discoverable</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a>Clear Selection</a></li>
+                </ul>
+            </div>
+            <input type="hidden" name="FlagFilter" id="FlagFilter" />
+        </div>
+        <button type="button" class="btn btn-sm btn-default" onclick="submitFunc(null)"><span class="fa fa-search"></span> Lookup</button>
+    </div>
+</div>
+
+    if (string.IsNullOrEmpty(Model.BulkFunction))
+    {
+<input type="hidden" id="BulkFunction" name="BulkFunction" />
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Assets
+    </div>
+    <div class="panel-body">
+        <div class="container-fluid">
+            <div class="row text-right">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-primary" onclick="navTo('/Assets/Create/@(ViewBag.Matter.Id)')"><span class="fa fa-plus"></span> New Asset</button>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="submitFunc('download')"><span class="fa fa-cloud-download"></span> Download</button>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="submitFunc('checkout')"><span class="fa fa-lock"></span> Checkout</button>
+                </div>
+            </div>
+        </div>
+        <table class="table table-striped table-condensed table-hover table-text-small">
+            <thead>
+                <tr>
+                    <th style="text-align: center; width: 25px;">
+
+                    </th>
+                    <th style="text-align: center; width: 100px;">
+                        Date
+                    </th>
+                    <th style="text-align: center;">
+                        Title
+                    </th>
+                    <th style="text-align: center;">
+                        Tags
+                    </th>
+                    <th style="text-align: center;">
+                        Flags
+                    </th>
+                    <th style="text-align: center; width: 25px;">
+
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+               @for (int i = 0; i < Model.Assets.Count; i++)
+               {
+                <tr>
+                    <td>@Html.HiddenFor(x => Model.Assets[i].Id)@(Html.CheckBoxFor(x => Model.Assets[i].IsSelected, new { @Checked = false }))</td>
+                    <td>@Model.Assets[i].Date.ToShortDateString()</td>
+                    <td>@Html.ActionLink(Model.Assets[i].Title, "Details", "Assets", new { id = Model.Assets[i].Id }, null)</td>
+                    <td>@string.Join(", ", Model.Assets[i].Tags.Select(x => x.Name))</td>
+                    <td>
+                        @if (Model.Assets[i].IsCourtFiled)
+                        {
+                            <span class="fa fa-legal" title="Court Filed"></span>
+                        }
+                        @if (Model.Assets[i].IsAttorneyWorkProduct)
+                        {
+                            <span class="fa fa-warning" title="Attorney Work Product"></span>
+                        }
+                        @if (Model.Assets[i].IsPrivileged)
+                        {
+                            <span class="fa fa-exclamation" title="Privileged"></span>
+                        }
+                        @if (Model.Assets[i].IsDiscoverable)
+                        {
+                            <span class="fa fa-folder-open-o" title="Discoverable"></span>
+                        }
+                        else
+                        {
+                            <span class="fa fa-folder" title="Not Discoverable"></span>
+                        }
+                        @if (Model.Assets[i].CheckedOutAt.HasValue)
+                        {
+                            <span class="fa fa-lock" title="Checked Out"></span>
+                        }
+                    </td>
+                    <td class="text-right">
+                    </td>
+                </tr>
+               }
+            </tbody>
+        </table>
+    </div>
+</div>
+    }
+    else if (Model.BulkFunction == "download" ||
+            Model.BulkFunction == "checkout")
+    {
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                Downloads
+            </div>
+            <div class="panel-body">
+                <table class="table table-striped table-condensed table-hover table-text-small">
+                    <thead>
+                        <tr>
+                            <th style="text-align: center; width: 100px;">
+                                Date
+                            </th>
+                            <th style="text-align: center;">
+                                Title
+                            </th>
+                            <th style="text-align: center;">
+                                Tags
+                            </th>
+                            <th style="text-align: center;">
+                                Flags
+                            </th>
+                            <th style="text-align: center;">
+                                Files
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Assets.Count; i++)
+                        {
+                            <tr>
+                                <td>@Model.Assets[i].Date.ToShortDateString()</td>
+                                <td>@Model.Assets[i].Title</td>
+                                <td>@string.Join(", ", Model.Assets[i].Tags.Select(x => x.Name))</td>
+                                <td>
+                                    @if (Model.Assets[i].IsCourtFiled)
+                                    {
+                                        <span class="fa fa-legal" title="Court Filed"></span>
+                                    }
+                                    @if (Model.Assets[i].IsAttorneyWorkProduct)
+                                    {
+                                        <span class="fa fa-warning" title="Attorney Work Product"></span>
+                                    }
+                                    @if (Model.Assets[i].IsPrivileged)
+                                    {
+                                        <span class="fa fa-exclamation" title="Privileged"></span>
+                                    }
+                                    @if (Model.Assets[i].IsDiscoverable)
+                                    {
+                                        <span class="fa fa-folder-open-o" title="Discoverable"></span>
+                                    }
+                                    else
+                                    {
+                                        <span class="fa fa-folder" title="Not Discoverable"></span>
+                                    }
+                                    @if (Model.Assets[i].CheckedOutAt.HasValue)
+                                    {
+                                        <span class="fa fa-lock" title="Checked Out"></span>
+                                    }
+                                </td>
+                                <td>
+                                    @foreach(var item in Model.Assets[i].Files)
+                                    {
+                                        <div>@Html.ActionLink(Model.Assets[i].Title + item.Extension, "Download", "Files", new { id = item.Id }, null)</div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+}

@@ -446,6 +446,7 @@
         Task Notes
         <div style="float: right;">
             <div class="btn-group">
+                <button type="button" id="newMatterNote" class="btn btn-xs btn-default" onclick="navTo('/Notes/Create?MatterId=@(Model.Id)')"><span class="fa fa-plus"></span> New Note</button>
                 <button type="button" id="listNotes2" class="btn btn-xs btn-default" onclick="navTo('/Matters/Notes/@(Model.Id)')"><span class="fa fa-list"></span> List Notes</button>
             </div>
         </div>
@@ -493,4 +494,101 @@
     </div>
 </div>
 
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Assets
+        <div style="float: right;">
+            <div class="btn-group">
+                <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Assets/Create/@(Model.Id.Value)')"><span class="fa fa-plus"></span> New Asset</button>
+                <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Matters/Assets/@(Model.Id)')"><span class="fa fa-list"></span> List Assets</button>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body">
+        <table class="table table-striped table-condensed table-hover table-text-small">
+            <thead>
+                <tr>
+                    <th style="text-align: center; width: 170px;">
+                        Date
+                    </th>
+                    <th style="text-align: center;">
+                        Title
+                    </th>
+                    <th style="text-align: center;">
+                        Tags
+                    </th>
+                    <th style="text-align: right; width: 200px;">
+
+                    </th>
+                    <th style="text-align: right; width: 200px;">
+
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Assets)
+                {
+                    <tr>
+                        <td>
+                            @(item.Date.ToShortDateString())
+                        </td>
+                        <td>
+                            @(Html.ActionLink(item.Title, "Details", "Assets", new { id = item.Id.Value }, null))
+                        </td>
+                        <td>
+                            @foreach (var tag in item.Tags)
+                            {
+                                <span>@(tag.Name)</span>
+                            }
+                        </td>
+                        <td style="text-align: right;">
+                            @if (item.IsCourtFiled)
+                            {
+                               <span class="fa fa-legal" title="Court Filed"></span>
+                            }
+                            @if (item.IsAttorneyWorkProduct)
+                            {
+                                <span class="fa fa-warning" title="Attorney Work Product"></span>
+                            }
+                            @if (item.IsPrivileged)
+                            {
+                                <span class="fa fa-exclamation" title="Privileged"></span>
+                            }
+                            @if (item.IsDiscoverable)
+                            {
+                                <span class="fa fa-folder-open-o" title="Discoverable"></span>
+                            }
+                            else
+                            {
+                                <span class="fa fa-folder" title="Not Discoverable"></span>
+                            }
+                            @if (item.CheckedOutAt.HasValue)
+                            {
+                                <span class="fa fa-lock" title="Checked Out"></span>
+                            }
+                        </td>
+                        <td style="text-align: right;">
+
+                            <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Assets/Edit/@(item.Id.Value)')">
+                                <span class="fa fa-pencil"></span> Edit
+                            </button>
+                            @if (!item.CheckedOutAt.HasValue)
+                            {
+                                <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Assets/Checkout/@(item.Id.Value)')">
+                                    <span class="fa fa-lock"></span> Checkout
+                                </button>
+                            }
+                            else if (item.CheckedOutBy.Username == User.Identity.Name)
+                            {
+                                <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Assets/Checkin/@(item.Id.Value)')">
+                                    <span class="fa fa-unlock"></span> Checkin
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 @{ Html.RenderPartial("_CoreDetails");}

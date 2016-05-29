@@ -24,7 +24,7 @@
             <div class="col-sm-3">
                 @if (Model.DisabledBy != null)
                 {
-                    <text> Model.DisabledBy.Username </text>
+                    <text>@(Model.DisabledBy.Username)</text>
                 }
             </div>
             <div class="col-sm-2"></div>
@@ -32,7 +32,7 @@
             <div class="col-sm-3">
                 @if (Model.Disabled.HasValue)
                 {
-                    <text> Model.Disabled.Username </text>
+                    <text>@(String.Format("{0:g}", Model.Disabled.Value))</text>
                 }
             </div>
         </div>

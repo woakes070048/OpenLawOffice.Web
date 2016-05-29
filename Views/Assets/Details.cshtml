@@ -1,0 +1,184 @@
+﻿@model OpenLawOffice.Web.ViewModels.Assets.AssetViewModel
+@using OpenLawOffice.Web.Helpers
+
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
+    ViewBag.Title = "Asset Details";
+    ViewBag.PageTitle = "Asset Details";
+}
+
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(ViewBag.Matter.Id)">@ViewBag.Matter.Title</a></li>
+        <li><a href="/Matters/Assets/@(ViewBag.Matter.Id)">Assets</a></li>
+        <li>Asset: <a href="/Assets/Details/@(Model.Id)">@(Model.Title)</a></li>
+    </ul>
+}
+
+<div class="container-fluid">
+    <div class="row text-right">
+        <div class="btn-group">
+            @if (Model.CheckedOutAt.HasValue)
+            {
+                <button type="button" class="btn btn-sm btn-primary" onclick="navTo('/Assets/Checkin/@(Model.Id)')"><span class="fa fa-unlock"></span> Checkin</button>
+            }
+            else
+            {
+                <button type="button" class="btn btn-sm btn-primary" onclick="navTo('/Assets/Checkout/@(Model.Id)')"><span class="fa fa-lock"></span> Checkout</button>
+            }
+        </div>
+        <div class="btn-group">
+            @if (!Model.IsFinal && 
+                (Model.CheckedOutBy == null || Model.CheckedOutBy.Username == User.Identity.Name))
+            {
+                <button type="button" id="new" class="btn btn-sm btn-primary" onclick="navTo('/Versions/Create/@(Model.Id)')"><span class="fa fa-plus"></span> New Version</button>
+            }
+            <button type="button" id="details" class="btn btn-sm btn-primary" onclick="navTo('/Assets/Details/@(Model.Id)')"><span class="fa fa-info"></span> Detail</button>
+            <button type="button" id="edit" class="btn btn-sm btn-primary" onclick="navTo('/Assets/Edit/@(Model.Id)')"><span class="fa fa-pencil"></span> Edit</button>
+            <button type="button" id="list" class="btn btn-sm btn-primary" onclick="navTo('/Matters/Assets/@(ViewBag.Matter.Id)')"><span class="fa fa-list"></span> List</button>
+        </div>
+    </div>
+</div>
+
+<h2>@(Model.Title)</h2>
+
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Asset Details
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-sm-2">Date:</div>
+            <div class="col-sm-3">
+                @(String.Format("{0:g}", Model.Date))
+            </div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-3">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Finalized:</div>
+            <div class="col-sm-3">
+                @BooleanHelper.YesNo(Model.IsFinal)
+            </div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2">Filed with Court:</div>
+            <div class="col-sm-3">
+                @BooleanHelper.YesNo(Model.IsCourtFiled)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Attorney Work Product:</div>
+            <div class="col-sm-3">
+                @BooleanHelper.YesNo(Model.IsAttorneyWorkProduct)
+            </div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2">Privileged:</div>
+            <div class="col-sm-3">
+                @BooleanHelper.YesNo(Model.IsPrivileged)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Discoverable:</div>
+            <div class="col-sm-3">
+                @BooleanHelper.YesNo(Model.IsDiscoverable)
+            </div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2">When provided in discovery:</div>
+            <div class="col-sm-3">
+                @if (Model.ProvidedInDiscoveryAt.HasValue)
+                {
+                    @(String.Format("{0:g}", Model.ProvidedInDiscoveryAt.Value))
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Checked out by:</div>
+            <div class="col-sm-3">
+                @if (Model.CheckedOutBy != null)
+                {
+                    <text>@(Model.CheckedOutBy.Username)</text>
+                }
+            </div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2">When checked out:</div>
+            <div class="col-sm-3">
+                @if (Model.CheckedOutAt.HasValue)
+                {
+                    @(String.Format("{0:g}", Model.CheckedOutAt.Value))
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Tags:</div>
+            <div class="col-sm-10">
+                @if (Model.Tags != null)
+                {
+                    <text>@(string.Join(", ", Model.Tags.Select(x => x.Name)))</text>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@foreach (OpenLawOffice.Web.ViewModels.Assets.VersionViewModel version in Model.Versions)
+{    
+    <h3 style="border-bottom: 1px solid rgb(221,221,221); width: 100%; margin-bottom: 0px;">
+        Version: @(version.SequenceNumber)
+        <button type="button" id="edit" class="btn btn-xs btn-default" onclick="navTo('/Versions/Edit/@(version.Id)')"><span class="fa fa-pencil"></span> Edit</button>
+    </h3>
+    <div style="margin-bottom: 3px;">Change Details: @version.ChangeDetails</div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Files
+        </div>
+        <div class="panel-body">
+            <table class="table table-striped table-condensed table-hover table-text-small">
+                <thead>
+                    <tr>
+                        <th class="text-center">
+                            Type
+                        </th>
+                        <th class="text-center">
+                            Size
+                        </th>
+                        <th class="text-center">
+                            Source
+                        </th>
+                        <th style="text-align: right;">
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (OpenLawOffice.Web.ViewModels.Assets.FileViewModel file in version.Files)
+                    {
+                        <tr>
+                            <td>
+                                @(file.ContentType)
+                            </td>
+                            <td>
+                                @(file.ContentLength)
+                            </td>
+                            <td>
+                                @BooleanHelper.YesNo(file.IsSource)
+                            </td>
+                            <td class="text-right">
+                                <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Files/Edit/@(file.Id.Value)')">
+                                    <span class="fa fa-pencil"></span> Edit
+                                </button>
+                                <button type="button" class="btn btn-xs btn-default" onclick="navTo('/Files/Download/@(file.Id.Value)')">
+                                    <span class="fa fa-cloud-download"></span> Download
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+

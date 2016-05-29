@@ -96,6 +96,7 @@ namespace OpenLawOffice.Web.ViewModels.Matters
         public List<ViewModels.Tasks.TaskViewModel> Tasks { get; set; }
         public List<ViewModels.Notes.NoteViewModel> Notes { get; set; }
         public List<ViewModels.Notes.NoteTaskViewModel> TaskNotes { get; set; }
+        public List<Assets.AssetViewModel> Assets { get; set; }
 
         public void BuildMappings()
         {
@@ -216,6 +217,7 @@ namespace OpenLawOffice.Web.ViewModels.Matters
                 .ForMember(dst => dst.CaptionOtherPartyRegular, opt => opt.MapFrom(src => src.CaptionOtherPartyRegular))
                 .ForMember(dst => dst.CaptionOtherPartyLong, opt => opt.MapFrom(src => src.CaptionOtherPartyLong))
                 .ForMember(dst => dst.Clients, opt => opt.Ignore())
+                .ForMember(dst => dst.Assets, opt => opt.Ignore())
                 .ForMember(dst => dst.Tasks, opt => opt.Ignore())
                 .ForMember(dst => dst.Notes, opt => opt.Ignore())
                 .ForMember(dst => dst.TaskNotes, opt => opt.Ignore())

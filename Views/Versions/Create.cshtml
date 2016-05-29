@@ -1,0 +1,109 @@
+﻿@model OpenLawOffice.Web.ViewModels.Assets.CreateVersionViewModel
+
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
+    ViewBag.Title = "Create Version";
+    ViewBag.PageTitle = "Create Version";
+}
+
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(ViewBag.Matter.Id)">@(ViewBag.Matter.Title)</a></li>
+        <li><a href="/Matters/Assets/@(ViewBag.Matter.Id)">Assets</a></li>
+        <li><a href="/Assets/Details/@(ViewBag.Asset.Id)">@(ViewBag.Asset.Title)</a></li>
+        <li><a href="/Versions/Create/@(ViewBag.Asset.Id)" class="active">Create</a></li>
+    </ul>
+}
+
+
+<script type="text/javascript" src="/Scripts/moment.min.js"></script>
+
+<script language="javascript">
+    $(document).ready(function () {
+        $('#Files').on('fileloaded', function(event, file, previewId, index, reader) {
+            $('#SourceFileWrapper').html($('#SourceFileWrapper').html() + '<input type="checkbox" name="SourceFiles" value="' + file.name + '">' + file.name + '<br />');
+        })
+        $('#Files').on('filecleared', function(event) {
+            $('#SourceFileWrapper').html('');
+        })
+        $('#Files').on('filebrowse', function(event) {
+            $('#SourceFileWrapper').html('');
+        })
+    });
+</script>
+
+@if (Model.IsFinal)
+{
+    <div>A new version cannot be created for this asset because the asset is already marked as final.  If you 
+    wish to create a new version, you must first edit the asset and remove the final indicator.</div>
+    <div>@(Html.ActionLink("Edit Asset", "Edit", "Assets", new { Id = ViewBag.Asset.Id }, null))</div>
+}
+else if (ViewBag.Asset.CheckedOutBy != null && 
+        ViewBag.Asset.CheckedOutBy.Username != User.Identity.Name)
+{
+    <div>This asset is checked out by another user.  You cannot create new versions of an asset when another user has it checked out.</div>
+    <div>Checked Out By: @(ViewBag.Asset.CheckedOutBy.Username)</div>
+    <div>Checked Out At: @(ViewBag.Asset.CheckedOutAt.Value.ToString())</div>
+}
+else
+{
+using (Html.BeginForm("Create", "Versions", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @(Html.ValidationSummary(true))
+
+    <div class="panel panel-default">
+        <div class="panel-heading">Asset Information</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-4">
+                    Finalized
+                </span>
+                <div class="col-sm-8">
+                    @(Html.CheckBoxFor(model => model.IsFinal, new { @Checked = true, @class = "form-control", @style = "width: 50px; display: inline;" }))
+                    Check to indicate this asset has reached its final version
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-4">
+                    Filed with Court
+                </span>
+                <div class="col-sm-8">
+                    @(Html.CheckBoxFor(model => model.IsCourtFiled, new { @Checked = false, @class = "form-control", @style = "width: 50px; display: inline;" }))
+                    Check to indicate this asset has been filed with a Court
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-4">
+                    Change Details
+                </span>
+                <div class="col-sm-8">
+                    @(Html.TextBoxFor(m => m.Version.ChangeDetails, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-4">
+                    File(s)
+                </span>
+                <div class="col-sm-8">
+                    <input id="Files" name="@(Html.NameFor(model => model.Files))" type="file" class="file form-control" multiple data-show-upload="false" data-show-caption="true">
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="control-label col-sm-4">
+                    Select Source File(s):
+                </span>
+                <div class="col-sm-8" id="SourceFileWrapper">
+
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-4 col-sm-8">
+                    <button type="submit" class="btn btn-default text-center media-middle center-block">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+}

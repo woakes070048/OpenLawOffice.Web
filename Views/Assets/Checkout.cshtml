@@ -1,0 +1,130 @@
+﻿@model OpenLawOffice.Web.ViewModels.Assets.AssetViewModel
+@using OpenLawOffice.Web.Helpers
+
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
+    ViewBag.Title = "Checkout Asset";
+    ViewBag.PageTitle = "Checkout Asset";
+}
+
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(ViewBag.Matter.Id)">@(ViewBag.Matter.Title)</a></li>
+        <li><a href="/Matters/Assets/@(ViewBag.Matter.Id)">Assets</a></li>
+        <li><a href="/Assets/Details/@(Model.Id)">@(Model.Title)</a></li>
+        <li><a href="/Assets/Checkout/@(Model.Id)" class="active">Checkout</a></li>
+    </ul>
+}
+
+<h2>@(Model.Title)</h2>
+
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Asset Details
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-sm-2">Date:</div>
+            <div class="col-sm-3">
+                @(String.Format("{0:g}", Model.Date))
+            </div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-3">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Finalized:</div>
+            <div class="col-sm-3">
+                @BooleanHelper.YesNo(Model.IsFinal)
+            </div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2">Filed with Court:</div>
+            <div class="col-sm-3">
+                @BooleanHelper.YesNo(Model.IsCourtFiled)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Attorney Work Product:</div>
+            <div class="col-sm-3">
+                @BooleanHelper.YesNo(Model.IsAttorneyWorkProduct)
+            </div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2">Privileged:</div>
+            <div class="col-sm-3">
+                @BooleanHelper.YesNo(Model.IsPrivileged)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Discoverable:</div>
+            <div class="col-sm-3">
+                @BooleanHelper.YesNo(Model.IsDiscoverable)
+            </div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2">When provided in discovery:</div>
+            <div class="col-sm-3">
+                @if (Model.ProvidedInDiscoveryAt.HasValue)
+                {
+                @(String.Format("{0:g}", Model.ProvidedInDiscoveryAt.Value))
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Checked out by:</div>
+            <div class="col-sm-3">
+                @if (Model.CheckedOutBy != null)
+                {
+                <text>@(Model.CheckedOutBy.Username)</text>
+                }
+            </div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2">When checked out:</div>
+            <div class="col-sm-3">
+                @if (Model.CheckedOutAt.HasValue)
+                {
+                @(String.Format("{0:g}", Model.CheckedOutAt.Value))
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Tags:</div>
+            <div class="col-sm-10">
+                @if (Model.Tags != null)
+                {
+                <text>@(string.Join(", ", Model.Tags.Select(x => x.Name)))</text>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm())
+{
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Information
+        </div>
+        <div class="panel-body">
+            <p>
+                Checking out an asset blocks other users from being able to make changes to the asset
+                until the user that checked out the asset checks in the asset.
+            </p>
+            <p>
+                If you checkout the asset, no one else will be able to make changes to the asset unless
+                and until you check in the asset.
+            </p>
+            <p>
+                If you are not going to make changes to the asset, do not check it out, just
+                download the files you desire.  Checkout should only be used when you intend to make
+                changes and then want them saved.
+            </p>
+            <div style="text-align: center; width: 100%">
+                <button type="submit" class="btn btn-default text-center media-middle center-block">
+                    <span class="fa fa-lock"></span> Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+}

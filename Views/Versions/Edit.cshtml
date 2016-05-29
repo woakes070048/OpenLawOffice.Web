@@ -1,0 +1,44 @@
+﻿@model OpenLawOffice.Web.ViewModels.Assets.VersionViewModel
+
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
+    ViewBag.Title = "Edit Version";
+    ViewBag.PageTitle = "Edit Version";
+}
+
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Matters">Matters</a></li>
+        <li>Matter: <a href="/Matters/Details/@(ViewBag.Matter.Id)">@(ViewBag.Matter.Title)</a></li>
+        <li><a href="/Matters/Assets/@(ViewBag.Matter.Id)">Assets</a></li>
+        <li><a href="/Assets/Details/@(ViewBag.Asset.Id)">@(ViewBag.Asset.Title)</a></li>
+        <li><a href="/Assets/Details/@(ViewBag.Asset.Id)">Version: @(Model.SequenceNumber)</a></li>
+        <li><a href="/Versions/Edit/@(Model.Id)" class="active">Edit</a></li>
+    </ul>
+}
+
+
+@using (Html.BeginForm())
+{
+    @(Html.ValidationSummary(true))
+
+    <div class="panel panel-default">
+        <div class="panel-heading">Version Information</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <span class="control-label col-sm-4">
+                    Change Details
+                </span>
+                <div class="col-sm-8">
+                    @(Html.TextBoxFor(m => m.ChangeDetails, new { @class = "form-control" }))
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-4 col-sm-8">
+                    <button type="submit" class="btn btn-default text-center media-middle center-block">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}

@@ -54,7 +54,7 @@ namespace OpenLawOffice.Web.Controllers
                     active = true;
                     break;
             }
-            
+
             contactFilter = Request["contactFilter"];
             titleFilter = Request["titleFilter"];
             caseNumberFilter = Request["caseNumberFilter"];
@@ -72,7 +72,7 @@ namespace OpenLawOffice.Web.Controllers
                 if (int.TryParse(Request["courtGeographicalJurisdictionFilter"], out i))
                     courtGeographicalJurisdictionFilter = i;
             }
-            
+
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
                 Data.Matters.CourtType.List(conn, false).ForEach(x =>
@@ -85,14 +85,14 @@ namespace OpenLawOffice.Web.Controllers
                     viewModel.CourtGeographicalJurisdictions.Add(Mapper.Map<ViewModels.Matters.CourtGeographicalJurisdictionViewModel>(x));
                 });
 
-                Data.Matters.Matter.List(active, contactFilter, 
+                Data.Matters.Matter.List(active, contactFilter,
                     titleFilter, caseNumberFilter, courtTypeFilter, courtGeographicalJurisdictionFilter,
                     conn, false).ForEach(x =>
                 {
                     viewModel.Matters.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
                 });
             }
-            
+
             return View(viewModel);
         }
 
@@ -284,7 +284,7 @@ namespace OpenLawOffice.Web.Controllers
             List<Common.Models.Timing.Time> unbilledTimeList;
             decimal feesBilled = 0, feesUnbilled = 0,
                 expensesBilled = 0, expensesUnbilled = 0,
-                timeBilledDollars = 0, 
+                timeBilledDollars = 0,
                 totalValue = 0;
             TimeSpan timeBilledSpan = new TimeSpan(),
                 timeUnbilledSpan = new TimeSpan(),
@@ -393,6 +393,18 @@ namespace OpenLawOffice.Web.Controllers
                     ntvm.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(Data.Tasks.Task.Get(x.Task.Id.Value, conn, false));
                     ntvm.Note = Mapper.Map<ViewModels.Notes.NoteViewModel>(Data.Notes.Note.Get(x.Note.Id.Value, conn, false));
                     viewModel.TaskNotes.Add(ntvm);
+                });
+
+                viewModel.Assets = new List<ViewModels.Assets.AssetViewModel>();
+                Data.Assets.Asset.ListForMatter(id, conn, false).ForEach(x =>
+                {
+                    ViewModels.Assets.AssetViewModel avm = Mapper.Map<ViewModels.Assets.AssetViewModel>(x);
+                    avm.Tags = new List<ViewModels.Assets.TagViewModel>();
+                    Data.Assets.Tag.ListForAsset(avm.Id.Value, conn, false).ForEach(y =>
+                    {
+                        avm.Tags.Add(Mapper.Map<ViewModels.Assets.TagViewModel>(y));
+                    });
+                    viewModel.Assets.Add(avm);
                 });
 
                 PopulateCoreDetails(viewModel, conn);
@@ -703,7 +715,7 @@ namespace OpenLawOffice.Web.Controllers
                         mc.Matter = model;
                         Data.Matters.MatterContact.Create(trans, mc, currentUser);
                     }
-                    
+
                     trans.Commit();
                 }
                 catch
@@ -822,7 +834,7 @@ namespace OpenLawOffice.Web.Controllers
             viewModel.CourtTypes = courtTypeList;
             viewModel.CourtGeographicalJurisdictions = courtGeographicalJurisdictionList;
             viewModel.CourtSittingInCities = courtSittingInCityList;
-                        
+
             ViewBag.Matter = model.Title;
             ViewBag.MatterId = model.Id;
 
@@ -889,7 +901,7 @@ namespace OpenLawOffice.Web.Controllers
                     }
 
                     currentUser = Data.Account.Users.Get(trans, User.Identity.Name);
-                    
+
                     model = Mapper.Map<Common.Models.Matters.Matter>(viewModel.Matter);
 
                     model = Data.Matters.Matter.Edit(trans, model, currentUser);
@@ -1034,7 +1046,7 @@ namespace OpenLawOffice.Web.Controllers
 
                     viewModel.Each(x =>
                     {
-                        Common.Models.Forms.FormFieldMatter model = 
+                        Common.Models.Forms.FormFieldMatter model =
                             Data.Forms.FormFieldMatter.Get(trans, matter.Id.Value, x.FormField.Id.Value);
 
                         if (model != null)
@@ -1341,7 +1353,7 @@ namespace OpenLawOffice.Web.Controllers
             ViewModels.Timing.DayViewModel viewModel = new ViewModels.Timing.DayViewModel();
 
             employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
-            
+
             dynamic profile = ProfileBase.Create(Membership.GetUser().UserName);
             if (profile.ContactId != null && !string.IsNullOrEmpty(profile.ContactId))
                 contactId = int.Parse(profile.ContactId);
@@ -1462,7 +1474,7 @@ namespace OpenLawOffice.Web.Controllers
             ViewBag.EmployeeContactList = employeeContactList;
             return View(viewModel);
         }
-        
+
         [Authorize(Roles = "Login, User")]
         public ActionResult Timesheet_PrintInternal(ViewModels.Home.DashboardViewModel currentDVM)
         {
@@ -1738,6 +1750,112 @@ namespace OpenLawOffice.Web.Controllers
             ViewBag.MatterId = matter.Id;
 
             return View(viewModelList);
+        }
+
+        [Authorize(Roles = "Login, User")]
+        public ActionResult Assets(Guid id)
+        {
+            Common.Models.Matters.Matter matter;
+            ViewModels.Assets.AssetsOfMatterViewModel viewModel = new ViewModels.Assets.AssetsOfMatterViewModel();
+            viewModel.Assets = new List<ViewModels.Assets.SelectableAssetViewModel>();
+
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                matter = Data.Matters.Matter.Get(id, conn, false);
+
+                Data.Assets.Asset.ListForMatter(id, conn, false).ForEach(x =>
+                {
+                    ViewModels.Assets.SelectableAssetViewModel vm = Mapper.Map<ViewModels.Assets.SelectableAssetViewModel>(x);
+
+                    vm.Tags = new List<ViewModels.Assets.TagViewModel>();
+                    Data.Assets.Tag.ListForAsset(x.Id.Value, conn, false).ForEach(tag =>
+                    {
+                        vm.Tags.Add(Mapper.Map<ViewModels.Assets.TagViewModel>(tag));
+                    });
+
+                    viewModel.Assets.Add(vm);
+                });
+            }
+
+            ViewBag.Matter = matter;
+
+            return View(viewModel);
+        }
+
+        [Authorize(Roles = "Login, User")]
+        [HttpPost]
+        public ActionResult Assets(Guid id, ViewModels.Assets.AssetsOfMatterViewModel viewModel)
+        {
+            Common.Models.Account.Users currentUser;
+            Common.Models.Matters.Matter matter;
+            ViewModels.Assets.AssetsOfMatterViewModel newViewModel = new ViewModels.Assets.AssetsOfMatterViewModel();
+            newViewModel.Assets = new List<ViewModels.Assets.SelectableAssetViewModel>();
+
+            using (Data.Transaction trans = Data.Transaction.Create())
+            {
+                try
+                {
+                    currentUser = Data.Account.Users.Get(User.Identity.Name);
+
+                    matter = Data.Matters.Matter.Get(trans, id);
+
+                    Data.Assets.Asset.ListForMatter(trans, id, viewModel.DateFromFilter, viewModel.DateToFilter, 
+                        viewModel.FlagFilter, viewModel.TagFilter, viewModel.TitleFilter).ForEach(x =>
+                    {
+                        ViewModels.Assets.SelectableAssetViewModel a = null;
+                        if (viewModel.Assets != null)
+                        {
+                            IEnumerable<ViewModels.Assets.SelectableAssetViewModel> hits = viewModel.Assets.Where(y => y.Id == x.Id);
+                            if (hits.Count() > 1)
+                                a = hits.First();
+                            else
+                                a = hits.SingleOrDefault();
+                        }
+                        if ((a != null && a.IsSelected) ||
+                            string.IsNullOrEmpty(viewModel.BulkFunction))
+                        {
+                            ViewModels.Assets.SelectableAssetViewModel vm = Mapper.Map<ViewModels.Assets.SelectableAssetViewModel>(x);
+
+                            vm.Tags = new List<ViewModels.Assets.TagViewModel>();
+                            Data.Assets.Tag.ListForAsset(trans, x.Id.Value).ForEach(tag =>
+                            {
+                                vm.Tags.Add(Mapper.Map<ViewModels.Assets.TagViewModel>(tag));
+                            });
+
+                            vm.Files = new List<ViewModels.Assets.FileViewModel>();
+                            Data.Assets.Asset.ListFilesForMostRecentVersion(trans, x.Id.Value).ForEach(file =>
+                            {
+                                vm.Files.Add(Mapper.Map<ViewModels.Assets.FileViewModel>(file));
+                            });
+
+                            newViewModel.Assets.Add(vm);
+
+                            if (viewModel.BulkFunction == "checkout")
+                            {
+                                Data.Assets.Asset.Checkout(trans, x.Id.Value, currentUser);
+                            }
+                        }
+                    });
+
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    throw ex;
+                }
+            }
+
+            newViewModel.BulkFunction = viewModel.BulkFunction;
+            newViewModel.DateFromFilter = viewModel.DateFromFilter;
+            newViewModel.DateToFilter = viewModel.DateToFilter;
+            newViewModel.FlagFilter = viewModel.FlagFilter;
+            newViewModel.TagFilter = viewModel.TagFilter;
+            newViewModel.TitleFilter = viewModel.TitleFilter;
+
+            ViewBag.Matter = matter;
+
+            return View(newViewModel);
         }
     }
 }

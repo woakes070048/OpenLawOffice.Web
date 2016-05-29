@@ -136,10 +136,8 @@ namespace OpenLawOffice.Web.Controllers
                             viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(task);
                             viewModel.Time.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
                     
-                            ViewBag.Task = task.Title;
-                            ViewBag.TaskId = task.Id;
-                            ViewBag.Matter = matter.Title;
-                            ViewBag.MatterId = matter.Id;
+                            ViewBag.Task = task;
+                            ViewBag.Matter = matter;
                     
                             foreach (Common.Models.Timing.Time time in conflicts)
                             {

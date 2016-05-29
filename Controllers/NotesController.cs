@@ -166,6 +166,8 @@ namespace OpenLawOffice.Web.Controllers
                         });
                     }
 
+                    trans.Commit();
+
                     return RedirectToAction("Details", new { Id = id });
                 }
                 catch
