@@ -24,6 +24,7 @@ namespace OpenLawOffice.Web.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public ActionResult Authenticate()
         {
             dynamic profile;

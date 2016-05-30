@@ -22,6 +22,7 @@
 namespace OpenLawOffice.Web
 {
     using System;
+    using System.Data;
 
     public class Security
     {
@@ -41,6 +42,21 @@ namespace OpenLawOffice.Web
             byte[] bytes = System.Text.Encoding.UTF8.GetBytes(str);
             bytes = sha512.ComputeHash(bytes);
             return BitConverter.ToString(bytes).Replace("-", "");
+        }
+
+        public bool VerifyToken(IDbConnection conn, Guid token, bool renewSession = true)
+        {
+            Common.Models.External.ExternalSession session = 
+                Data.External.ExternalSession.Get(token, conn, false);
+
+            if (session == null) return false;
+
+            if (session.Expires < DateTime.Now) return false;
+
+            if (renewSession)
+                session = Data.External.ExternalSession.Renew(session, conn, false);
+
+            return true;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Newtonsoft.Json;
+using System.Web;
 
 namespace OpenLawOffice.Web
 {
@@ -19,6 +20,20 @@ namespace OpenLawOffice.Web
                 //    return serializer.Deserialize<T>(jtr);
                 //}
             }
+        }
+
+        public static Guid? GetToken(this HttpRequestBase request)
+        {
+            Guid token;
+            string authTokenHeader = request.Headers["OLO-AUTH-TOKEN"];
+
+            if (string.IsNullOrEmpty(authTokenHeader))
+                return null;
+            
+            if (!Guid.TryParse(authTokenHeader, out token))
+                return null;
+
+            return token;
         }
     }
 }

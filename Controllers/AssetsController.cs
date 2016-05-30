@@ -107,7 +107,7 @@ namespace OpenLawOffice.Web.Controllers
 
             return View(viewModel);
         }
-        
+
         [HttpPost]
         [Authorize(Roles = "Login, User")]
         public ActionResult Create(Guid id, ViewModels.Assets.CreateAssetViewModel viewModel)

@@ -156,6 +156,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\AccountJsonController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\AssetsController.cs" />
     <Compile Include="Controllers\AssetTagsController.cs" />
@@ -202,6 +203,7 @@
     <Compile Include="Helpers\FieldHelper.cs" />
     <Compile Include="Helpers\TimeSpanHelper.cs" />
     <Compile Include="IFormsAuthenticationService.cs" />
+    <Compile Include="JsonAuthorizeAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Security.cs" />
     <Compile Include="ViewModels\AccountValidation.cs" />
@@ -583,7 +585,9 @@
     <Content Include="Views\Assets\Checkin.cshtml" />
     <Content Include="Views\Matters\Assets.cshtml" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Views\AccountJson\" />
+  </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
