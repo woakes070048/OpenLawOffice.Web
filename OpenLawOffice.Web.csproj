@@ -159,6 +159,7 @@
     <Compile Include="Controllers\AccountJsonController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\AssetsController.cs" />
+    <Compile Include="Controllers\AssetsJsonController.cs" />
     <Compile Include="Controllers\AssetTagsController.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\BillingController.cs" />
@@ -179,6 +180,7 @@
     <Compile Include="Controllers\JsonInterfaceController.cs" />
     <Compile Include="Controllers\MatterContactController.cs" />
     <Compile Include="Controllers\MattersController.cs" />
+    <Compile Include="Controllers\MattersJsonController.cs" />
     <Compile Include="Controllers\MatterTagsController.cs" />
     <Compile Include="Controllers\MatterTypesController.cs" />
     <Compile Include="Controllers\NotesController.cs" />

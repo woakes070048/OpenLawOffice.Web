@@ -706,9 +706,10 @@ namespace OpenLawOffice.Web.Controllers
 
                     trans.Commit();
                 }
-                catch
+                catch (Exception ex)
                 {
                     trans.Rollback();
+                    throw ex;
                 }
             }
 

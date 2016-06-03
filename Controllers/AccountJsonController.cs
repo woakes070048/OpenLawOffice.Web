@@ -21,25 +21,25 @@ namespace OpenLawOffice.Web.Controllers
         [HttpPost]
         public ActionResult Authenticate()
         {
-            Common.Net.Request<Common.Net.AuthPackage> request;
+            Common.Net.AuthPackage authPackage;
             Common.Net.Response<Guid> response = new Common.Net.Response<Guid>();
 
             response.RequestReceived = DateTime.Now;
-            
-            request = Request.InputStream.JsonDeserialize<Common.Net.Request<Common.Net.AuthPackage>>();
+
+            authPackage = Request.InputStream.JsonDeserialize<Common.Net.AuthPackage>();
 
             using (Data.Transaction trans = Data.Transaction.Create(true))
             {
                 try
                 {
                     dynamic profile;
-                    Common.Models.Account.Users user = Data.Account.Users.Get(trans, request.Package.Username);
+                    Common.Models.Account.Users user = Data.Account.Users.Get(trans, authPackage.Username);
                     profile = ProfileBase.Create(user.Username);
 
                     // decrypt password
                     Common.Encryption enc = new Common.Encryption();
                     Common.Encryption.Package package;
-                    enc.IV = request.Package.IV;
+                    enc.IV = authPackage.IV;
                     if (profile != null && profile.ExternalAppKey != null
                         && !string.IsNullOrEmpty(profile.ExternalAppKey))
                         enc.Key = profile.ExternalAppKey;
@@ -52,7 +52,7 @@ namespace OpenLawOffice.Web.Controllers
                     }
                     package = enc.Decrypt(new Common.Encryption.Package()
                     {
-                        Input = request.Package.Password
+                        Input = authPackage.Password
                     });
                     if (string.IsNullOrEmpty(package.Output))
                     {
@@ -61,24 +61,24 @@ namespace OpenLawOffice.Web.Controllers
                         response.ResponseSent = DateTime.Now;
                         return Json(response, JsonRequestBehavior.AllowGet);
                     }
-                    request.Package.Password = package.Output;
+                    authPackage.Password = package.Output;
 
                     string hashFromDb = Security.ClientHashPassword(user.Password);
-                    string hashFromWeb = Security.ClientHashPassword(request.Package.Password);
+                    string hashFromWeb = Security.ClientHashPassword(authPackage.Password);
 
-                    if (MembershipService.ValidateUser(request.Package.Username, request.Package.Password))
+                    if (MembershipService.ValidateUser(authPackage.Username, authPackage.Password))
                     {
                         Common.Models.External.ExternalSession session =
-                            Data.External.ExternalSession.Get(trans, request.Package.AppName, request.Package.MachineId, request.Package.Username);
-                        user = Data.Account.Users.Get(trans, request.Package.Username);
+                            Data.External.ExternalSession.Get(trans, authPackage.AppName, authPackage.MachineId, authPackage.Username);
+                        user = Data.Account.Users.Get(trans, authPackage.Username);
 
                         if (session == null)
                         { // create
                             session = Data.External.ExternalSession.Create(trans, new Common.Models.External.ExternalSession()
                             {
-                                MachineId = request.Package.MachineId,
+                                MachineId = authPackage.MachineId,
                                 User = user,
-                                AppName = request.Package.AppName
+                                AppName = authPackage.AppName
                             });
                         }
                         else
@@ -86,9 +86,9 @@ namespace OpenLawOffice.Web.Controllers
                             session = Data.External.ExternalSession.Update(trans, new Common.Models.External.ExternalSession()
                             {
                                 Id = session.Id,
-                                MachineId = request.Package.MachineId,
+                                MachineId = authPackage.MachineId,
                                 User = user,
-                                AppName = request.Package.AppName
+                                AppName = authPackage.AppName
                             });
                         }
 
@@ -117,10 +117,54 @@ namespace OpenLawOffice.Web.Controllers
             return Json(response, JsonRequestBehavior.AllowGet);
         }
 
+        [HttpPost]
         [JsonAuthorize]
-        public ActionResult Index()
+        public ActionResult CloseSession()
         {
-            return null;
+            Guid? token;
+            Common.Net.Request<Common.Net.AuthPackage> request;
+            Common.Models.External.ExternalSession session;
+            Common.Net.Response<bool> response = new Common.Net.Response<bool>();
+
+            request = Request.InputStream.JsonDeserialize<Common.Net.Request<Common.Net.AuthPackage>>();
+
+            response.RequestReceived = DateTime.Now;
+
+            token = Request.GetToken();
+            if (token == null || !token.HasValue)
+            {
+                response.Successful = false;
+                response.Error = "Invalid Auth Token";
+                response.Package = false;
+                response.ResponseSent = DateTime.Now;
+                return Json(response, JsonRequestBehavior.AllowGet);
+            }
+
+            using (Data.Transaction trans = Data.Transaction.Create(true))
+            {
+                try
+                {
+                    // Close the session here
+                    session = Data.External.ExternalSession.Get(trans, request.Package.AppName, request.Package.MachineId, request.Package.Username);
+                    session = Data.External.ExternalSession.Delete(trans, session);
+
+                    trans.Commit();
+
+                    response.Successful = true;
+                    response.Package = true;
+                }
+                catch
+                {
+                    trans.Rollback();
+                    response.Successful = false;
+                    response.Package = false;
+                    response.Error = "Unexpected server error.";
+                }
+            }
+
+            response.ResponseSent = DateTime.Now;
+
+            return Json(response, JsonRequestBehavior.AllowGet);
         }
     }
 }

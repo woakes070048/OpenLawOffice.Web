@@ -9,6 +9,8 @@ namespace OpenLawOffice.Web
 {
     public class JsonAuthorizeAttribute : AuthorizeAttribute
     {
+        public string Roles { get; set; }
+
         public override void OnAuthorization(AuthorizationContext filterContext)
         {
             if (filterContext == null) throw new ArgumentNullException("filterContext");
@@ -31,6 +33,23 @@ namespace OpenLawOffice.Web
                     return;
                 }
             }
+
+            if (!AuthorizeCore(filterContext.HttpContext))
+            {
+                filterContext.Result = new HttpUnauthorizedResult();
+                return;
+            }
+
+            //// Check roles
+            //string[] roles = Roles.Split(',');
+            //foreach (string role in roles)
+            //{
+            //    if (((Controller)filterContext.Controller).User.IsInRole(role.Trim()))
+            //        return;
+            //}
+
+            //// If the user does not have any role, fail.
+            //filterContext.Result = new HttpUnauthorizedResult();
         }
     }
 }
