@@ -30,6 +30,7 @@ namespace OpenLawOffice.Web.Controllers
     using System.Web.Security;
     using System.Data;
     using System.Linq;
+    using Common.Models.Assets;
 
     [HandleError(View = "Errors/Index", Order = 10)]
     public class VersionsController : BaseController
@@ -82,7 +83,6 @@ namespace OpenLawOffice.Web.Controllers
                     currentUser = Data.Account.Users.Get(User.Identity.Name);
                     asset = Data.Assets.Asset.Get(trans, id);
                     assetId = asset.Id.Value;
-                    asset.CheckedOutAt.Value.ToString();
                     if (asset.CheckedOutBy != null && asset.CheckedOutBy.PId.HasValue)
                     {
                         if (asset.CheckedOutBy.PId.Value != currentUser.PId.Value)
@@ -113,7 +113,8 @@ namespace OpenLawOffice.Web.Controllers
                             Version = version,
                             Id = Guid.NewGuid(),
                             ContentLength = vmFile.ContentLength,
-                            ContentType = (Common.Models.Assets.ContentType)Enum.Parse(typeof(Common.Models.Assets.ContentType), vmFile.ContentType.Substring(vmFile.ContentType.LastIndexOf('/') + 1), true),
+                            ContentType = vmFile.ContentType.ToContentType(),
+                            //ContentType = (Common.Models.Assets.ContentType)Enum.Parse(typeof(Common.Models.Assets.ContentType), vmFile.ContentType.Substring(vmFile.ContentType.LastIndexOf('/') + 1), true),
                             IsSource = isSource,
                             Extension = System.IO.Path.GetExtension(vmFile.FileName)
                         };
