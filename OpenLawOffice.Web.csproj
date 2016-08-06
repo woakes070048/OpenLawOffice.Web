@@ -605,6 +605,10 @@
       <Project>{596a8bcb-2716-47bd-82c3-5b52f0082f10}</Project>
       <Name>OpenLawOffice.Data</Name>
     </ProjectReference>
+    <ProjectReference Include="..\OpenLawOffice.Assets\OpenLawOffice.Assets.csproj">
+      <Project>{03979d6c-d25d-4441-ab09-216e0027b9a8}</Project>
+      <Name>OpenLawOffice.Assets</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Shared\_LeftMenu.cshtml" />
