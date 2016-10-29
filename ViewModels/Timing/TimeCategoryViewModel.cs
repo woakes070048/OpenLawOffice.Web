@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="TimeViewModel.cs" company="Nodine Legal, LLC">
+// <copyright file="TimeCategoryViewModel.cs" company="Nodine Legal, LLC">
 // Licensed to Nodine Legal, LLC under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -21,40 +21,26 @@
 
 namespace OpenLawOffice.Web.ViewModels.Timing
 {
-    using System;
     using AutoMapper;
-    using OpenLawOffice.Common.Models;
+    using Common.Models;
 
     [MapMe]
-    public class TimeViewModel : CoreViewModel
+    public class TimeCategoryViewModel : CoreViewModel
     {
-        public Guid? Id { get; set; }
+        public int? Id { get; set; }
 
-        public DateTime Start { get; set; }
-
-        public DateTime? Stop { get; set; }
-
-        public TimeSpan Duration { get; set; }
-
-        public Contacts.ContactViewModel Worker { get; set; }
-
-        public Timing.TimeCategoryViewModel TimeCategory { get; set; }
-
-        public string Details { get; set; }
-
-        public string WorkerDisplayName { get; set; }
-
-        public bool Billable { get; set; }
+        public string Title { get; set; }
 
         public void BuildMappings()
         {
-            Mapper.CreateMap<Common.Models.Timing.Time, TimeViewModel>()
+            Mapper.CreateMap<Common.Models.Timing.TimeCategory, TimeCategoryViewModel>()
                 .ForMember(dst => dst.IsStub, opt => opt.UseValue(false))
                 .ForMember(dst => dst.Created, opt => opt.MapFrom(src => src.Created))
                 .ForMember(dst => dst.Modified, opt => opt.MapFrom(src => src.Modified))
                 .ForMember(dst => dst.Disabled, opt => opt.MapFrom(src => src.Disabled))
                 .ForMember(dst => dst.CreatedBy, opt => opt.ResolveUsing(db =>
                 {
+                    if (db.CreatedBy == null || !db.CreatedBy.PId.HasValue) return null;
                     return new ViewModels.Account.UsersViewModel()
                     {
                         PId = db.CreatedBy.PId,
@@ -63,6 +49,7 @@ namespace OpenLawOffice.Web.ViewModels.Timing
                 }))
                 .ForMember(dst => dst.ModifiedBy, opt => opt.ResolveUsing(db =>
                 {
+                    if (db.ModifiedBy == null || !db.ModifiedBy.PId.HasValue) return null;
                     return new ViewModels.Account.UsersViewModel()
                     {
                         PId = db.ModifiedBy.PId,
@@ -79,33 +66,9 @@ namespace OpenLawOffice.Web.ViewModels.Timing
                     };
                 }))
                 .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dst => dst.Start, opt => opt.MapFrom(src => src.Start))
-                .ForMember(dst => dst.Stop, opt => opt.MapFrom(src => src.Stop))
-                .ForMember(dst => dst.Duration, opt => opt.ResolveUsing(db =>
-                {
-                    return db.Stop - db.Start;
-                }))
-                .ForMember(dst => dst.Worker, opt => opt.ResolveUsing(db =>
-                {
-                    return new ViewModels.Contacts.ContactViewModel()
-                    {
-                        Id = db.Worker.Id,
-                        IsStub = true
-                    };
-                }))
-                .ForMember(dst => dst.TimeCategory, opt => opt.ResolveUsing(db =>
-                {
-                    return new ViewModels.Timing.TimeCategoryViewModel()
-                    {
-                        Id = db.TimeCategory.Id,
-                        IsStub = true
-                    };
-                }))
-                .ForMember(dst => dst.Details, opt => opt.MapFrom(src => src.Details))
-                .ForMember(dst => dst.WorkerDisplayName, opt => opt.Ignore())
-                .ForMember(dst => dst.Billable, opt => opt.MapFrom(src => src.Billable));
+                .ForMember(dst => dst.Title, opt => opt.MapFrom(src => src.Title));
 
-            Mapper.CreateMap<TimeViewModel, Common.Models.Timing.Time>()
+            Mapper.CreateMap<TimeCategoryViewModel, Common.Models.Timing.TimeCategory>()
                 .ForMember(dst => dst.Created, opt => opt.MapFrom(src => src.Created))
                 .ForMember(dst => dst.Modified, opt => opt.MapFrom(src => src.Modified))
                 .ForMember(dst => dst.Disabled, opt => opt.MapFrom(src => src.Disabled))
@@ -115,7 +78,8 @@ namespace OpenLawOffice.Web.ViewModels.Timing
                         return null;
                     return new ViewModels.Account.UsersViewModel()
                     {
-                        PId = x.CreatedBy.PId
+                        PId = x.CreatedBy.PId,
+                        IsStub = true
                     };
                 }))
                 .ForMember(dst => dst.ModifiedBy, opt => opt.ResolveUsing(x =>
@@ -124,7 +88,8 @@ namespace OpenLawOffice.Web.ViewModels.Timing
                         return null;
                     return new ViewModels.Account.UsersViewModel()
                     {
-                        PId = x.ModifiedBy.PId
+                        PId = x.ModifiedBy.PId,
+                        IsStub = true
                     };
                 }))
                 .ForMember(dst => dst.DisabledBy, opt => opt.ResolveUsing(x =>
@@ -133,32 +98,12 @@ namespace OpenLawOffice.Web.ViewModels.Timing
                         return null;
                     return new ViewModels.Account.UsersViewModel()
                     {
-                        PId = x.DisabledBy.PId.Value
+                        PId = x.DisabledBy.PId.Value,
+                        IsStub = true
                     };
                 }))
                 .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dst => dst.Start, opt => opt.MapFrom(src => src.Start))
-                .ForMember(dst => dst.Stop, opt => opt.MapFrom(src => src.Stop))
-                .ForMember(dst => dst.Worker, opt => opt.ResolveUsing(model =>
-                {
-                    if (model.Worker == null) return null;
-                    return new Common.Models.Contacts.Contact()
-                    {
-                        Id = model.Worker.Id,
-                        IsStub = true
-                    };
-                }))
-                .ForMember(dst => dst.TimeCategory, opt => opt.ResolveUsing(model =>
-                {
-                    if (model.Worker == null) return null;
-                    return new Common.Models.Timing.TimeCategory()
-                    {
-                        Id = model.TimeCategory.Id,
-                        IsStub = true
-                    };
-                }))
-                .ForMember(dst => dst.Details, opt => opt.MapFrom(src => src.Details))
-                .ForMember(dst => dst.Billable, opt => opt.MapFrom(src => src.Billable));
+                .ForMember(dst => dst.Title, opt => opt.MapFrom(src => src.Title));
         }
     }
 }

@@ -47,15 +47,19 @@ namespace OpenLawOffice.Web.ViewModels.Billing
         public Matters.MatterViewModel Matter { get; set; }
         public BillingGroupViewModel BillingGroup { get; set; }
 
-        public List<InvoiceTimeViewModel> Times { get; set; }
+        //public List<InvoiceTimeViewModel> Times { get; set; }
         public List<InvoiceExpenseViewModel> Expenses { get; set; }
         public List<InvoiceFeeViewModel> Fees { get; set; }
 
+        public List<InvoiceTimeGroupViewModel> TimeGroups { get; set; }
+
         public InvoiceViewModel()
         {
-            Times = new List<InvoiceTimeViewModel>();
+            //Times = new List<InvoiceTimeViewModel>();
             Expenses = new List<InvoiceExpenseViewModel>();
             Fees = new List<InvoiceFeeViewModel>();
+            TimeGroups = new List<InvoiceTimeGroupViewModel>();
+            TimeGroups.Add(new InvoiceTimeGroupViewModel() { Id = 0, GroupName = "Standard", Times = new List<InvoiceTimeViewModel>() });
         }
 
         public void BuildMappings()
@@ -128,9 +132,10 @@ namespace OpenLawOffice.Web.ViewModels.Billing
                         IsStub = true
                     };
                 }))
-                .ForMember(dst => dst.Times, opt => opt.Ignore())
+                //.ForMember(dst => dst.Times, opt => opt.Ignore())
                 .ForMember(dst => dst.Expenses, opt => opt.Ignore())
-                .ForMember(dst => dst.Fees, opt => opt.Ignore());
+                .ForMember(dst => dst.Fees, opt => opt.Ignore())
+                .ForMember(dst => dst.TimeGroups, opt => opt.Ignore());
 
             Mapper.CreateMap<InvoiceViewModel, Common.Models.Billing.Invoice>()
                 .ForMember(dst => dst.Created, opt => opt.MapFrom(src => src.Created))

@@ -192,6 +192,7 @@
     <Compile Include="Controllers\TaskTagsController.cs" />
     <Compile Include="Controllers\TaskTemplatesController.cs" />
     <Compile Include="Controllers\TaskTimeController.cs" />
+    <Compile Include="Controllers\TimeCategoriesController.cs" />
     <Compile Include="Controllers\TimingController.cs" />
     <Compile Include="Controllers\UserTaskSettingsController.cs" />
     <Compile Include="Controllers\VersionsController.cs" />
@@ -240,6 +241,7 @@
     <Compile Include="ViewModels\Billing\GroupInvoiceViewModel.cs" />
     <Compile Include="ViewModels\Billing\InvoiceExpenseViewModel.cs" />
     <Compile Include="ViewModels\Billing\InvoiceFeeViewModel.cs" />
+    <Compile Include="ViewModels\Billing\InvoiceTimeGroupViewModel.cs" />
     <Compile Include="ViewModels\Billing\InvoiceTimeViewModel.cs" />
     <Compile Include="ViewModels\Billing\InvoiceViewModel.cs" />
     <Compile Include="ViewModels\Contacts\ConflictViewModel.cs" />
@@ -294,6 +296,7 @@
     <Compile Include="ViewModels\Tasks\TaskTimeViewModel.cs" />
     <Compile Include="ViewModels\Tasks\TaskViewModel.cs" />
     <Compile Include="ViewModels\Timing\DayViewModel.cs" />
+    <Compile Include="ViewModels\Timing\TimeCategoryViewModel.cs" />
     <Compile Include="ViewModels\Timing\TimeViewModel.cs" />
     <Compile Include="ViewModels\ValidatePasswordLengthAttribute.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
@@ -586,6 +589,11 @@
     <Content Include="Views\Assets\Checkout.cshtml" />
     <Content Include="Views\Assets\Checkin.cshtml" />
     <Content Include="Views\Matters\Assets.cshtml" />
+    <Content Include="Views\TimeCategories\Create.cshtml" />
+    <Content Include="Views\TimeCategories\Delete.cshtml" />
+    <Content Include="Views\TimeCategories\Details.cshtml" />
+    <Content Include="Views\TimeCategories\Edit.cshtml" />
+    <Content Include="Views\TimeCategories\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Views\AccountJson\" />

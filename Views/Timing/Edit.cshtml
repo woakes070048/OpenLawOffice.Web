@@ -33,6 +33,18 @@
             Task Assignment Details
         </div>
         <div class="panel-body">
+            <div class="row">
+                <div class="form-group">
+                    <span class="control-label col-sm-2">
+                        Time Category
+                    </span>
+                    <div class="col-sm-5">
+                        @(Html.DropDownListFor(x => x.TimeCategory.Id,
+                        new SelectList(ViewBag.TimeCategoryList, "Id", "Title"),
+                        new { @size = 1, @class = "form-control", @style = "width: 100%" }))
+                    </div>
+                </div>
+            </div>
             <div class="form-group">
                 <span class="control-label col-sm-2">
                     Start<span class="required-field" title="Required Field">*</span>

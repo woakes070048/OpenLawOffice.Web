@@ -13,6 +13,24 @@
     </ul>
 }
 
+<script type="text/javascript">
+    $(function () {
+        $("#new").click(function () {
+            window.location = '/BillingRates/Create';
+        })
+    })
+</script>
+
+<div class="container-fluid">
+    <div class="row text-right">
+        <div class="btn-group">
+            <button id="new" class="btn btn-sm btn-primary">
+                <span class="fa fa-plus"></span> Create
+            </button>
+        </div>
+    </div>
+</div>
+
 <div class="panel panel-default">
     <div class="panel-heading">
         Billing Rates

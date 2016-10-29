@@ -62,10 +62,13 @@ namespace OpenLawOffice.Web.Controllers
         {
             long taskId;
             int contactId;
+            Common.Models.Account.Users currentUser;
             ViewModels.Tasks.TaskTimeViewModel viewModel;
             Common.Models.Matters.Matter matter;
             Common.Models.Tasks.Task task;
             Common.Models.Contacts.Contact contact;
+            Common.Models.Timing.TimeCategory timeCategory = null;
+            List<Common.Models.Timing.TimeCategory> timeCategoryList;
 
             // Every TaskTime must be created from a task, so we should always know the TaskId
             taskId = long.Parse(Request["TaskId"]);
@@ -74,9 +77,20 @@ namespace OpenLawOffice.Web.Controllers
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
                 // Load task & contact
+                currentUser = Data.Account.Users.Get(User.Identity.Name);
                 task = Data.Tasks.Task.Get(taskId, conn, false);
 
                 contact = Data.Contacts.Contact.Get(contactId, conn, false);
+
+                timeCategory = Data.Timing.TimeCategory.Get(1, conn, false);
+
+                if (timeCategory == null || !timeCategory.Id.HasValue)
+                {
+                    timeCategory = Data.Timing.TimeCategory.Create(new Common.Models.Timing.TimeCategory()
+                    {
+                        Title = "Standard"
+                    }, currentUser);
+                }
 
                 viewModel = new ViewModels.Tasks.TaskTimeViewModel()
                 {
@@ -84,16 +98,27 @@ namespace OpenLawOffice.Web.Controllers
                     Time = new ViewModels.Timing.TimeViewModel()
                     {
                         Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact),
+                        TimeCategory = Mapper.Map<ViewModels.Timing.TimeCategoryViewModel>(timeCategory),
                         Start = DateTime.Now,
                         Billable = true
                     }
                 };
 
                 matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value, conn, false);
+
+                timeCategoryList = Data.Timing.TimeCategory.List(conn, false);
+                timeCategoryList.Insert(0, new Common.Models.Timing.TimeCategory()
+                {
+                    Id = 0,
+                    Title = "Standard"
+                });
+
+                viewModel.Time.TimeCategory.Id = 0;
             }
 
             ViewBag.Task = task;
             ViewBag.Matter = matter;
+            ViewBag.TimeCategoryList = timeCategoryList;
 
             return View(viewModel);
         }
@@ -104,6 +129,7 @@ namespace OpenLawOffice.Web.Controllers
         {
             Common.Models.Account.Users currentUser;
             Common.Models.Tasks.TaskTime taskTime;
+            List<Common.Models.Timing.TimeCategory> timeCategoryList;
 
             using (Data.Transaction trans = Data.Transaction.Create(true))
             {
@@ -132,13 +158,21 @@ namespace OpenLawOffice.Web.Controllers
                             task = Data.Tasks.Task.Get(taskId);
                             contact = Data.Contacts.Contact.Get(contactId);
                             matter = Data.Tasks.Task.GetRelatedMatter(taskId);
-                    
+
+                            timeCategoryList = Data.Timing.TimeCategory.List(trans);
+                            timeCategoryList.Insert(0, new Common.Models.Timing.TimeCategory()
+                            {
+                                Id = 0,
+                                Title = "Standard"
+                            });
+
                             viewModel.Task = Mapper.Map<ViewModels.Tasks.TaskViewModel>(task);
                             viewModel.Time.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
                     
                             ViewBag.Task = task;
                             ViewBag.Matter = matter;
-                    
+                            ViewBag.TimeCategoryList = timeCategoryList;
+
                             foreach (Common.Models.Timing.Time time in conflicts)
                             {
                                 time.Worker = Data.Contacts.Contact.Get(time.Worker.Id.Value);

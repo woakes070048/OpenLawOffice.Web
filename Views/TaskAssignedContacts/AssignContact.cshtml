@@ -42,7 +42,7 @@
                 </span>
                 <div class="col-sm-10">
                     @(Html.HiddenFor(model => model.Contact.Id))
-                    @(Html.ActionLink(Model.Contact.Title, "Details", "Contacts", new { id = Model.Contact.Id }, null))
+                    @(Html.ActionLink(Model.Contact.DisplayName, "Details", "Contacts", new { id = Model.Contact.Id }, null))
                 </div>
             </div>
             <span class="control-label col-sm-2">

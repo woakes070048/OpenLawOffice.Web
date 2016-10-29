@@ -34,15 +34,19 @@ namespace OpenLawOffice.Web.ViewModels.Billing
         public TimeSpan TimeSum { get; set; }
         public decimal TimeSumMoney { get; set; }
 
-        public List<InvoiceTimeViewModel> Times { get; set; }
+        //public List<InvoiceTimeViewModel> Times { get; set; }
         public List<InvoiceExpenseViewModel> Expenses { get; set; }
         public List<InvoiceFeeViewModel> Fees { get; set; }
 
+        public List<InvoiceTimeGroupViewModel> TimeGroups { get; set; }
+
         public GroupInvoiceItemViewModel()
         {
-            Times = new List<InvoiceTimeViewModel>();
+            //Times = new List<InvoiceTimeViewModel>();
             Expenses = new List<InvoiceExpenseViewModel>();
             Fees = new List<InvoiceFeeViewModel>();
+            TimeGroups = new List<InvoiceTimeGroupViewModel>();
+            TimeGroups.Add(new InvoiceTimeGroupViewModel() { Id = 0, GroupName = "Standard", Times = new List<InvoiceTimeViewModel>() });
         }
     }
 }

@@ -80,13 +80,32 @@ namespace OpenLawOffice.Web.Controllers
                         Data.Billing.Fee.Get(vm.Fee.Id.Value, conn, false));
                     viewModel.Fees.Add(vm);
                 });
-
+                
                 Data.Billing.Invoice.ListInvoiceTimesForInvoice(invoice.Id.Value, conn, false).ForEach(x =>
                 {
                     ViewModels.Billing.InvoiceTimeViewModel vm = Mapper.Map<ViewModels.Billing.InvoiceTimeViewModel>(x);
                     vm.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(
                         Data.Timing.Time.Get(vm.Time.Id.Value, conn, false));
-                    viewModel.Times.Add(vm);
+
+                    ViewModels.Billing.InvoiceTimeGroupViewModel timeGroup;
+                    if (vm.Time.TimeCategory == null || !vm.Time.TimeCategory.Id.HasValue)
+                        timeGroup = viewModel.TimeGroups.SingleOrDefault(y => y.Id == 0);
+                    else
+                        timeGroup = viewModel.TimeGroups.SingleOrDefault(y => y.Id == vm.Time.TimeCategory.Id);
+                    if (timeGroup == null || timeGroup.Id == -1)
+                    {
+                        Common.Models.Timing.TimeCategory tc = Data.Timing.TimeCategory.Get(vm.Time.TimeCategory.Id.Value, conn, false);
+                        timeGroup = new ViewModels.Billing.InvoiceTimeGroupViewModel()
+                        {
+                            Id = tc.Id.Value,
+                            GroupName = tc.Title,
+                            Times = new List<ViewModels.Billing.InvoiceTimeViewModel>()
+                        };
+                        timeGroup.Times.Add(vm);
+                        viewModel.TimeGroups.Add(timeGroup);
+                    }
+                    else
+                        timeGroup.Times.Add(vm);
                 });
             }
 
@@ -135,6 +154,27 @@ namespace OpenLawOffice.Web.Controllers
                     ViewModels.Billing.InvoiceExpenseViewModel ievm;
                     ViewModels.Billing.InvoiceFeeViewModel ifvm;
                     ViewModels.Billing.InvoiceTimeViewModel itvm;
+                    
+                    // Validation
+                    for (int i = 0; i < viewModel.TimeGroups.Count; i++)
+                    {
+                        if (viewModel.TimeGroups[i].Times.Count > 0)
+                        {
+                            Common.Models.Timing.TimeCategory zTc;
+                            Common.Models.Timing.Time zItem = Data.Timing.Time.Get(viewModel.TimeGroups[i].Times[0].Time.Id.Value);
+
+                            if (zItem.TimeCategory == null || !zItem.TimeCategory.Id.HasValue || zItem.TimeCategory.Id.Value < 1)
+                            {
+                                viewModel.TimeGroups[i].GroupName = "Standard";
+                                viewModel.TimeGroups[i].Id = 0;
+                            }
+                            else{
+                                zTc = Data.Timing.TimeCategory.Get(zItem.TimeCategory.Id.Value);
+                                viewModel.TimeGroups[i].GroupName = zTc.Title;
+                                viewModel.TimeGroups[i].Id = zTc.Id.Value;
+                            }
+                        }
+                    }
 
                     savedInvoice = Mapper.Map<ViewModels.Billing.InvoiceViewModel>(Data.Billing.Invoice.Get(trans, id));
                     savedInvoice.Expenses = new List<ViewModels.Billing.InvoiceExpenseViewModel>();
@@ -147,10 +187,31 @@ namespace OpenLawOffice.Web.Controllers
                     {
                         savedInvoice.Fees.Add(Mapper.Map<ViewModels.Billing.InvoiceFeeViewModel>(x));
                     });
-                    savedInvoice.Times = new List<ViewModels.Billing.InvoiceTimeViewModel>();
+
                     Data.Billing.Invoice.ListInvoiceTimesForInvoice(trans, id).ForEach(x =>
                     {
-                        savedInvoice.Times.Add(Mapper.Map<ViewModels.Billing.InvoiceTimeViewModel>(x));
+                        ViewModels.Billing.InvoiceTimeViewModel vm = Mapper.Map<ViewModels.Billing.InvoiceTimeViewModel>(x);
+                        vm.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(Data.Timing.Time.Get(trans, vm.Time.Id.Value));
+                                                
+                        ViewModels.Billing.InvoiceTimeGroupViewModel timeGroup;
+                        if (vm.Time.TimeCategory == null || !vm.Time.TimeCategory.Id.HasValue)
+                            timeGroup = savedInvoice.TimeGroups.SingleOrDefault(y => y.Id == 0);
+                        else
+                            timeGroup = savedInvoice.TimeGroups.SingleOrDefault(y => y.Id == vm.Time.TimeCategory.Id);
+                        if (timeGroup == null || timeGroup.Id == -1)
+                        {
+                            Common.Models.Timing.TimeCategory tc = Data.Timing.TimeCategory.Get(trans, vm.Time.TimeCategory.Id.Value);
+                            timeGroup = new ViewModels.Billing.InvoiceTimeGroupViewModel()
+                            {
+                                Id = tc.Id.Value,
+                                GroupName = tc.Title,
+                                Times = new List<ViewModels.Billing.InvoiceTimeViewModel>()
+                            };
+                            timeGroup.Times.Add(vm);
+                            savedInvoice.TimeGroups.Add(timeGroup);
+                        }
+                        else
+                            timeGroup.Times.Add(vm);
                     });
                     
                     // Validation
@@ -168,13 +229,16 @@ namespace OpenLawOffice.Web.Controllers
                         if (string.IsNullOrEmpty(viewModel.Fees[i].Details))
                             ModelState.AddModelError(string.Format("Fees[{0}].Details", i), "Required");
                     };
-                    for (int i = 0; i < viewModel.Times.Count; i++)
+                    for (int i = 0; i < viewModel.TimeGroups.Count; i++)
                     {
-                        itvm = savedInvoice.Times.Single(x => x.Time.Id.Value == viewModel.Times[i].Time.Id);
-                        viewModel.Times[i].Time = itvm.Time;
-                        if (string.IsNullOrEmpty(viewModel.Times[i].Details))
-                            ModelState.AddModelError(string.Format("Times[{0}].Details", i), "Required");
-                    };
+                        for (int j = 0; j < viewModel.TimeGroups[i].Times.Count; j++)
+                        {
+                            itvm = savedInvoice.TimeGroups[i].Times.Single(x => x.Time.Id.Value == viewModel.TimeGroups[i].Times[j].Time.Id);
+                            viewModel.TimeGroups[i].Times[j].Time = itvm.Time;
+                            if (string.IsNullOrEmpty(viewModel.TimeGroups[i].Times[j].Details))
+                                ModelState.AddModelError(string.Format("TimeGroups[{0}].Times[{1}].Details", i, j), "Required");
+                        };
+                    }
 
                     if (!ModelState.IsValid)
                     {
@@ -231,22 +295,30 @@ namespace OpenLawOffice.Web.Controllers
                         Data.Billing.InvoiceFee.Edit(trans, mod, currentUser);
                     });
 
-                    viewModel.Times.ForEach(vm =>
+                    viewModel.TimeGroups.ForEach(tg =>
                     {
-                        Common.Models.Billing.InvoiceTime mod = new Common.Models.Billing.InvoiceTime()
+                        tg.Times.ForEach(vm =>
                         {
-                            Id = vm.Id,
-                            Invoice = invoice,
-                            Time = new Common.Models.Timing.Time()
+                            Common.Models.Billing.InvoiceTime mod = new Common.Models.Billing.InvoiceTime()
                             {
-                                Id = vm.Time.Id
-                            },
-                            Duration = vm.Duration,
-                            PricePerHour = vm.PricePerHour,
-                            Details = vm.Details
-                        };
-                        subtotal += ((decimal)mod.Duration.TotalHours * mod.PricePerHour);
-                        Data.Billing.InvoiceTime.Edit(trans, mod, currentUser);
+                                Id = vm.Id,
+                                Invoice = invoice,
+                                Time = new Common.Models.Timing.Time()
+                                {
+                                    Id = vm.Time.Id,
+                                    TimeCategory = new Common.Models.Timing.TimeCategory()
+                                    {
+                                        Id = tg.Id,
+                                        Title = tg.GroupName
+                                    }
+                                },
+                                Duration = vm.Duration,
+                                PricePerHour = vm.PricePerHour,
+                                Details = vm.Details
+                            };
+                            subtotal += ((decimal)mod.Duration.TotalHours * mod.PricePerHour);
+                            Data.Billing.InvoiceTime.Edit(trans, mod, currentUser);
+                        });
                     });
 
                     invoice.Subtotal = subtotal;
@@ -302,7 +374,26 @@ namespace OpenLawOffice.Web.Controllers
                     ViewModels.Billing.InvoiceTimeViewModel vm = Mapper.Map<ViewModels.Billing.InvoiceTimeViewModel>(x);
                     vm.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(
                         Data.Timing.Time.Get(vm.Time.Id.Value, conn, false));
-                    viewModel.Times.Add(vm);
+
+                    ViewModels.Billing.InvoiceTimeGroupViewModel timeGroup;
+                    if (vm.Time.TimeCategory == null || !vm.Time.TimeCategory.Id.HasValue)
+                        timeGroup = viewModel.TimeGroups.SingleOrDefault(y => y.Id == 0);
+                    else
+                        timeGroup = viewModel.TimeGroups.SingleOrDefault(y => y.Id == vm.Time.TimeCategory.Id);
+                    if (timeGroup == null || timeGroup.Id == -1)
+                    {
+                        Common.Models.Timing.TimeCategory tc = Data.Timing.TimeCategory.Get(vm.Time.TimeCategory.Id.Value, conn, false);
+                        timeGroup = new ViewModels.Billing.InvoiceTimeGroupViewModel()
+                        {
+                            Id = tc.Id.Value,
+                            GroupName = tc.Title,
+                            Times = new List<ViewModels.Billing.InvoiceTimeViewModel>()
+                        };
+                        timeGroup.Times.Add(vm);
+                        viewModel.TimeGroups.Add(timeGroup);
+                    }
+                    else
+                        timeGroup.Times.Add(vm);
                 });
             }
 
@@ -353,7 +444,26 @@ namespace OpenLawOffice.Web.Controllers
                     ViewModels.Billing.InvoiceTimeViewModel vm = Mapper.Map<ViewModels.Billing.InvoiceTimeViewModel>(x);
                     vm.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(
                         Data.Timing.Time.Get(vm.Time.Id.Value, conn, false));
-                    viewModel.Times.Add(vm);
+
+                    ViewModels.Billing.InvoiceTimeGroupViewModel timeGroup;
+                    if (x.Time.TimeCategory == null || !x.Time.TimeCategory.Id.HasValue)
+                        timeGroup = viewModel.TimeGroups.SingleOrDefault(y => y.Id == 0);
+                    else
+                        timeGroup = viewModel.TimeGroups.SingleOrDefault(y => y.Id == vm.Time.TimeCategory.Id);
+                    if (timeGroup == null || timeGroup.Id == -1)
+                    {
+                        Common.Models.Timing.TimeCategory tc = Data.Timing.TimeCategory.Get(vm.Time.TimeCategory.Id.Value, conn, false);
+                        timeGroup = new ViewModels.Billing.InvoiceTimeGroupViewModel()
+                        {
+                            Id = tc.Id.Value,
+                            GroupName = tc.Title,
+                            Times = new List<ViewModels.Billing.InvoiceTimeViewModel>()
+                        };
+                        timeGroup.Times.Add(vm);
+                        viewModel.TimeGroups.Add(timeGroup);
+                    }
+                    else
+                        timeGroup.Times.Add(vm);
                 });
             }
 
@@ -464,12 +574,32 @@ namespace OpenLawOffice.Web.Controllers
                         ViewModels.Billing.InvoiceTimeViewModel vm = Mapper.Map<ViewModels.Billing.InvoiceTimeViewModel>(x);
                         vm.Time = Mapper.Map<ViewModels.Timing.TimeViewModel>(
                             Data.Timing.Time.Get(vm.Time.Id.Value, conn, false));
+                        
+                        ViewModels.Billing.InvoiceTimeGroupViewModel timeGroup;
+                        if (vm.Time.TimeCategory == null || !vm.Time.TimeCategory.Id.HasValue)
+                            timeGroup = giivm.TimeGroups.SingleOrDefault(y => y.Id == 0);
+                        else
+                            timeGroup = giivm.TimeGroups.SingleOrDefault(y => y.Id == vm.Time.TimeCategory.Id);
+                        if (timeGroup == null || timeGroup.Id == -1)
+                        {
+                            Common.Models.Timing.TimeCategory tc = Data.Timing.TimeCategory.Get(vm.Time.TimeCategory.Id.Value, conn, false);
+                            timeGroup = new ViewModels.Billing.InvoiceTimeGroupViewModel()
+                            {
+                                Id = tc.Id.Value,
+                                GroupName = tc.Title,
+                                Times = new List<ViewModels.Billing.InvoiceTimeViewModel>()
+                            };
+                            timeGroup.Times.Add(vm);
+                            giivm.TimeGroups.Add(timeGroup);
+                        }
+                        else
+                            timeGroup.Times.Add(vm);
+
                         giivm.TimeSum = giivm.TimeSum.Add(vm.Duration);
                         giivm.TimeSumMoney += vm.PricePerHour * (decimal)vm.Duration.TotalHours;
-                        giivm.Times.Add(vm);
                     });
 
-                    if ((giivm.Times.Count > 0) ||
+                    if (((giivm.TimeGroups.Count > 0) && (giivm.TimeGroups.Count(x => x.Times.Count > 0) > 0)) ||
                         (giivm.Expenses.Count > 0) ||
                         (giivm.Fees.Count > 0))
                         viewModel.Matters.Add(giivm);

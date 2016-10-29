@@ -36,24 +36,29 @@
             Time for Task
         </div>
         <div class="panel-body">
-            <div class="form-group">
-                <span class="control-label col-sm-2">
-                    Task
-                </span>
-                <div class="col-sm-10">
-                    @(Html.HiddenFor(model => model.Task.Id))
-                    @(Model.Task.Title)
+            <div class="row">
+                <div class="form-group">
+                    <span class="control-label col-sm-2">
+                        Task
+                    </span>
+                    <div class="col-sm-10">
+                        @(Html.HiddenFor(model => model.Task.Id))
+                        @(Model.Task.Title)
+                    </div>
                 </div>
             </div>
-            <div class="form-group">
-                <span class="control-label col-sm-2">
-                    Worker
-                </span>
-                <div class="col-sm-10">
-                    @(Html.HiddenFor(model => model.Time.Worker.Id))
-                    @(Model.Time.Worker.DisplayName)
+            <div class="row">
+                <div class="form-group">
+                    <span class="control-label col-sm-2">
+                        Worker
+                    </span>
+                    <div class="col-sm-10">
+                        @(Html.HiddenFor(model => model.Time.Worker.Id))
+                        @(Model.Time.Worker.DisplayName)
+                    </div>
                 </div>
             </div>
+            <div class="row">
             <div class="form-group">
                 <span class="control-label col-sm-2">
                     Billable<span class="required-field" title="Required Field">*</span>
@@ -63,64 +68,83 @@
                     Uncheck if the matter is already completed
                 </div>
             </div>
-            <div class="form-group">
-                <span class="control-label col-sm-2">
-                    Start Date/Time<span class="required-field" title="Required Field">*</span>
-                </span>
-                <div class="col-sm-10">
-                    <div class='input-group date' id='startdatepicker'>
-                        @(Html.TextBoxFor(m => m.Time.Start, new { @class = "form-control", @Value = Model.Time.Start.ToString("M/d/yyyy h:mm tt") }))
-                        <span class="input-group-addon">
-                            <span class="fa fa-calendar"></span>
-                        </span>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <span class="control-label col-sm-2">
+                        Time Category
+                    </span>
+                    <div class="col-sm-5">
+                        @(Html.DropDownListFor(x => x.Time.TimeCategory.Id,
+                        new SelectList(ViewBag.TimeCategoryList, "Id", "Title"),
+                        new { @size = 1, @class = "form-control", @style = "width: 100%" }))
                     </div>
                 </div>
             </div>
-            <div class="form-group">
-                <span class="control-label col-sm-2">
-                    Stop Date/Time<span class="required-field" title="Required Field">*</span>
-                </span>
-                <div class="col-sm-10">
-                    <div class="form-group form-inline">
-                        <div class="input-group">
-                            <div id="timeadvance" class="input-group-addon" style="cursor: pointer;">
-                                <span class="fa fa-hourglass-half"></span>
-                            </div>
-                            @(Html.TextBoxFor(m => m.Time.Stop, new { @class = "form-control" }))
+            <div class="row">
+                <div class="form-group">
+                    <span class="control-label col-sm-2">
+                        Start Date/Time<span class="required-field" title="Required Field">*</span>
+                    </span>
+                    <div class="col-sm-5">
+                        <div class='input-group date' id='startdatepicker'>
+                            <span class="input-group-addon">
+                                <span class="fa fa-calendar"></span>
+                            </span>
+                            @(Html.TextBoxFor(m => m.Time.Start, new { @class = "form-control", @Value = Model.Time.Start.ToString("M/d/yyyy h:mm tt") }))
                         </div>
-                        <script language="javascript">
-                            $(document).ready(function () {
-                                $('#timeadvance').click(function () {
-                                    var stop, duration;
-                                    var start = moment($('#Time_Start').val());
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <span class="control-label col-sm-2">
+                        Stop Date/Time<span class="required-field" title="Required Field">*</span>
+                    </span>
+                    <div class="col-sm-10">
+                        <div class="form-group form-inline">
+                            <div class="input-group">
+                                <div id="timeadvance" class="input-group-addon" style="cursor: pointer;">
+                                    <span class="fa fa-hourglass-half"></span>
+                                </div>
+                                @(Html.TextBoxFor(m => m.Time.Stop, new { @class = "form-control" }))
+                            </div>
+                            <script language="javascript">
+                                $(document).ready(function () {
+                                    $('#timeadvance').click(function () {
+                                        var stop, duration;
+                                        var start = moment($('#Time_Start').val());
 
-                                    if (moment($('#Time_Start').val()) > moment()) { // time entry in the future, must treat differently
-                                        stop = moment(start).add(6, 'minutes').format('M/D/YYYY h:mm A');
-                                    }
-                                    else {
-                                        if ($('#Time_Stop').val() == '') {
-                                            duration = moment().diff(start, 'minutes');
+                                        if (moment($('#Time_Start').val()) > moment()) { // time entry in the future, must treat differently
+                                            stop = moment(start).add(6, 'minutes').format('M/D/YYYY h:mm A');
                                         }
                                         else {
-                                            stop = moment($('#Time_Stop').val());
-                                            duration = stop.diff(start, 'minutes');
+                                            if ($('#Time_Stop').val() == '') {
+                                                duration = moment().diff(start, 'minutes');
+                                            }
+                                            else {
+                                                stop = moment($('#Time_Stop').val());
+                                                duration = stop.diff(start, 'minutes');
+                                            }
+                                            var minutesToAdd = 6 - (duration % 6);
+                                            stop = moment(stop).add(minutesToAdd, 'minutes').format('M/D/YYYY h:mm A');
                                         }
-                                        var minutesToAdd = 6 - (duration % 6);
-                                        stop = moment(stop).add(minutesToAdd, 'minutes').format('M/D/YYYY h:mm A');
-                                    }
-                                    $('#Time_Stop').val(stop)
+                                        $('#Time_Stop').val(stop)
+                                    });
                                 });
-                            });
-                        </script>
+                            </script>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="form-group">
-                <span class="control-label col-sm-2">
-                    Details
-                </span>
-                <div class="col-sm-10">
-                    @(Html.TextAreaFor(m => m.Time.Details, new { @class = "form-control", @style = "height: 300px;" }))
+            <div class="row">
+                <div class="form-group">
+                    <span class="control-label col-sm-2">
+                        Details
+                    </span>
+                    <div class="col-sm-10">
+                        @(Html.TextAreaFor(m => m.Time.Details, new { @class = "form-control", @style = "height: 300px;" }))
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,4 +1,36 @@
-﻿4/10/2016
+﻿9/3/2016
+-- Table: time_category
+
+-- DROP TABLE time_category;
+
+CREATE TABLE time_category
+(
+-- Inherited from table core:  created_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  modified_by_user_pid uuid NOT NULL,
+-- Inherited from table core:  disabled_by_user_pid uuid,
+-- Inherited from table core:  utc_created timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_modified timestamp without time zone NOT NULL,
+-- Inherited from table core:  utc_disabled timestamp without time zone,
+  id serial NOT NULL,
+  title text NOT NULL,
+  CONSTRAINT time_category_pkey PRIMARY KEY (id),
+  CONSTRAINT time_category_title_unique UNIQUE (title)
+)
+INHERITS (core)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE time_category
+  OWNER TO postgres;
+
+
+ALTER TABLE "time"
+  ADD COLUMN time_category_id integer;
+ALTER TABLE "time"
+  ADD CONSTRAINT "FK_time_category_TimeCategoryId" FOREIGN KEY (time_category_id) REFERENCES time_category (id) ON UPDATE NO ACTION ON DELETE NO ACTION;
+
+
+4/10/2016
 -- Table: asset
 
 -- DROP TABLE asset;

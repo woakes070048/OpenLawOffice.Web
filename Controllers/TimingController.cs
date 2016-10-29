@@ -40,6 +40,7 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Contacts.Contact contact;
             Common.Models.Tasks.Task task;
             Common.Models.Matters.Matter matter;
+            Common.Models.Timing.TimeCategory timeCategory;
 
             using (IDbConnection conn = Data.Database.Instance.GetConnection())
             {
@@ -52,6 +53,12 @@ namespace OpenLawOffice.Web.Controllers
                 viewModel.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
 
                 task = Data.Timing.Time.GetRelatedTask(model.Id.Value, conn, false);
+
+                if (model.TimeCategory == null || !model.TimeCategory.Id.HasValue)
+                    timeCategory = new Common.Models.Timing.TimeCategory() { Id = 0, Title = "Standard" };
+                else
+                    timeCategory = Data.Timing.TimeCategory.Get(model.TimeCategory.Id.Value, conn, false);
+                viewModel.TimeCategory = Mapper.Map<ViewModels.Timing.TimeCategoryViewModel>(timeCategory);
 
                 PopulateCoreDetails(viewModel, conn);
 
@@ -74,6 +81,8 @@ namespace OpenLawOffice.Web.Controllers
             Common.Models.Tasks.Task task;
             Common.Models.Matters.Matter matter;
             List<ViewModels.Contacts.ContactViewModel> employeeContactList;
+            Common.Models.Timing.TimeCategory timeCategory;
+            List<Common.Models.Timing.TimeCategory> timeCategoryList;
 
             employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
 
@@ -89,6 +98,12 @@ namespace OpenLawOffice.Web.Controllers
 
                 task = Data.Timing.Time.GetRelatedTask(model.Id.Value, conn, false);
 
+                if (model.TimeCategory == null || !model.TimeCategory.Id.HasValue)
+                    timeCategory = new Common.Models.Timing.TimeCategory() { Id = 0, Title = "Standard" };
+                else
+                    timeCategory = Data.Timing.TimeCategory.Get(model.TimeCategory.Id.Value, conn, false);
+                viewModel.TimeCategory = Mapper.Map<ViewModels.Timing.TimeCategoryViewModel>(timeCategory);
+
                 Data.Contacts.Contact.ListEmployeesOnly(conn, false).ForEach(x =>
                 {
                     employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
@@ -97,11 +112,19 @@ namespace OpenLawOffice.Web.Controllers
                 ViewBag.TaskId = task.Id.Value;
 
                 matter = Data.Tasks.Task.GetRelatedMatter(task.Id.Value, conn, false);
+
+                timeCategoryList = Data.Timing.TimeCategory.List(conn, false);
+                timeCategoryList.Insert(0, new Common.Models.Timing.TimeCategory()
+                {
+                    Id = 0,
+                    Title = "Standard"
+                });
             }
 
             ViewBag.Task = task;
             ViewBag.Matter = matter;
             ViewBag.EmployeeContactList = employeeContactList;
+            ViewBag.TimeCategoryList = timeCategoryList;
 
             return View(viewModel);
         }
@@ -112,6 +135,7 @@ namespace OpenLawOffice.Web.Controllers
         {
             Common.Models.Account.Users currentUser;
             Common.Models.Timing.Time model;
+            List<Common.Models.Timing.TimeCategory> timeCategoryList;
 
             using (Data.Transaction trans = Data.Transaction.Create(true))
             {
@@ -141,8 +165,17 @@ namespace OpenLawOffice.Web.Controllers
                             ModelState.AddModelError(String.Empty, "Time conflicts with other time entries.");
 
                             matter = Data.Tasks.Task.GetRelatedMatter(trans, task.Id.Value);
+
+                            timeCategoryList = Data.Timing.TimeCategory.List(trans);
+                            timeCategoryList.Insert(0, new Common.Models.Timing.TimeCategory()
+                            {
+                                Id = 0,
+                                Title = "Standard"
+                            });
+
                             ViewBag.Task = task;
                             ViewBag.Matter = matter;
+                            ViewBag.TimeCategoryList = timeCategoryList;
                             return View(viewModel);
                         }
                     }
@@ -153,7 +186,7 @@ namespace OpenLawOffice.Web.Controllers
 
                     return RedirectToAction("Details", new { Id = id });
                 }
-                catch
+                catch(Exception ex)
                 {
                     trans.Rollback();
                     return Edit(id);

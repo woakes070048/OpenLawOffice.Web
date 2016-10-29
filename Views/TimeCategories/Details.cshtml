@@ -1,0 +1,32 @@
+﻿@model OpenLawOffice.Web.ViewModels.Timing.TimeCategoryViewModel
+
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
+    ViewBag.Title = "Time Category Details";
+    ViewBag.PageTitle = "Time Category Details";
+}
+
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Settings">Settings</a></li>
+        <li><a href="/TimeCategories">Time Categories</a></li>
+        <li>Court Type: <a href="/TimeCategories/Details/@(Model.Id)" class="active">@(Model.Title)</a></li>
+    </ul>
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">Time Category Information</div>
+    <div class="panel-body">
+        <div class="form-group">
+            <span class="control-label col-sm-2">Title<span class="required-field" title="Required Field">*</span></span>
+            <div class="col-sm-10" style="padding-top: 7px;">
+                @(Model.Title)
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-default">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
