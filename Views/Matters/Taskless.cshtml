@@ -1,0 +1,47 @@
+﻿@model List<OpenLawOffice.Web.ViewModels.Matters.MatterViewModel>
+
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
+    ViewBag.Title = "Taskless Matters";
+    ViewBag.PageTitle = "Taskless Matters";
+}
+
+@section Breadcrumb {
+    <ul class="breadcrumb">
+        <li><a href="/Home">Home</a></li>
+        <li><a href="/Matters/Taskless" class="active">Taskless Matters</a></li>
+    </ul>
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Taskless Matters
+    </div>
+    <div class="panel-body">
+        <table class="table table-striped table-condensed table-hover table-text-small">
+            <thead>
+                <tr>
+                    <th style="text-align: center; min-width: 400px;">
+                        Title
+                    </th>
+                    <th style="text-align: center;">
+                        Case Number
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @(Html.ActionLink(item.Title, "Details", "Matters", new { id = item.Id.Value }, null))
+                    </td>
+                    <td>
+                        @(item.CaseNumber)
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

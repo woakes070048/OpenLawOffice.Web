@@ -974,6 +974,22 @@ namespace OpenLawOffice.Web.Controllers
         }
 
         [Authorize(Roles = "Login, User")]
+        public ActionResult Taskless()
+        {
+            List<ViewModels.Matters.MatterViewModel> tasklessMatters = new List<ViewModels.Matters.MatterViewModel>();
+
+            using (IDbConnection conn = Data.Database.Instance.GetConnection())
+            {
+                Data.Matters.Matter.ListMattersWithoutActiveTasks(5, conn, false).ForEach(x =>
+                {
+                    tasklessMatters.Add(Mapper.Map<ViewModels.Matters.MatterViewModel>(x));
+                });
+            }
+
+            return View(tasklessMatters);
+        }
+
+        [Authorize(Roles = "Login, User")]
         public ActionResult Tasks(Guid id)
         {
             Common.Models.Matters.Matter matter;

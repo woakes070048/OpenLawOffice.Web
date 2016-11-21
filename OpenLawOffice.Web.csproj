@@ -594,6 +594,7 @@
     <Content Include="Views\TimeCategories\Details.cshtml" />
     <Content Include="Views\TimeCategories\Edit.cshtml" />
     <Content Include="Views\TimeCategories\Index.cshtml" />
+    <Content Include="Views\Matters\Taskless.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Views\AccountJson\" />
