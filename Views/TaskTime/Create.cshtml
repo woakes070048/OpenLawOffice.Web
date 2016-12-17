@@ -28,7 +28,7 @@
     @(Html.ValidationSummary(true))
     if (ViewBag.ErrorMessage != null)
     {
-        <div style="color: Red;">@(ViewBag.ErrorMessage)</div>
+        <div style="color: Red;">@Html.Raw(ViewBag.ErrorMessage)</div>
     }
 
     <div class="panel panel-default">

@@ -156,13 +156,33 @@ namespace OpenLawOffice.Web.Controllers
                             Common.Models.Contacts.Contact contact;
                             Common.Models.Tasks.Task task;
                             Common.Models.Matters.Matter matter;
+                            string errorListString = "";
+                            List<ViewModels.Contacts.ContactViewModel> employeeContactList;
 
                             contact = Data.Contacts.Contact.Get(trans, viewModel.Worker.Id.Value);
                             viewModel.Worker = Mapper.Map<ViewModels.Contacts.ContactViewModel>(contact);
 
                             task = Data.Timing.Time.GetRelatedTask(trans, model.Id.Value);
 
-                            ModelState.AddModelError(String.Empty, "Time conflicts with other time entries.");
+                            foreach (Common.Models.Timing.Time time in conflicts)
+                            {
+                                time.Worker = Data.Contacts.Contact.Get(time.Worker.Id.Value);
+                                errorListString += "<li>" + time.Worker.DisplayName +
+                                    "</a> worked from " + time.Start.ToString("M/d/yyyy h:mm tt");
+
+                                if (time.Stop.HasValue)
+                                    errorListString += " to " + time.Stop.Value.ToString("M/d/yyyy h:mm tt") +
+                                        " [<a href=\"/Timing/Edit/" + time.Id.Value.ToString() + "\">edit</a>]";
+                                else
+                                    errorListString += " to an unknown time " +
+                                        "[<a href=\"/Timing/Edit/" + time.Id.Value.ToString() + "\">edit</a>]";
+
+                                errorListString += "</li>";
+                            }
+
+                            ViewBag.ErrorMessage = "Time conflicts with the following other time entries:<ul>" + errorListString + "</ul>";
+
+                            //ModelState.AddModelError(String.Empty, "Time conflicts with other time entries.");
 
                             matter = Data.Tasks.Task.GetRelatedMatter(trans, task.Id.Value);
 
@@ -173,9 +193,16 @@ namespace OpenLawOffice.Web.Controllers
                                 Title = "Standard"
                             });
 
+                            employeeContactList = new List<ViewModels.Contacts.ContactViewModel>();
+                            Data.Contacts.Contact.ListEmployeesOnly(trans).ForEach(x =>
+                            {
+                                employeeContactList.Add(Mapper.Map<ViewModels.Contacts.ContactViewModel>(x));
+                            });
+
                             ViewBag.Task = task;
                             ViewBag.Matter = matter;
                             ViewBag.TimeCategoryList = timeCategoryList;
+                            ViewBag.EmployeeContactList = employeeContactList;
                             return View(viewModel);
                         }
                     }
@@ -186,7 +213,7 @@ namespace OpenLawOffice.Web.Controllers
 
                     return RedirectToAction("Details", new { Id = id });
                 }
-                catch(Exception ex)
+                catch
                 {
                     trans.Rollback();
                     return Edit(id);
